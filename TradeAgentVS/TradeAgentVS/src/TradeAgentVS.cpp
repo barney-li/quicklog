@@ -22,7 +22,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	boost::progress_display progressDisp(1000);
 	for(int i=0;i<1000;i++)
 	{
-		boost::this_thread::sleep_for(boost::chrono::nanoseconds(1000000));
+		boost::this_thread::sleep_for(boost::chrono::nanoseconds(100000));
 		progressDisp+=1;
 	}
 

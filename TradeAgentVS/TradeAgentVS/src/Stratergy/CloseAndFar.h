@@ -221,7 +221,7 @@ private:
 				SetState(OPEN_STATE);
 				StartTimer(stgArg.maxOpenTime);//start timer
 				stringstream tempStream;
-				tempStream<<"Trying to open with price: "<<dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice<<"...";
+				tempStream<<"Trying to open ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice<<"], order reference is ["<<lastOrder.orderRef<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
 			break;
@@ -234,7 +234,9 @@ private:
 			}
 			else if((OPEN_OVERTIME == tradeEvent))
 			{
-				logger.LogThisFast("Trying to cancel...");
+				stringstream tempStream;
+				tempStream<<"Trying to cancel ["<<instrumentList[SEC_INSTRUMENT]<<"], order reference is ["<<lastOrder.orderRef<<"].";
+				logger.LogThisFast(tempStream.str());
 				ReqOrderAction(instrumentList[SEC_INSTRUMENT],lastOrder.orderRef);
 				SetState(CANCEL_OPEN_STATE);
 			}
@@ -254,7 +256,7 @@ private:
 				SetState(FORCE_CLOSE_STATE);
 
 				stringstream tempStream;
-				tempStream<<"Trying to force close with price: "<<forceStopPrice<<"...";
+				tempStream<<"Trying to force close ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<forceStopPrice<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
 			break;
@@ -279,7 +281,7 @@ private:
 				SetState(FORCE_CLOSE_STATE);
 
 				stringstream tempStream;
-				tempStream<<"Trying to force close with price: "<<forceStopPrice<<"...";
+				tempStream<<"Trying to force close ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<forceStopPrice<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
 			else if(CANCELED == tradeEvent)
@@ -366,45 +368,45 @@ private:
 		logger.LogThisFast(tempStream.str());
 
 		//judge for BUY_PRICE_GOOD, BUY_PRICE_NOT_GOOD and MUST_STOP
-		int instrumentIndex = instrumentMap.at(pDepthMarketData->InstrumentID);
-		int posInBufSec = posInBuf[instrumentIndex];
-		int posInBufMain = posInBuf[0];
+		int instrumentIndex = instrumentMap.at(pDepthMarketData->InstrumentID);// get instrument index
+		int posInBufSec = posInBuf[SEC_INSTRUMENT];
+		int posInBufMain = posInBuf[MAIN_INSTRUMENT];
 		int lastPosInBufMain = posInBufMain-1;
 		if(lastPosInBufMain<0)
 		{
 			lastPosInBufMain = STRATEGY_BUFFER_SIZE-1;
 		}
 		//最新数据为主力且主力买1发生负向变动时，进行止损
-		if((strcmp(pDepthMarketData->InstrumentID, instrumentList[0]) == 0)&&
-			(dataBuf[0][posInBufMain].bidPrice > dataBuf[0][posInBufMain].lowerLimit)&&
-			(dataBuf[0][posInBufMain].bidPrice < dataBuf[0][posInBufMain].upperLimit)&&
-			(dataBuf[0][lastPosInBufMain].bidPrice > dataBuf[0][lastPosInBufMain].lowerLimit)&&
-			(dataBuf[0][lastPosInBufMain].bidPrice < dataBuf[0][lastPosInBufMain].upperLimit)&&
-			(dataBuf[0][posInBufMain].bidPrice - dataBuf[0][lastPosInBufMain].bidPrice < 0))
+		if((instrumentIndex == MAIN_INSTRUMENT )&&
+			(dataBuf[MAIN_INSTRUMENT][posInBufMain].bidPrice > dataBuf[MAIN_INSTRUMENT][posInBufMain].lowerLimit)&&
+			(dataBuf[MAIN_INSTRUMENT][posInBufMain].bidPrice < dataBuf[MAIN_INSTRUMENT][posInBufMain].upperLimit)&&
+			(dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].bidPrice > dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].lowerLimit)&&
+			(dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].bidPrice < dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].upperLimit)&&
+			(dataBuf[MAIN_INSTRUMENT][posInBufMain].bidPrice - dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].bidPrice < 0))
 		{
 			StateMachine(MUST_STOP);
 		}
 		// wait until the two instrument data are in the same time slot to judge the open condition
 		bool sameTime, sameMillisec;
-		string mainInsTime = dataBuf[0][posInBuf[0]].updateTime;
-		string secInsTime = dataBuf[1][posInBuf[1]].updateTime;
-		double mainMillisec = dataBuf[0][posInBuf[0]].updateMillisec;
-		double secMillisec = dataBuf[1][posInBuf[1]].updateMillisec;
+		string mainInsTime = dataBuf[MAIN_INSTRUMENT][posInBuf[MAIN_INSTRUMENT]].updateTime;
+		string secInsTime = dataBuf[SEC_INSTRUMENT][posInBuf[SEC_INSTRUMENT]].updateTime;
+		double mainMillisec = dataBuf[MAIN_INSTRUMENT][posInBuf[MAIN_INSTRUMENT]].updateMillisec;
+		double secMillisec = dataBuf[SEC_INSTRUMENT][posInBuf[SEC_INSTRUMENT]].updateMillisec;
 		if((mainMillisec == secMillisec) && (mainInsTime.compare(secInsTime) == 0))
 		{
 			
 			//条件1.次主力盘口买卖价差小于等于stgArg.secPriceDiff
-			if((dataBuf[instrumentIndex][posInBufSec].askPrice - dataBuf[instrumentIndex][posInBufSec].bidPrice) <= stgArg.secPriceDiff)
+			if((dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice - dataBuf[SEC_INSTRUMENT][posInBufSec].bidPrice) <= stgArg.secPriceDiff)
 			{
 				//条件2.次主力盘口买卖量差大于等于stgArg.secVolumeDiff
-				if(dataBuf[instrumentIndex][posInBufSec].bidVolume - dataBuf[instrumentIndex][posInBufSec].askVolume >= stgArg.secVolumeDiff)
+				if(dataBuf[SEC_INSTRUMENT][posInBufSec].bidVolume - dataBuf[SEC_INSTRUMENT][posInBufSec].askVolume >= stgArg.secVolumeDiff)
 				{
 					//条件3.主力（注意这里是主力）价格位于合理区间，且变动大于等于stgArg.mainPriceDelta
-					if((dataBuf[0][posInBufMain].bidPrice > dataBuf[0][posInBufMain].lowerLimit)&&
-						(dataBuf[0][posInBufMain].bidPrice < dataBuf[0][posInBufMain].upperLimit)&&
-						(dataBuf[0][lastPosInBufMain].bidPrice > dataBuf[0][lastPosInBufMain].lowerLimit)&&
-						(dataBuf[0][lastPosInBufMain].bidPrice < dataBuf[0][lastPosInBufMain].upperLimit)&&
-						(dataBuf[0][posInBufMain].bidPrice - dataBuf[0][lastPosInBufMain].bidPrice >= stgArg.mainPriceDelta))
+					if((dataBuf[MAIN_INSTRUMENT][posInBufMain].bidPrice > dataBuf[MAIN_INSTRUMENT][posInBufMain].lowerLimit)&&
+						(dataBuf[MAIN_INSTRUMENT][posInBufMain].bidPrice < dataBuf[MAIN_INSTRUMENT][posInBufMain].upperLimit)&&
+						(dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].bidPrice > dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].lowerLimit)&&
+						(dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].bidPrice < dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].upperLimit)&&
+						(dataBuf[MAIN_INSTRUMENT][posInBufMain].bidPrice - dataBuf[MAIN_INSTRUMENT][lastPosInBufMain].bidPrice >= stgArg.mainPriceDelta))
 					{
 						StateMachine(BUY_PRICE_GOOD);
 					}
