@@ -47,6 +47,8 @@ private:
 	TThostFtdcVolumeType lastVolume;//由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
 	// object to structure of strategy parameter
 	StrategyParameter stgArg;
+	// temp string stream, used for storing messages
+	stringstream tempStream;
 public:
 	CloseAndFar(void)
 	{
@@ -220,7 +222,8 @@ private:
 								&lastOrder);
 				SetState(OPEN_STATE);
 				StartTimer(stgArg.maxOpenTime);//start timer
-				stringstream tempStream;
+				tempStream.clear();
+				tempStream.str("");
 				tempStream<<"Trying to open ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice<<"], order reference is ["<<lastOrder.orderRef<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
@@ -234,7 +237,8 @@ private:
 			}
 			else if((OPEN_OVERTIME == tradeEvent))
 			{
-				stringstream tempStream;
+				tempStream.clear();
+				tempStream.str("");
 				tempStream<<"Trying to cancel ["<<instrumentList[SEC_INSTRUMENT]<<"], order reference is ["<<lastOrder.orderRef<<"].";
 				logger.LogThisFast(tempStream.str());
 				ReqOrderAction(instrumentList[SEC_INSTRUMENT],lastOrder.orderRef);
@@ -255,7 +259,8 @@ private:
 								&lastOrder);
 				SetState(FORCE_CLOSE_STATE);
 
-				stringstream tempStream;
+				tempStream.clear();
+				tempStream.str("");
 				tempStream<<"Trying to force close ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<forceStopPrice<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
@@ -280,7 +285,8 @@ private:
 								&lastOrder);
 				SetState(FORCE_CLOSE_STATE);
 
-				stringstream tempStream;
+				tempStream.clear();
+				tempStream.str("");
 				tempStream<<"Trying to force close ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<forceStopPrice<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
@@ -299,15 +305,19 @@ private:
 	{
 		boost::posix_time::ptime localTime = boost::posix_time::microsec_clock::local_time();
 		cout<<"---> Trade return at "<<localTime.time_of_day()<<endl;
-		stringstream tempStream;
-		tempStream<<"Traded at price:	"<<pTrade->Price;
-		// calculate how much do i earn in the last trade, and log it
+		tempStream.clear();
+		tempStream.str("");
+		if(pTrade->OffsetFlag == THOST_FTDC_OF_Open)
+		{
+			tempStream<<"Opened ["<<pTrade->InstrumentID<<"] at price ["<<pTrade->Price<<"].";
+		}
+		// if this trade is close, then calculate how much do i earn in the last trade, and log it
 		if((pTrade->OffsetFlag == THOST_FTDC_OF_CloseToday)||
 			(pTrade->OffsetFlag == THOST_FTDC_OF_Close)||
 			(pTrade->OffsetFlag == THOST_FTDC_OF_ForceClose))
 		{
-			
-			tempStream<<"	Profit during last trade:	"<<pTrade->Price-lastTrade.tradePrice;
+			tempStream<<"Closed ["<<pTrade->InstrumentID<<"] at price ["<<pTrade->Price<<"]."<<endl;
+			tempStream<<"Profit during last trade is ["<<pTrade->Price-lastTrade.tradePrice<<"].";
 		}
 		logger.LogThisFast(tempStream.str());
 		StoreLastTrade(pTrade);
@@ -323,6 +333,10 @@ private:
 		cout<<"------> Order Submit Status: "<<pOrder->OrderSubmitStatus<<endl;
 		if((pOrder->OrderStatus == THOST_FTDC_OST_Canceled) && (pOrder->OrderSubmitStatus == THOST_FTDC_OSS_Accepted))
 		{
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"Order ["<<pOrder->OrderRef<<"] has been canceled. ";
+			logger.LogThisFast(tempStream.str());
 			StateMachine(CANCELED);
 		}
 		if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted))
@@ -357,7 +371,8 @@ private:
 	// close and far strategy
 	void CAFStrategy(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
-		stringstream tempStream;
+		tempStream.clear();
+		tempStream.str("");
 		tempStream<<pDepthMarketData->InstrumentID<<"	"
 					<<pDepthMarketData->UpdateTime<<"	"
 					<<pDepthMarketData->UpdateMillisec<<"	"

@@ -1,7 +1,7 @@
 ﻿// TradeAgentVS.cpp : 
 //
 //#define BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG //开启后，计时精度为纳秒
-//#define BOOST_DATE_TIME_SOURCE
+#define BOOST_DATE_TIME_SOURCE
 #include "stdafx.h"
 #include <iostream>
 #include <TradeProcess.h>
