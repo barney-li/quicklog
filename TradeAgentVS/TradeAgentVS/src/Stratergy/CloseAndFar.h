@@ -119,7 +119,18 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"MaxOpenTime\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-		stgArg.closePriceConst = 0.0;		
+		if(config.ReadDouble(stgArg.openPriceConst, "OpenPriceConst") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"OpenPriceConst\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"OpenPriceConst\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadDouble(stgArg.closePriceConst, "ClosePriceConst") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"ClosePriceConst\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"ClosePriceConst\" in config file");
+			initStatus = CONFIG_ERROR;
+		}		
 		stgArg.floatError = 0.00001;
 
 		if(ALL_GOOD == initStatus)
@@ -215,7 +226,7 @@ private:
 				
 				int posInBufSec = posInBuf[SEC_INSTRUMENT];
 				ReqOrderInsert(dataBuf[SEC_INSTRUMENT][posInBufSec].instrumentId,
-								dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice,
+								dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice + stgArg.openPriceConst,
 								stgArg.openCloseVolume,
 								THOST_FTDC_D_Buy, 
 								THOST_FTDC_OF_Open,
@@ -224,7 +235,7 @@ private:
 				StartTimer(stgArg.maxOpenTime);//start timer
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"Trying to open ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice<<"], order reference is ["<<lastOrder.orderRef<<"].";
+				tempStream<<"Trying to open ["<<instrumentList[SEC_INSTRUMENT]<<"] with price ["<<dataBuf[SEC_INSTRUMENT][posInBufSec].askPrice + stgArg.openPriceConst<<"], order reference is ["<<lastOrder.orderRef<<"].";
 				logger.LogThisFast(tempStream.str());
 			}
 			break;
@@ -316,7 +327,7 @@ private:
 			(pTrade->OffsetFlag == THOST_FTDC_OF_Close)||
 			(pTrade->OffsetFlag == THOST_FTDC_OF_ForceClose))
 		{
-			tempStream<<"Closed ["<<pTrade->InstrumentID<<"] at price ["<<pTrade->Price<<"]."<<endl;
+			tempStream<<"Closed ["<<pTrade->InstrumentID<<"] at price ["<<pTrade->Price<<"]. ";
 			tempStream<<"Profit during last trade is ["<<pTrade->Price-lastTrade.tradePrice<<"].";
 		}
 		logger.LogThisFast(tempStream.str());

@@ -77,6 +77,7 @@ protected:
 		double		mainPriceDelta;		// Delta为本次数据与上次数据的价格变动
 		double		secPriceDiff;		// Diff为当前盘口的买卖价差
 		double		closePriceConst;	// 平仓时的价格上浮常数
+		double		openPriceConst;		// 开仓价格上浮常数
 		double		floatError;			// 浮点数误差
 		int			secVolumeDiff;		// 当前盘口的买卖数量差
 		int			openCloseVolume;	// 每次开仓平仓的数量
