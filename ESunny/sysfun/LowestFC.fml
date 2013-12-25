@@ -1,0 +1,16 @@
+//--------------------------------------------------------------
+// 简称: LowestFC
+// 名称: 快速计算最低
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price(1);
+	Numeric Length(10);
+Vars
+	Numeric LowestValue;
+	Numeric ExtremesBar;
+Begin
+	LowestValue = Extremes(Price, Length, False, ExtremesBar);	
+	Return LowestValue;
+End

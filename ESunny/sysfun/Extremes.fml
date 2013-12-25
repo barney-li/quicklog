@@ -1,0 +1,68 @@
+//--------------------------------------------------------------
+// 简称: Extremes
+// 名称: 求极值
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price;
+	Numeric Length;
+	Bool bMax;	
+	NumericRef ExtremeBar;	
+Vars
+	NumericSeries MyVal;
+	NumericSeries MyBar;
+	Numeric i;
+Begin
+	MyVal = Price;
+	MyBar = 0;
+	
+	If ( CurrentBar <= Length - 1 || MyBar[1] == Length - 1)
+	{
+		for i = 1 to Length - 1
+		{
+			If (bMax )
+			{
+				If ( Price[i] > MyVal)
+				{
+					MyVal = Price[i];
+					MyBar = i;
+				}
+			}Else
+			{
+				If ( Price[i] < MyVal)
+				{
+					MyVal = Price[i];
+					MyBar = i;
+				}
+			}
+		}	
+	}Else
+	{
+		If ( bMax )
+		{
+			If ( Price >= MyVal[1])
+			{
+				MyVal = Price;
+				MyBar = 0;
+			}Else
+			{
+				MyVal = MyVal[1];
+				MyBar = MyBar[1] + 1;
+			}
+		}Else
+		{
+			If ( Price <= MyVal[1])
+			{
+				MyVal = Price;
+				MyBar = 0;
+			}Else
+			{
+				MyVal = MyVal[1];
+				MyBar = MyBar[1] + 1;
+			}
+		}
+	}	
+	ExtremeBar = MyBar;
+	Return MyVal;
+End

@@ -1,0 +1,39 @@
+//------------------------------------------------------------------------
+// 简称:DualPeirod
+// 名称:多周期数据处理
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params
+	String Kind("CF205"); //品种名称
+Vars
+	NumericArray arr1;
+	NumericArray arr2;
+Begin
+	arr1=HisData(Enum_Data_Close,Enum_Period_Min15,Kind);  //取15分钟收盘价
+	arr2=HisData(Enum_Data_Open,Enum_Period_Day,Kind);  //取日线的上周期开盘价
+	
+	
+	if(ArrLength(arr1)==0)
+	{
+		Print("暂未获取到15分钟数据");
+	}	
+	Else
+	{
+		Numeric MA1=iMA(arr1);        //求15分钟线的当前MA值
+		Print(Kind+"的15分钟线当前MA值为："+Text(MA1));
+	}
+	
+	if(ArrLength(arr2)==0)
+	{
+		Print("暂未获取到日线数据");
+	}
+	Else
+	{
+		
+		Numeric MA2=iMA(arr2,20,1);  //求日线前一周期的MA值
+		Print(Kind+"的日线前一周期MA值为:"+Text(MA2));
+	}	
+	
+End
+

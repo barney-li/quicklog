@@ -1,0 +1,12 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Vars
+	Numeric TLowValue;
+Begin
+	TLowValue = Close[1];
+	If(Low <= Close[1])
+		TLowValue = Low;
+	Return TLowValue;
+End

@@ -1,0 +1,40 @@
+//--------------------------------------------------------------
+// 简称: myMACDDir
+// 名称: myMACDDir
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+
+Vars
+	NumericArray largerScaleClose;
+	NumericArray macdBar;
+	Numeric dir(0);
+	Numeric difLine(0);
+	Numeric deaLine(0);
+Begin
+	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_Min30(), "", 100);
+	ArrAdd(macdBar,iMACD(largerScaleClose, difLine, deaLine, 12, 26, 9, 0));
+	ArrAdd(macdBar,iMACD(largerScaleClose, difLine, deaLine, 12, 26, 9, 1));
+	ArrAdd(macdBar,iMACD(largerScaleClose, difLine, deaLine, 12, 26, 9, 2));
+	If((macdBar[0]>macdBar[1]))
+	{
+		//MACD上升时，准备做多
+		dir = 1;
+		//PlotText(Close,"buy");
+		
+	}
+	Else If((macdBar[0]<macdBar[1]))
+	{
+		//MACD下降时，准备做空
+		dir = -1;
+		//PlotText(Close,"sell");
+	}
+	Else
+	{
+		dir = 0;
+		//PlotText(Close,"NA");
+	}
+	//Print(largerScaleClose[1]);
+	Return dir;
+End

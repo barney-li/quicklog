@@ -1,0 +1,69 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Bool
+//--------------------------------------------------------------
+
+Params
+	NumericSeries Price;
+	Numeric Length;
+	Numeric LeftStrength;
+	Numeric RightStrength;
+	Numeric Instance;
+	Numeric HiLo;
+	NumericRef PivotPrice;
+	NumericRef PivotBar;
+Vars
+	Numeric CandidatePrice( 0 );
+	Numeric LengthCntr( 0 );
+	Numeric StrengthCntr( 0 );
+	Numeric InstanceCntr( 0 );
+	Bool PivotTest( False);
+	Bool InstanceTest( False ) ;
+Begin
+	InstanceCntr = 0 ;
+	InstanceTest = False ;
+	LengthCntr = RightStrength ; 
+	While (LengthCntr < Length && (!InstanceTest ))
+	{
+		CandidatePrice = Price[LengthCntr] ;
+		PivotTest = True ;	
+		StrengthCntr = LengthCntr + 1 ;
+		
+		While (PivotTest && StrengthCntr - LengthCntr <= LeftStrength )
+		{
+			If (( HiLo == 1 And CandidatePrice < Price[StrengthCntr] ) or ( HiLo == -1 And CandidatePrice > Price[StrengthCntr] ))
+				PivotTest = False;
+			Else
+				StrengthCntr = StrengthCntr + 1 ;
+		}
+		
+		StrengthCntr = LengthCntr - 1 ;
+		While (PivotTest && (LengthCntr - StrengthCntr) <= RightStrength )
+		{
+			If (( HiLo == 1 And CandidatePrice <= Price[StrengthCntr] ) or ( HiLo == -1 And CandidatePrice >= Price[StrengthCntr] ))
+				PivotTest = False;
+			Else
+				StrengthCntr = StrengthCntr - 1 ;
+		}
+		
+		If (PivotTest)		
+			InstanceCntr = InstanceCntr + 1 ;
+
+		If (InstanceCntr == Instance)
+			InstanceTest = True;
+		Else
+			LengthCntr = LengthCntr + 1 ;
+	}	
+	
+	If (InstanceTest )
+	{
+		PivotPrice = CandidatePrice ;
+		PivotBar = LengthCntr ;
+		Return True;
+	}Else
+	{
+		PivotPrice = -1 ;
+		PivotBar = -1 ;
+		Return False;		
+	}	
+End

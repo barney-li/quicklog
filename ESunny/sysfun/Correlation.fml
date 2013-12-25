@@ -1,0 +1,29 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price1(1); 
+	NumericSeries Price2(1);
+	Numeric Length(10);
+Vars
+	Numeric Matches(0);
+	BoolSeries Con;
+	Numeric i;
+Begin
+	Con = ( Price1 >= Price1[1] and Price2 >= Price2[1]) or ( Price1 < Price1[1] and Price2 < Price2[1]);
+	if (CurrentBar < Length )
+	{
+		Return 0;
+	}Else
+	{			
+		for i = 0 To Length - 1
+		{			
+			if (Con[i])
+			{
+				Matches = Matches + 1 ;
+			}
+		}
+		Return  2 * Matches / Length - 1 ;
+	}	
+End

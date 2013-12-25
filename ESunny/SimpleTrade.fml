@@ -1,0 +1,22 @@
+//------------------------------------------------------------------------
+// 简称:SimpleTrade
+// 名称:一个简单的交易指令
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params  
+	Numeric BuyPrice(3500);   //开仓价格
+	Numeric SellPrice(4000);   //平仓价格
+Vars
+	
+Begin
+	if(Q_Close <=BuyPrice && MarketPosition ==0) //如果价格低于3500，且持仓为0
+	{
+		Buy(1,Q_AskPrice);          //以申卖价买入一手
+	}
+	
+	if(Q_Close >=SellPrice && MarketPosition == 1) //如果价格高于400，且持有多仓
+	{
+		Sell(1,Q_BidPrice);          //以申买价平仓
+	}
+End

@@ -1,0 +1,30 @@
+//------------------------------------------------------------------------
+// 简称:PairTrade
+// 名称:一个简单的套利交易指令
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params  
+	String symbol1("TA205");  //第一腿合约名称
+	String symbol2("TA207");  //第二腿合约名称
+	Numeric HighPrice(10);     //高价
+	Numeric LowPrice(-5);    //低价
+Vars
+	Numeric price1;
+	Numeric price2;
+	Numeric difPrice;
+Begin
+	price1 = Q_AskPrice(symbol1);
+	price2 = Q_BidPrice(symbol2);
+	difPrice = price1 - price2;
+	
+	if(difPrice <= LowPrice)                     //组合价格低于LowPrice,开仓
+		A_SendOrder(Enum_Buy,Enum_Entry,1,difPrice,symbol1,symbol2);
+	
+	if(difPrice >=HighPrice)         //组合价格高于HighPrice,平仓
+	{
+		Sell(0,Q_BidPrice(symbol1));
+		BuyToCover(0,Q_AskPrice(symbol2),symbol2);
+	}
+	
+End

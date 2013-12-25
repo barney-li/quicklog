@@ -1,0 +1,23 @@
+//--------------------------------------------------------------
+// 简称: XAverage
+// 名称: 求指数平均
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price(10);
+	Numeric Length(10);
+Vars
+	Numeric sFcactor;
+	NumericSeries XAvgValue;
+Begin
+	sFcactor = 2 / ( Length + 1 );
+	if (CurrentBar == 0 )
+	{
+		XAvgValue = Price;
+	}else
+	{
+		XAvgValue = XAvgValue[1] + sFcactor * ( Price - XAvgValue[1] ) ;
+	}	
+	Return XAvgValue;
+End

@@ -1,0 +1,19 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price(1);
+	Numeric Length(10);
+Vars
+	Numeric SumValue(0);
+	Numeric Mean;
+	Numeric i;
+Begin
+	Mean = Average(Price, Length);
+	For i = 0 to Length - 1 
+	{
+		SumValue = SumValue + Abs(Price[i] - Mean);
+	}	
+	Return SumValue / Length;
+End

@@ -1,0 +1,12 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Vars
+	Numeric THighValue;
+Begin
+	THighValue = Close[1];
+	If(High >= Close[1])
+		THighValue = High;
+	Return THighValue;
+End

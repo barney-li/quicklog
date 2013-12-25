@@ -1,0 +1,161 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Bool
+//--------------------------------------------------------------
+Params
+	Numeric AfStep;
+	Numeric AfLimit;
+	NumericRef oParClose;
+	NumericRef oParOpen;
+	NumericRef oPosition;
+	NumericRef oTransition;
+Vars
+	NumericSeries Af(0);	
+	NumericSeries ParOpen(0);
+	NumericSeries Position(0);	
+	NumericSeries HHValue(0);
+	NumericSeries LLValue(0);
+Begin
+	If (CurrentBar == 0)
+	{
+		Position = 1 ;
+		oTransition = 1 ;
+		Af = AfStep ;
+		HHValue = High ;
+		LLValue = Low ;		
+		oParClose = LLValue ;
+		ParOpen = oParClose + Af * ( HHValue - oParClose) ;
+		If (ParOpen > Low)
+		{
+			ParOpen = Low ;
+		}
+	}Else
+	{	
+		oTransition = 0 ;	
+		If (High > HHValue[1])
+		{
+			HHValue = High;
+		}Else
+		{
+			HHValue = HHValue[1];
+		}
+		
+		If (Low < LLValue[1])
+		{
+			LLValue = Low;
+		}Else
+		{
+			LLValue = LLValue[1];
+		}
+		
+		If ( Position[1] == 1) 
+		{
+			If ( Low <= ParOpen[1])
+			{
+				Position = -1 ;
+				oTransition = -1 ;				
+				oParClose = HHValue ;
+				HHValue = High ;
+				LLValue  = Low ;
+	
+				Af = AfStep ;
+				ParOpen = oParClose + Af * ( LLValue - oParClose ) ;
+					
+				If (ParOpen < High)
+				{
+					ParOpen = High ;
+				}
+				
+				If (ParOpen < High[1])
+				{
+					ParOpen = High[1] ;
+				}
+			}Else
+			{
+				Position = Position[1];
+				oParClose = ParOpen[1] ;					
+				If (HHValue > HHValue[1] and Af[1] < AfLimit )
+				{
+					If(Af[1]+AfStep > AfLimit)
+					{
+						Af = AfLimit ;
+					}Else
+					{
+						Af = Af[1]+AfStep;
+					}				
+					
+				}Else
+				{
+					Af = Af[1];
+				}	
+				ParOpen = oParClose + Af * ( HHValue - oParClose ) ;				
+	
+				If (ParOpen > Low)
+				{
+					ParOpen = Low ;
+				}
+				
+				If (ParOpen > Low[1])
+				{
+					ParOpen = Low[1];
+				}
+			}
+		}Else 
+		{
+			If (High >= ParOpen[1])
+			{
+				Position = 1 ;
+				oTransition = 1 ;
+				
+				oParClose = LLValue ;
+				HHValue = High ;
+				LLValue  = Low ;
+				
+				Af = AfStep ;
+				ParOpen = oParClose + Af * ( HHValue - oParClose) ;
+				If (ParOpen > Low)
+				{
+					ParOpen = Low ;
+				}
+				
+				If (ParOpen > Low[1])
+				{
+					ParOpen = Low[1];
+				}
+			}Else
+			{
+				Position = Position[1];
+				oParClose = ParOpen[1];
+					
+				If (LLValue < LLValue[1] And Af[1] < AfLimit )
+				{
+					If(Af[1]+AfStep > AfLimit)
+					{
+						Af = AfLimit ;
+					}Else
+					{
+						Af = Af[1]+AfStep;
+					}
+				}Else
+				{
+					Af = Af[1];
+				}
+				ParOpen = oParClose + Af * ( LLValue - oParClose ) ;
+	
+				If (ParOpen < High)
+				{
+					ParOpen = High ;
+				}
+				
+				If (ParOpen < High[1])
+				{
+					ParOpen = High[1] ;
+				}
+			}
+		}	
+	}	
+	
+	oParOpen = ParOpen;
+	oPosition = Position;
+	Return True;
+End

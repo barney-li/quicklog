@@ -1,0 +1,27 @@
+//--------------------------------------------------------------
+// 简称: RSI
+// 名称: 返回相对强弱指标值
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price(10);
+	Integer N(12);
+Vars
+	Numeric Result(0);
+Begin
+	Numeric LPrice = Price[1];
+	
+	Numeric AvgAll = SMA(ABS(Price-LPrice),N,1);	
+	Numeric AvgUp  = SMA(Max(Price-LPrice,0),N,1);
+	if(AvgAll == 0)
+	{
+		Result =  0;
+	}
+	else
+	{
+		Result = 100 * AvgUp / AvgAll;
+	}
+	
+	return Result;
+End

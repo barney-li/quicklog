@@ -1,0 +1,44 @@
+：//--------------------------------------------------------------
+// 简称: iKDJ
+// 名称: 求数组形式的KDJ
+// 类型: 内建函数
+// 输出: Numeric
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+// 简称: iKDJ
+// 名称: iKDJ
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+Numeric N(9);
+NumericArray arrClose; //收盘价数组
+NumericArray arrHigh; //最高价数组
+NumericArray arrLow; //最低价数组
+NumericRef KValue; //返回K
+NumericRef DValue; //返回D
+NumericRef JValue;  //返回J
+Numeric Pos(0);
+Vars
+NumericArray arrRSV;
+NumericArray arrK;
+Numeric nCaluNum(30);   //这个数字越大，iSMA计算越精确，但速度越慢
+Begin
+ArrSetSize(arrRSV,nCaluNum);
+ArrSetSize(arrK,nCaluNum);
+for(int i=0;i<nCaluNum;i++)
+{
+Numeric LL = iLLV(arrLow,N,Pos+i);
+Numeric HH = iHHV(arrHigh,N,Pos+i);
+arrRSV[i] = (arrClose[Pos+i]-LL)/(HH-LL)*100;
+}
+for(int i=0;i<nCaluNum;i++)
+{
+arrK[i] = iSMA(arrRSV,3,1,i);
+}
+KValue = arrK[0]; 
+DValue = iSMA(arrK,3,1);
+JValue = 3*KValue-2*DValue;
+
+Return arrRSV[Pos];
+End

@@ -1,0 +1,18 @@
+//--------------------------------------------------------------
+// 简称: AvgPrice
+// 名称: 求平均价格
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Vars
+	Numeric AvgPriceValue;
+Begin
+	if (Open > 0)
+	{
+		AvgPriceValue = (Close + Open + High + Low) * 1/4;
+	}Else
+	{
+		AvgPriceValue = (Close + High + Low) * 1/3;
+	}	
+	Return AvgPriceValue;
+End

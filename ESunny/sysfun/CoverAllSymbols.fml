@@ -1,0 +1,22 @@
+//--------------------------------------------------------------
+// 简称: CoverAllSymbols
+// 名称: 平掉当前公式所有持仓
+// 类型: 用户函数
+// 输出: Integer
+//--------------------------------------------------------------
+Params
+
+Vars
+	String commodity("");
+Begin
+	commodity=A_FirstPositionSymbol;
+	while(commodity!="")
+	{
+		if(A_BuyPosition(commodity))
+			Sell(A_BuyPosition(commodity),0,commodity);
+		if(A_SellPosition(commodity))
+			BuyToCover(A_SellPosition(commodity),0,commodity);
+		commodity=A_NextPositionSymbol(commodity);
+	}
+	Return 1;
+End

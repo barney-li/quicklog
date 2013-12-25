@@ -1,0 +1,43 @@
+//--------------------------------------------------------------
+// 简称: CancelAllOrders
+// 名称: 批量撤单函数
+// 类型: 用户函数
+// 输出: Bool
+//--------------------------------------------------------------
+Params
+	Numeric orderType(0);   //撤单类型: 0:撤掉所有订单，1：撤掉所有多单，-1：撤掉所有空单
+	String  name("");
+Vars
+	
+Begin
+	Integer HaveCancelNum(0);
+	Integer OrderNo = A_FirstOrderNo(name);
+	While(OrderNo != -1)
+	{
+		if(A_OrderStatus(OrderNo) == Enum_Queue || A_OrderStatus(OrderNo)==Enum_PartDeal) //订单正在排队或部分成交
+		{
+			if(orderType == 0) //撤掉所有订单
+			{
+				A_DeleteOrder(OrderNo);
+				HaveCancelNum++;
+			}
+			Else if(orderType==1 && A_OrderBuyOrSell(OrderNo)==Enum_Buy) //撤掉所有多单
+			{
+				A_DeleteOrder(OrderNo);
+				HaveCancelNum++;
+			}
+			Else if(orderType==-1 && A_OrderBuyOrSell(OrderNo)==Enum_Sell) //撤掉所有空单
+			{
+				A_DeleteOrder(OrderNo);
+				HaveCancelNum++;
+			}
+		}
+		
+		
+		//处理下一订单
+		OrderNo = A_NextOrderNo(OrderNo);
+	} 
+	
+	Print("I Have Canceled " + Text(HaveCancelNum) +"Orders !");
+	Return True;
+End

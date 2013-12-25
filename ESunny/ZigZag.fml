@@ -1,0 +1,76 @@
+//------------------------------------------------------------------------
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+
+Params
+	Numeric RetracePct(2);
+Vars	
+	NumericSeries SwingPrice;
+	Numeric SwingHighPrice;
+	Numeric SwingLowPrice;
+	NumericSeries PreBar(0);
+	NumericSeries UpDn(0);
+	Bool SaveSwing(False);
+	Bool NewTL(False);
+	Bool UpdateTL(False);
+Begin
+	If(CurrentBar == 0)
+		SwingPrice = Close;
+	
+		
+	SwingHighPrice = SwingHigh( 1, Close, 1,2);
+	SwingLowPrice = SwingLow( 1, Close, 1, 2 );
+	If (SwingHighPrice <> -1)
+	{
+		If(UpDn <=0 && SwingHighPrice >= SwingPrice * (1+RetracePct*0.01))
+		{
+			UpDn = 1;
+			NewTL = True;
+			SaveSwing = True;
+		}Else If(UpDn == 1 && SwingHighPrice >= SwingPrice)
+		{
+			UpdateTL = True;
+			SaveSwing = True;
+		}
+
+		If(SaveSwing)
+		{
+			SwingPrice = SwingHighPrice;
+			PreBar = CurrentBar;
+		}
+	}Else If(SwingLowPrice <> -1)
+	{
+		If(UpDn >=0 && SwingLowPrice <= SwingPrice * (1-RetracePct*0.01))
+		{
+			UpDn = -1;
+			NewTL = True;
+			SaveSwing = True;
+		}Else If(UpDn == -1 && SwingLowPrice <= SwingPrice)
+		{
+			UpdateTL = True;
+			SaveSwing = True;
+		}
+
+		If(SaveSwing )
+		{
+			SwingPrice = SwingLowPrice;
+			PreBar = CurrentBar;
+		}		
+	}
+		
+	If( NewTL)
+	{
+		PlotNumeric("ZigZag",SwingPrice,0,-1,1);
+	}Else If(UpdateTL)
+	{
+		If (UpDn == UpDn[1])
+		{
+			Unplot("ZigZag",PreBar - PreBar[1]+1);
+			PlotNumeric("ZigZag",SwingPrice,0,-1,1);
+		}Else
+		{
+			PlotNumeric("ZigZag",SwingPrice,0,-1,1);
+		}
+	}		
+End

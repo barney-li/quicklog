@@ -1,0 +1,40 @@
+//--------------------------------------------------------------
+// 简称: iSMA
+// 名称: 求数组的权重平均值
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericArray Arr;
+	Integer N(10);
+	Numeric M(1);
+	Integer Pos(0);
+Vars
+	Numeric result;
+Begin
+	int arrLen = ArrLength(Arr);
+	if(arrLen==0) Return 0;
+	
+	if(Pos>=arrLen) Return Arr[arrLen-1]; 
+	
+	if(N<M)
+		Return Arr[Pos];
+	
+	int start = arrLen-1;
+	if(start- Pos >200) start = Pos + 200;
+	
+	for(int i=start; i>=Pos;i--)
+	{
+		if(i == start)
+		{
+			result = Arr[i];
+		}
+		Else
+		{
+			result = (M*Arr[i] + (N-M)* result) / N;
+		}
+	}
+	
+	
+	Return result;
+End

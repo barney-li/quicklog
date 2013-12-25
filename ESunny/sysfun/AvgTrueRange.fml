@@ -1,0 +1,12 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Params
+	Numeric Length(10);
+Vars
+	NumericSeries curTrueRang;
+Begin
+	curTrueRang=TrueRange;
+	Return Average(curTrueRang,Length);
+End

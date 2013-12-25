@@ -1,0 +1,18 @@
+//--------------------------------------------------------------
+// 简称: DEMA
+// 名称: 求双指数移动平均
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price(0);
+	Numeric Length(10);
+Vars
+	Numeric DEMAValue;
+	NumericSeries EMA1;
+	Numeric EMA2;
+Begin
+	EMA1 = XAverage(Price,Length);
+	EMA2 = XAverage(EMA1,Length);
+	Return 2*EMA1 - EMA2; 	
+End

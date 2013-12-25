@@ -1,0 +1,22 @@
+//--------------------------------------------------------------
+// 简称: MyKDJ
+// 名称: MyKDJ
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric N(9);
+	NumericRef RSV;
+	NumericRef KValue;
+	NumericRef DValue;
+	NumericRef JValue;
+	Numeric offset;
+Vars
+	Numeric Num;
+Begin
+	RSV = (CLOSE[offset]-MyExtremes(LOW,False,N,offset))/(MyExtremes(HIGH,False,N,offset)-MyExtremes(LOW,False,N,offset))*100;
+	KValue = SMA(RSV,3,1); 
+	DValue = SMA(KValue,3,1);
+	JValue = 3*KValue-2*DValue;
+	Return RSV;
+End

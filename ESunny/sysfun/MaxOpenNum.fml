@@ -1,0 +1,14 @@
+//--------------------------------------------------------------
+// 简称: MaxOpenNum
+// 名称: 返回当前资金可以开仓的手数
+// 类型: 用户函数
+// 输出: Integer
+//--------------------------------------------------------------
+Params
+	String commodity("");
+Vars
+	Integer Num(0);
+Begin
+	Num=M_FreeMargin/(Q_Close(commodity)*ContractUnit(commodity)*SeatMargin(commodity));
+	Return Num;
+End

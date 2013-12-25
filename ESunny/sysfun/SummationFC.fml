@@ -1,0 +1,24 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price;
+	Numeric Length(10);
+Vars
+	NumericSeries SumValue(0);
+	Numeric i;
+Begin
+	If(CurrentBar < Length)
+	{
+		SumValue = 0;
+		for i = 0 to Length - 1
+		{
+			SumValue = SumValue + price[i];
+		}
+	}Else
+	{
+		SumValue = SumValue[1] + Price - Price[Length];
+	}
+	Return SumValue;
+End

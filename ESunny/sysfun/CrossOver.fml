@@ -1,0 +1,30 @@
+//--------------------------------------------------------------
+// 简称: CrossOver
+// 名称: 求是否上穿
+// 函数类型: 用户函数
+// 返回值: Bool
+//--------------------------------------------------------------
+Params
+	NumericSeries Price1(1); 
+	NumericSeries Price2(1);
+Vars
+	Bool Con1(False);
+	Bool PreCon(False);
+	Numeric Counter(0);
+Begin
+	If(Price1 > Price2)
+	{
+		Counter = 1;	
+		Con1 = Price1[1] == Price2[1];		
+		While (Con1 and Counter < CurrentBar)
+		{			
+			Counter = Counter + 1;			 
+			Con1 = Price1[Counter] == Price2[Counter];	
+		}
+		PreCon = Price1[Counter] < Price2[Counter];
+		Return PreCon;
+	}Else
+	{
+		Return False;
+	}
+End

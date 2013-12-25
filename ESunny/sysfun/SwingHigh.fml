@@ -1,0 +1,16 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Params
+	Numeric Instance(1);
+	NumericSeries Price(1);
+	Numeric Strength(1);
+	Numeric Length(10);
+Vars
+	Numeric PivotPrice;
+	Numeric PivotBar;
+Begin
+	Pivot(Price,Length,Strength,Strength,Instance,1,PivotPrice,PivotBar);
+	Return PivotPrice;
+End

@@ -1,0 +1,48 @@
+//--------------------------------------------------------------
+// 简称: VolD
+// 名称: 求N天前的成交量
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric daysAgo(2);
+Vars
+	NumericSeries barCnt;
+	NumericSeries dayVol;
+	Numeric i;
+	Numeric j;
+	Numeric nIndex(0);
+	Numeric CBIndex;
+Begin
+	CBIndex = CurrentBar;
+	If(CBIndex == 0 || Date != Date[1])
+	{
+		barCnt = 1;
+		dayVol = Vol;
+	}Else
+	{
+		barCnt = barCnt + 1;
+		dayVol = dayVol + Vol;
+	}
+		
+	If(daysAgo == 0)
+	{
+		return dayVol;
+	}Else
+	{
+		For i = 1 To daysAgo
+		{
+			If( i == 1)
+			{	
+				j = 0;
+			}Else
+			{
+				j = j + BarCnt[j];				
+			}
+			If (j > CBIndex ) 
+				Return InvalidNumeric;
+			nIndex = nIndex + BarCnt[j];
+		}
+		Return dayVol[nIndex];
+	}
+End

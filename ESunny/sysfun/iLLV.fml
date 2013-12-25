@@ -1,0 +1,22 @@
+//--------------------------------------------------------------
+// 简称: iLLV
+// 名称: 求最低
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericArray arr;
+	Numeric length(10);
+	Numeric pos(0);
+Vars
+	Numeric Num;
+Begin
+	num=arr[pos];
+	for(Integer i=pos+1;i<pos+length;i++)
+	{
+		if(arr[i]<num)
+			num=arr[i];
+	}
+	Return Num;
+End
+

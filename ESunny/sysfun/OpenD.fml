@@ -1,0 +1,48 @@
+//--------------------------------------------------------------
+// 简称: OpenD
+// 名称: 求N天前的开盘价
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric daysAgo(2);
+Vars
+	NumericSeries barCnt;
+	NumericSeries dayOpen;
+	Numeric i;
+	Numeric j;
+	Numeric nIndex(0);
+	Numeric CBIndex;
+Begin
+	CBIndex = CurrentBar;
+	If(CBIndex == 0 || Date != Date[1])
+	{
+		barCnt = 1;
+		dayOpen = Open;
+	}Else
+	{
+		barCnt = barCnt + 1;
+	}
+		
+	If(daysAgo == 0)
+	{
+		return dayOpen;
+	}Else
+	{
+		For i = 1 To daysAgo
+		{
+			If( i == 1)
+			{	
+				j = 0;
+			}Else
+			{
+				j = j + BarCnt[j];				
+			}
+			If (j > CBIndex ) 
+				Return InvalidNumeric;
+			nIndex = nIndex + BarCnt[j];
+		}
+		Return dayOpen[nIndex];
+	}
+End
+

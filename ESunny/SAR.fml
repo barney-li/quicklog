@@ -1,0 +1,17 @@
+//------------------------------------------------------------------------
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params
+	Numeric AfStep( 0.02);
+	Numeric AfLimit( 0.2 ) ;
+Vars
+	Numeric oParCl( 0 ); 
+	Numeric oParOp( 0 );
+	Numeric oPosition( 0 );
+	Numeric oTransition( 0 );
+Begin
+	ParabolicSAR( AfStep, AfLimit, oParCl, oParOp, oPosition, oTransition ) ;
+	PlotDot(oParCl,13);
+	
+End

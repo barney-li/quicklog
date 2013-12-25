@@ -1,0 +1,169 @@
+//------------------------------------------------------------------------
+// 简称:ThreeFilter
+// 名称:ThreeFilter
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params  	
+	//参数定义段
+	Numeric ATREMA(3);
+	Numeric delayTimer(3);
+	Numeric recentHiLoWide(2);
+GlobalVars	
+	//全局变量定义段
+	Numeric tradeDir(0);
+	Numeric stopPrice(0);
+	NumericSeries theATR;
+	NumericSeries theTR;
+	Numeric startBar(0);
+	NumericSeries RSV;
+	NumericSeries KValue;
+	NumericSeries DValue;
+	NumericSeries JValue;
+	Numeric startPrice(0);
+	Numeric endPrice(0);
+	Numeric myProfit(0);
+Vars		
+	//局部变量定义段
+	Numeric dir(0);
+	Numeric tempRSV;
+	Numeric tempK;
+	Numeric tempD;
+	Numeric tempJ;
+	Numeric preClose(0);
+	Numeric preHigh(0);
+	Numeric preLow(0);
+	Numeric lowLmt(0);
+	Numeric upLmt(0);
+	Numeric closePrice(0);
+	Numeric sysATR(0);
+	Numeric recentLo(0);
+	Numeric recentHi(0);
+Begin
+	//策略执行区
+	//缓存序列变量，提高再次访问的效率
+	closePrice = Close;
+	preClose = Close[1];
+	preHigh = High[1];
+	preLow = Low[1];
+	lowLmt = Q_LowerLimit;
+	upLmt = Q_UpperLimit;
+	sysATR = AvgTrueRange(ATREMA);
+	//近期高低点，用来设置起始止损
+	recentLo = LowestFC(Low,recentHiLoWide);
+	recentHi = HighestFC(High,recentHiLoWide);
+	//计算ATR
+	theTR = myTR();
+	theATR = myATR(theTR, ATREMA);
+	//求KDJ
+	KDJ(9, tempRSV, tempK, tempD, tempJ);
+	RSV = tempRSV;
+	KValue = tempK;
+	DValue = tempD;
+	JValue = tempJ;
+	//检查持仓状况
+	tradeDir = MarketPosition();
+	//未开仓，进行开仓逻辑
+	If(tradeDir == 0)
+	{
+		dir = myMACDDir();
+		If(dir == 1)
+		{
+			If(RSV[1]<=30)//进入超卖区
+			{
+				If(Close >= preHigh+1*MinMove*PriceScale)//价格超过上一根K线的顶点
+				{
+					//两天内的最低价减一跳作为stopPrice
+					stopPrice = recentLo - 1*MinMove*PriceScale;
+					startBar = CurrentBar;
+					//If(Close - stopPrice < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+					{
+						PlotText(closePrice, "BUY");
+						Buy(1,0);
+						//计算真实情况下的买入价格
+						If(Open > preHigh+1*MinMove*PriceScale)
+						{
+							startPrice = Open + 1*MinMove*PriceScale;
+						}
+						Else
+						{
+							startPrice = preHigh+1*MinMove*PriceScale+1*MinMove*PriceScale;
+						} 
+					}
+				}
+				
+			}
+		}
+		If(dir == -1)
+		{
+			If(RSV[1]>=70)
+			{
+				If(Close <= preLow-1*MinMove*PriceScale)
+				{
+					stopPrice = recentHi + 1*MinMove*PriceScale;
+					startBar = CurrentBar;
+					//If(stopPrice - Close < 10*MinMove*PriceScale)
+					{
+						PlotText(closePrice, "SELL");
+						SellShort(1,0);
+						If(Open < preLow-1*MinMove*PriceScale)
+						{
+							startPrice = Open - 1*MinMove*PriceScale;
+						}
+						Else
+						{
+							startPrice = preLow-1*MinMove*PriceScale - 1*MinMove*PriceScale;
+						}
+					}
+				}
+			}
+		}
+	}
+	//买仓，进入卖平逻辑
+	If(tradeDir == 1)
+	{
+		If(Low<=stopPrice)
+		{
+			//止损
+			Sell(0,0);
+			endPrice = stopPrice - 1*MinMove*PriceScale;
+			Print("Profit: ");
+			Print(endPrice - startPrice);
+			myProfit = myProfit + endPrice - startPrice;
+			Print("Total Profit: ");
+			Print(myProfit);
+		}
+		Else
+		{
+			If(CurrentBar - startBar > delayTimer)
+			{
+				stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
+			}
+		}
+		PlotDot(stopPrice, 1);
+	}
+	//卖仓，进入买平逻辑
+	If(tradeDir == -1)
+	{
+		If(High>=stopPrice)
+		{
+			//止损
+			BuyToCover(0,0);
+			endPrice = stopPrice + 1*MinMove*PriceScale;
+			Print("Profit: ");
+			Print(startPrice - endPrice);
+			myProfit = myProfit + startPrice - endPrice;
+			Print("Total Profit: ");
+			Print(myProfit);
+		}
+		Else
+		{
+			If(CurrentBar - startBar > delayTimer)
+			{
+				stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
+			}
+		}
+		PlotDot(stopPrice, 3);
+	}
+	
+End

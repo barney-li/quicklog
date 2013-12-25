@@ -1,0 +1,22 @@
+//--------------------------------------------------------------
+// 简称: iMA
+// 名称: 移动平均线
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericArray Arr;
+	Numeric Length(10);
+	Numeric Pos(0);
+Vars
+	
+	Numeric sum(0);
+Begin
+			
+	for(Integer i=Pos;i<Pos+Length;i++)
+	{
+		sum+=arr[i];
+	}
+	
+	Return sum/Length;
+End

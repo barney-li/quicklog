@@ -1,0 +1,21 @@
+//--------------------------------------------------------------
+// 简称: Highest
+// 名称: 求最高
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries Price(0);
+	Numeric Length(5); 
+Vars
+	Numeric HighestValue;
+	Numeric i;
+Begin			
+	HighestValue = Price;		
+	for i=1 to Length - 1
+    {
+		If(Price[i] > HighestValue)
+			HighestValue = Price[i];
+	}
+	Return HighestValue;
+End

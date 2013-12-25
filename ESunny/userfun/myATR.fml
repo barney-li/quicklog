@@ -1,0 +1,15 @@
+//--------------------------------------------------------------
+// 简称: myATR
+// 名称: myATR
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries theTR;
+	Numeric length;
+Vars
+	Numeric retVal;
+Begin
+	retVal = AverageFC(theTR, length);
+	Return retVal;
+End

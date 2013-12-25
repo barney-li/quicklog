@@ -1,0 +1,18 @@
+//--------------------------------------------------------------
+//函数类型：用户函数
+//返回值：Numeric
+//--------------------------------------------------------------
+Params
+	BoolSeries TestCondition(false);
+	Numeric Length(10);
+Vars
+	Numeric Sum(0);
+	Numeric i;
+Begin
+	For i=0 To Length - 1
+	{
+		If(TestCondition[i]) 
+			Sum = Sum + 1;
+	}
+	Return Sum;
+End
