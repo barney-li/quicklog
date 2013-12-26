@@ -7,7 +7,7 @@
 Params  	
 	//参数定义段
 	Numeric ATREMA(3);
-	Numeric delayTimer(3);
+	Numeric delayTimer(1);
 	Numeric recentHiLoWide(2);
 GlobalVars	
 	//全局变量定义段
@@ -23,6 +23,8 @@ GlobalVars
 	Numeric startPrice(0);
 	Numeric endPrice(0);
 	Numeric myProfit(0);
+	Numeric win(0);
+	Numeric lose(0);
 Vars		
 	//局部变量定义段
 	Numeric dir(0);
@@ -75,8 +77,10 @@ Begin
 				{
 					//两天内的最低价减一跳作为stopPrice
 					stopPrice = recentLo - 1*MinMove*PriceScale;
+					//stopPrice = recentLo;
 					startBar = CurrentBar;
-					//If(Close - stopPrice < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+					If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+					//If(Open<preHigh+1*MinMove*PriceScale && Close >= preHigh+1*MinMove*PriceScale)
 					{
 						PlotText(closePrice, "BUY");
 						Buy(1,0);
@@ -87,7 +91,7 @@ Begin
 						}
 						Else
 						{
-							startPrice = preHigh+1*MinMove*PriceScale+1*MinMove*PriceScale;
+							startPrice = preHigh+2*MinMove*PriceScale;
 						} 
 					}
 				}
@@ -101,8 +105,10 @@ Begin
 				If(Close <= preLow-1*MinMove*PriceScale)
 				{
 					stopPrice = recentHi + 1*MinMove*PriceScale;
+					//stopPrice = recentHi;
 					startBar = CurrentBar;
-					//If(stopPrice - Close < 10*MinMove*PriceScale)
+					If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
+					//If(Open > preLow-1*MinMove*PriceScale && Close <= preLow-1*MinMove*PriceScale)
 					{
 						PlotText(closePrice, "SELL");
 						SellShort(1,0);
@@ -112,7 +118,7 @@ Begin
 						}
 						Else
 						{
-							startPrice = preLow-1*MinMove*PriceScale - 1*MinMove*PriceScale;
+							startPrice = preLow - 2*MinMove*PriceScale;
 						}
 					}
 				}
@@ -122,6 +128,11 @@ Begin
 	//买仓，进入卖平逻辑
 	If(tradeDir == 1)
 	{
+		If(CurrentBar - startBar > delayTimer)
+		{
+			stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
+		}
+		PlotDot(stopPrice, 0);
 		If(Low<=stopPrice)
 		{
 			//止损
@@ -132,19 +143,27 @@ Begin
 			myProfit = myProfit + endPrice - startPrice;
 			Print("Total Profit: ");
 			Print(myProfit);
-		}
-		Else
-		{
-			If(CurrentBar - startBar > delayTimer)
+			If(endPrice - startPrice > 0)
 			{
-				stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
+				win++;
 			}
+			Else
+			{
+				lose++;
+			}
+			Print(win/(win+lose));
+			PlotDot(stopPrice, 11);
 		}
-		PlotDot(stopPrice, 1);
+		
 	}
 	//卖仓，进入买平逻辑
 	If(tradeDir == -1)
 	{
+		If(CurrentBar - startBar > delayTimer)
+		{
+			stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
+		}
+		PlotDot(stopPrice, 1);
 		If(High>=stopPrice)
 		{
 			//止损
@@ -155,15 +174,18 @@ Begin
 			myProfit = myProfit + startPrice - endPrice;
 			Print("Total Profit: ");
 			Print(myProfit);
-		}
-		Else
-		{
-			If(CurrentBar - startBar > delayTimer)
+			If(startPrice - endPrice > 0)
 			{
-				stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
+				win++;
 			}
+			Else
+			{
+				lose++;
+			}
+			Print(win/(win+lose));
+			PlotDot(stopPrice, 11);
 		}
-		PlotDot(stopPrice, 3);
+		
 	}
 	
 End
