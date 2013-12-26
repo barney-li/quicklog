@@ -119,7 +119,8 @@ Begin
 	{
 		If(CurrentBar - startBar > delayTimer)
 		{
-			stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
+			//stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
+			stopPrice = stopPrice + theATR[1]*0.1;
 		}
 		PlotDot(stopPrice, 0);
 		If(Low<=stopPrice)
@@ -150,7 +151,8 @@ Begin
 	{
 		If(CurrentBar - startBar > delayTimer)
 		{
-			stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
+			//stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
+			stopPrice = stopPrice - theATR[1]*0.1;
 		}
 		PlotDot(stopPrice, 1);
 		If(High>=stopPrice)
