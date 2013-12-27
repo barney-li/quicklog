@@ -1,0 +1,20 @@
+//--------------------------------------------------------------
+// 简称: myTrPlus
+// 名称: myTrPlus
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric tradeDir;
+Vars
+	NumericSeries returnTR;
+	NumericArray tempTR;
+	NumericArray tempTR1;
+Begin
+	ArrAdd(tempTR, (High - Low));
+	ArrAdd(tempTR, (High - Close[1]));
+	ArrAdd(tempTR, (Low - Close[1]));
+	tempTR1 = ArrSort(tempTR, False);
+	returnTR = tempTR1[0];
+	Return returnTR;
+End

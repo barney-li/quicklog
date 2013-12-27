@@ -1,0 +1,44 @@
+//--------------------------------------------------------------
+// 简称: myDeltaPrice
+// 名称: myDeltaPrice
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric tradeDir;
+Vars
+	Numeric realDelta;
+	Numeric retVal;
+	//NumericArray tempTR;
+	//NumericArray tempTR1;
+Begin
+	realDelta = Close[1] - Close[2];
+	//ArrAdd(tempTR, (High[1] - Low[2]));
+	//ArrAdd(tempTR, (High[1] - Close[2]));
+	//ArrAdd(tempTR, (Low[1] - Close[2]));
+	//tempTR1 = ArrSort(tempTR, False);
+	//realDelta = tempTR1[0];
+	If(tradeDir == 1)
+	{
+		If(realDelta > 0)
+		{
+			retVal = realDelta;
+		}
+		Else
+		{
+			retVal = 0;
+		}
+	}
+	If(tradeDir == -1)
+	{
+		If(realDelta < 0)
+		{
+			retVal = realDelta;
+		}
+		Else
+		{
+			retVal = 0;
+		}
+	}
+	Return retVal;
+End
