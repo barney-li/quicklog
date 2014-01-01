@@ -20,8 +20,21 @@ RealInit
 Vars		
 	//局部变量定义段
 	Numeric fPrice(0);
+	Numeric dir(0);
 	
 Begin
 	//策略执行区		
-	myMACDDir();
+	dir = myMACDDir();
+	If(dir == 1)
+	{
+		PlotText(Close, "Buy");
+	}
+	If(dir == -1)
+	{
+		PlotText(Close, "Sell");
+	}
+	If(dir == 0)
+	{
+		PlotText(Close, "NA");
+	}
 End
