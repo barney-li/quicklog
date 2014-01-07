@@ -5,26 +5,28 @@
 // 输出: Numeric
 //--------------------------------------------------------------
 Params
-
+	Numeric minDelta(1);
+	Numeric largePeriod(30);
 Vars
 	NumericArray largerScaleClose;
 	NumericArray macdBar;
 	Numeric dir(0);
 	NumericArray difLine;
 	Numeric deaLine(0);
+	
 Begin
-	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_Min30(), "", 100);
+	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_MinX(largePeriod), "", 100);
 	ArrAdd(macdBar,iMACD(largerScaleClose, difLine[0], deaLine, 12, 26, 9, 0));
 	ArrAdd(macdBar,iMACD(largerScaleClose, difLine[1], deaLine, 12, 26, 9, 1));
 	ArrAdd(macdBar,iMACD(largerScaleClose, difLine[2], deaLine, 12, 26, 9, 2));
-	If((macdBar[1]>macdBar[2]) && difLine[0] > 0 && largerScaleClose[0] > largerScaleClose[1])
+	If((macdBar[1]-macdBar[2] > minDelta) && largerScaleClose[0] > largerScaleClose[1])
 	{
 		//MACD上升时，准备做多
 		dir = 1;
 		//PlotText(Close,"buy");
 		
 	}
-	Else If((macdBar[1]<macdBar[2]) && difLine[0] < 0 && largerScaleClose[0] < largerScaleClose[1])
+	Else If((macdBar[2] - macdBar[1] > minDelta) && largerScaleClose[0] < largerScaleClose[1])
 	{
 		//MACD下降时，准备做空
 		dir = -1;

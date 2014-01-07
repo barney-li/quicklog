@@ -1,0 +1,154 @@
+//------------------------------------------------------------------------
+// 简称:SimpleArbitrage
+// 名称:SimpleArbitrage
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params  	
+	//参数定义
+	Numeric buyDiscrepancy(3);
+	Numeric sellDiscrepancy(1);
+	String instrumentMain("AG1312");
+	String instrumentSecondary("AG1401");
+	Numeric bollLength(16);
+	Numeric bollOffsetOpen(2);
+	Numeric bollOffsetCover(1);
+GlobalVars	
+	//全局变量定义
+	Bool order(False);
+	Integer orderType(0);
+	Numeric openPriceMain(0);
+	Numeric openPriceSecondary(0);
+	Bool pendingMain(False);
+	Bool pendingSecondary(False);
+Vars	
+	//局部变量定义
+	NumericSeries diff(0);
+	Numeric priceMain(0);
+	Numeric priceSecondary(0);
+	Numeric centerLine(0);
+	Numeric upLine(0);
+	Numeric downLine(0);
+	Numeric upLineInner(0);
+	Numeric downLineInner(0);
+Begin		
+	//策略执行区
+	priceMain = Close(instrumentMain);
+	priceSecondary = Close(instrumentSecondary);
+	diff = priceMain - priceSecondary;
+	BOLL(diff, bollLength, bollOffsetOpen, centerLine, upLine, downLine);
+	BOLL(diff, bollLength, bollOffsetCover, centerLine, upLineInner, downLineInner);
+	Print(upLine);
+	Print(upLineInner);
+	PlotNumeric("BOLL center line", centerLine, 0, White);
+	PlotNumeric("BOLL up line", upLine, 0, Yellow);
+	PlotNumeric("BOLL down line", downLine, 0, Blue);
+	If(order == False)
+	{
+		If(diff<downLine)
+		{
+			Buy(1, Close(instrumentMain), instrumentMain);
+			SellShort(1, Close(instrumentSecondary), instrumentSecondary);//先开仓次主力合约
+			order = True;
+			orderType = 1;//下穿开仓
+			openPriceMain = Close(instrumentMain);
+			openPriceSecondary = Close(instrumentSecondary);
+			Print("=======================================");
+			Print("下穿开仓");
+			Print("合约1:");
+			Print(instrumentMain);
+			Print("开仓价:");
+			Print(Close(instrumentMain));
+			Print("合约2:");
+			Print(instrumentSecondary);
+			Print("开仓价:");
+			Print(Close(instrumentSecondary));
+			Print("开仓时间:");
+			Print(Day);
+			Print(Hour);
+			Print("最大亏损");
+			Print(Low(instrumentMain) - openPriceMain);
+			Print(openPriceSecondary - Low(instrumentSecondary));
+		}
+		Else If(diff>upLine)
+		{
+			SellShort(1, Close(instrumentMain), instrumentMain);
+			Buy(1, Close(instrumentSecondary), instrumentSecondary);
+			order = True;
+			orderType = 2;//上穿开仓
+			openPriceMain = Close(instrumentMain);
+			openPriceSecondary = Close(instrumentSecondary);
+			Print("=======================================");
+			Print("上穿开仓");
+			Print("合约1:");
+			Print(instrumentMain);
+			Print("开仓价:");
+			Print(Close(instrumentMain));
+			Print("合约2:");
+			Print(instrumentSecondary);
+			Print("开仓价:");
+			Print(Close(instrumentSecondary));
+			Print("开仓时间:");
+			Print(Day);
+			Print(Hour);
+			Print("最大亏损");
+			Print(openPriceMain - Low(instrumentMain));
+			Print(Low(instrumentSecondary) - openPriceSecondary);
+		}
+	}
+	Else
+	{
+		If(orderType == 1)
+		{
+			If(diff>downLineInner)
+			{
+				Sell(1, Close(instrumentMain), instrumentMain);
+				BuyToCover(1, Close(instrumentSecondary), instrumentSecondary);
+				order = False;
+				orderType = 0;
+				Print("=======================================");
+				Print("平：下穿开仓");
+				Print("合约1:");
+				Print(instrumentMain);
+				Print("平仓价:");
+				Print(Close(instrumentMain));
+				Print("合约2:");
+				Print(instrumentSecondary);
+				Print("平仓价:");
+				Print(Close(instrumentSecondary));
+				Print("平仓时间:");
+				Print(Day);
+				Print(Hour);
+			}
+			Print("最大亏损");
+			Print(Low(instrumentMain) - openPriceMain);
+			Print(openPriceSecondary - Low(instrumentSecondary));
+		}
+		Else If(orderType == 2)
+		{
+			If(diff<upLineInner)
+			{
+				BuyToCover(1, Close(instrumentMain), instrumentMain);
+				Sell(1, Close(instrumentSecondary), instrumentSecondary);
+				order = False;
+				orderType = 0;
+				Print("=======================================");
+				Print("平：上穿开仓");
+				Print("合约1:");
+				Print(instrumentMain);
+				Print("平仓价:");
+				Print(Close(instrumentMain));
+				Print("合约2:");
+				Print(instrumentSecondary);
+				Print("平仓价:");
+				Print(Close(instrumentSecondary));
+				Print("平仓时间:");
+				Print(Day);
+				Print(Hour);
+			}
+			Print("最大亏损");
+			Print(openPriceMain - Low(instrumentMain));
+			Print(Low(instrumentSecondary) - openPriceSecondary);
+		}
+	}
+End

@@ -1,0 +1,72 @@
+//------------------------------------------------------------------------
+// 简称:AMA
+// 名称:自适应移动平均线
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params  	
+	//参数定义
+	Numeric EffectCoeff(5);
+	Numeric AvgLen1(10);
+	Numeric AvgLen2(100);
+	Numeric RiseThreshold(3);
+	Numeric FallThreshold(-3);
+GlobalVars	
+	//全局变量定义
+Vars		
+	//局部变量定义
+	NumericSeries AdpAvgData(0);
+	NumericSeries Avg1(0);
+	NumericSeries Avg2(0);
+	Numeric BuyPosition(0);
+	Numeric SellPosition(0);
+	NumericSeries slope(0);
+	Numeric RiseThresholdReal(0);
+	Numeric FallThresholdReal(0);
+Begin		
+	//策略执行区
+	RiseThresholdReal = RiseThreshold*MinMove*PriceScale;
+	FallThresholdReal = FallThreshold*MinMove*PriceScale;
+	AdpAvgData = AdaptiveMovAvg(Close, EffectCoeff, 2, 30);
+	Avg1 = Average(Close,AvgLen1);
+	Avg2 = Average(Close,AvgLen2);
+	PlotNumeric("AdpAvgData",AdpAvgData,0,Green);
+	PlotNumeric("Avg1",Avg1,0,Yellow);
+	PlotNumeric("Avg2",Avg2,0,Blue);
+	slope = AdpAvgData[0]-AdpAvgData[1];
+	if(0 == A_BuyPosition)
+	{
+		if(slope>RiseThresholdReal)
+		{
+			Buy(1,Close);
+			PlotText(Close,"多头建仓");
+		}
+	}
+	else
+	{
+		if(slope<FallThresholdReal)
+		{
+			Sell(0,Close);
+			PlotText(Close,"多头平仓");
+		}
+	}
+	
+	if(0 == A_SellPosition)
+	{
+		if(slope<FallThresholdReal)
+		{
+			SellShort(1,Close);
+			PlotText(Open,"空头建仓");
+		}
+	}
+	else
+	{
+		if(slope>RiseThresholdReal)
+		{
+			BuyToCover(0,Close);
+			PlotText(Open,"空头平仓");
+		}
+	}
+	
+
+End

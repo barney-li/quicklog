@@ -1,0 +1,21 @@
+//--------------------------------------------------------------
+// 简称: SimpleMA
+// 名称: SimpleMA
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries input;
+	Numeric dataLength;
+Vars
+	Numeric tempSum(0);
+	Numeric numMA(0);
+	Integer index(0);
+Begin
+	For index=0 To dataLength-1
+	{
+		tempSum = tempSum+input[index];
+	}
+	numMA = tempSum/dataLength;
+	Return numMA;
+End

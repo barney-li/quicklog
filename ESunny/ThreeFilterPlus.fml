@@ -14,6 +14,9 @@ Params
 	Numeric atrIndex(0.1);//将ATR转换为棘轮步长的系数
 	Numeric atrType(0);//计算ATR方式，0为标准ATR，1为Barney ATR
 	Numeric timeBlank(0.0903);//开始进行开仓判断的时间
+	Numeric minDelta(1);//计算MACD方向时的阈值
+	Numeric largePeriod(30);//第一层滤网中，长周期K线的周期
+	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
 GlobalVars	
 	//全局变量定义段
 	Numeric tradeDir(0);
@@ -79,12 +82,12 @@ Begin
 	If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank )
 	//If(tradeDir == 0 && CurrentTime > timeBlank )
 	{
-		dir = myMACDDir();
+		dir = myMACDDir(minDelta, largePeriod);
 		If(dir == 1)
 		{
 			If(RSV[1]<=30)//进入超卖区
 			{
-				openPoint = preHigh+2*MinMove*PriceScale;
+				openPoint = preHigh+openBreak*MinMove*PriceScale;
 				//真实交易时，需要在此处添加限价单
 				//If(Low < preHigh+1*MinMove*PriceScale && High > preHigh+1*MinMove*PriceScale)//价格覆盖过了上一根K线的顶点，此时不应有滑点
 				If(High >= openPoint)
@@ -110,7 +113,7 @@ Begin
 		{
 			If(RSV[1]>=70)
 			{
-				openPoint = preLow-2*MinMove*PriceScale;
+				openPoint = preLow-openBreak*MinMove*PriceScale;
 				//真实交易时，需要在此处添加限价单
 				//If(High > preLow-1*MinMove*PriceScale && Low < preLow-1*MinMove*PriceScale)
 				If(Low <= openPoint)
