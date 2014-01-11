@@ -82,7 +82,8 @@ Begin
 	If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank )
 	//If(tradeDir == 0 && CurrentTime > timeBlank )
 	{
-		dir = myMACDDir(minDelta, largePeriod);
+		//dir = myMACDDir(minDelta, largePeriod);
+		dir = myMADir(0, 5, 10);
 		If(dir == 1)
 		{
 			If(RSV[1]<=30)//½øÈë³¬ÂôÇø

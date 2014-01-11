@@ -1,0 +1,37 @@
+//--------------------------------------------------------------
+// 简称: myMADir
+// 名称: myMADir
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric minDelta(0);
+	Numeric shortLen(5);
+	Numeric longLen(10);
+Vars
+	NumericArray largerScaleClose;
+	Numeric fastMA(0);
+	Numeric fastMA1(0);
+	Numeric slowMA(0);
+	Numeric dir(0);
+Begin
+	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_Day(), "", longLen);
+	fastMA = myAveragePlus(largerScaleClose,shortLen,0);
+	fastMA1 = myAveragePlus(largerScaleClose,shortLen,1);
+	slowMA = myAveragePlus(largerScaleClose,longLen);
+	PlotNumeric("myMA", fastMA);
+	PlotNumeric("myMA1", fastMA1);
+	If(fastMA > fastMA1)
+	{
+		dir = 1;
+	}
+	Else If(fastMA < fastMA1)
+	{
+		dir = -1;
+	}
+	Else
+	{
+		dir = 0;
+	}
+	Return dir;
+End

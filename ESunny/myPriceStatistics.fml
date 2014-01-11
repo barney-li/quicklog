@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------
-// 简称:test
-// 名称:test
+// 简称:myPriceStatistics
+// 名称:myPriceStatistics
 // 类别: 交易指令
 // 类型: 用户应用
 //------------------------------------------------------------------------
@@ -11,7 +11,6 @@ Params
 GlobalVars	
 	//全局变量定义段
 	Bool bOpen(False);
-	NumericSeries theTR;
 	
 RealInit	
 	//在模拟交易切换到真实交易时调用该段
@@ -20,22 +19,14 @@ RealInit
 Vars		
 	//局部变量定义段
 	Numeric fPrice(0);
-	Numeric dir(0);
 	
 Begin
 	//策略执行区		
-	//dir = myMACDDir();
-	dir = myMADir(0,5,10);
-	If(dir == 1)
+	if(!bOpen)
 	{
-		PlotText(Close, "Buy");
+		fPrice=Q_AskPrice;
+		Buy(P1,fPrice);
+		bOpen=True;
 	}
-	If(dir == -1)
-	{
-		PlotText(Close, "Sell");
-	}
-	If(dir == 0)
-	{
-		//PlotText(Close, "NA");
-	}
+	
 End

@@ -1,0 +1,20 @@
+//--------------------------------------------------------------
+// 简称: myAveragePlus
+// 名称: myAveragePlus
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericArray priceArray;
+	Numeric length;
+	Numeric offset(0);
+Vars
+	Numeric sum(0);
+	Numeric index(0);
+Begin
+	For index=0+offset to length-1+offset
+	{
+		sum = sum + priceArray[index];
+	}
+	Return sum/length;
+End
