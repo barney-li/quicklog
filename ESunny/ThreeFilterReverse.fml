@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------
-// 简称:ThreeFilterPlus
-// 名称:ThreeFilterPlus
+// 简称:ThreeFilterReverse
+// 名称:ThreeFilterReverse
 // 类别: 交易指令
 // 类型: 用户应用
 //------------------------------------------------------------------------
@@ -14,10 +14,12 @@ Params
 	Numeric atrIndex(0.1);//将ATR转换为棘轮步长的系数
 	Numeric atrType(0);//计算ATR方式，0为标准ATR，1为Barney ATR
 	Numeric timeBlank(0.0903);//开始进行开仓判断的时间
+	Numeric timeBlank1(0.1455);//停止开仓的时间
 	Numeric minDelta(1);//计算MACD方向时的阈值
 	Numeric largePeriod(30);//第一层滤网中，长周期K线的周期
 	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
 	Numeric fixedProfit(2);//固定收益，达到收益即平仓
+	Numeric fixedStop(2);//固定止损，达到即平仓
 GlobalVars	
 	//全局变量定义段
 	Numeric tradeDir(0);
@@ -82,7 +84,7 @@ Begin
 	tradeDir = MarketPosition();
 	//未开仓，进行开仓逻辑
 	//If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank )
-	If(tradeDir == 0 && CurrentTime > timeBlank )
+	If(tradeDir == 0 && CurrentTime > timeBlank && CurrentTime < timeBlank1)
 	{
 		//dir = myMACDDir(minDelta, largePeriod);
 		dir = myMADir(0, 5, 10);
@@ -98,16 +100,14 @@ Begin
 					//两天内的最低价减一跳作为stopPrice
 					stopPrice = recentLo - 1*MinMove*PriceScale;
 					startBar = CurrentBar;
-					//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+					If(Open >= openPoint)
 					{
-						If(Open >= openPoint)
-						{
-							openPoint = Open;
-						}
-						startPrice = openPoint + openSlide*MinMove*PriceScale;
-						PlotText(startPrice, "BUY");
-						Buy(1,startPrice);
+						openPoint = Open;
 					}
+					startPrice = openPoint - openSlide*MinMove*PriceScale;
+					PlotText(startPrice, "SELL");
+					SellShort(1,startPrice);
+					
 				}
 				
 			}
@@ -123,16 +123,13 @@ Begin
 				{
 					stopPrice = recentHi + 1*MinMove*PriceScale;
 					startBar = CurrentBar;
-					//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
+					If(Open <= openPoint)
 					{
-						If(Open <= openPoint)
-						{
-							openPoint = Open;
-						}
-						startPrice = openPoint - openSlide*MinMove*PriceScale;
-						PlotText(startPrice, "SELL");
-						SellShort(1,startPrice);
+						openPoint = Open;
 					}
+					startPrice = openPoint + openSlide*MinMove*PriceScale;
+					PlotText(startPrice, "BUY");
+					Buy(1,startPrice);
 				}
 			}
 		}
@@ -141,9 +138,9 @@ Begin
 	If(tradeDir == 1)
 	{
 		PlotDot(Close,0);
-		If(CurrentBar - startBar < 15)
+/*		If(CurrentBar - startBar < 7)
 		{
-			If(High > startPrice)
+			If(High - startPrice >= fixedProfit*MinMove*PriceScale)
 			{
 				win++;
 				Print(win/(win+lose));
@@ -155,6 +152,45 @@ Begin
 			lose++;
 			Print(win/(win+lose));
 			Sell(0,0);
+		}*/
+		If(High>=startPrice + fixedProfit*MinMove*PriceScale)
+		{
+			PlotIcon(startPrice + fixedProfit*MinMove*PriceScale - 1, 15);
+			myProfit = myProfit + fixedProfit*MinMove*PriceScale - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			win++;
+			Print(win/(win+lose));
+			Sell(0,0);
+		}
+		Else If(Low<=startPrice - fixedStop*MinMove*PriceScale)
+		{
+			
+			/*PlotIcon(startPrice - fixedStop*MinMove*PriceScale - 1, 1);
+			myProfit = myProfit - fixedStop*MinMove*PriceScale - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			lose++;
+			Print(win/(win+lose));
+			Sell(0,0);*/
+			//另一种情况，若盘中出现了最低点低于止损价，就在收盘时平仓
+			PlotIcon(Close,1);
+			myProfit = myProfit + Close - startPrice - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			lose++;
+			Print(win/(win+lose));
+			Sell(0,0);
+		}
+		Else If(CurrentTime >=0.1455)//不持隔夜仓
+		{
+			PlotIcon(Close,1);
+			myProfit = myProfit + Close - startPrice - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			lose++;
+			Print(win/(win+lose));
+			Sell(0,0);
 		}
 		
 	}
@@ -162,9 +198,9 @@ Begin
 	If(tradeDir == -1)
 	{
 		PlotDot(Close,1);
-		If(CurrentBar - startBar < 15)
+		/*If(CurrentBar - startBar < 7)
 		{
-			If(Low < startPrice)
+			If(startPrice - Low >= fixedProfit*MinMove*PriceScale)
 			{
 				win++;
 				Print(win/(win+lose));
@@ -176,7 +212,47 @@ Begin
 			lose++;
 			Print(win/(win+lose));
 			BuyToCover(0,0);
+		}*/
+		If(Low<=startPrice + fixedProfit*MinMove*PriceScale)
+		{
+			PlotIcon(startPrice - fixedProfit*MinMove*PriceScale + 1, 15);
+			myProfit = myProfit + fixedProfit*MinMove*PriceScale - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			win++;
+			Print(win/(win+lose));
+			BuyToCover(0,0);
 		}
+		Else If(High>=startPrice + fixedStop*MinMove*PriceScale)
+		{
+			
+			/*PlotIcon(startPrice + fixedStop*MinMove*PriceScale + 1, 1);
+			myProfit = myProfit - fixedStop*MinMove*PriceScale - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			lose++;
+			Print(win/(win+lose));
+			BuyToCover(0,0);*/
+			//另一种情况
+			PlotIcon(Close,1);
+			myProfit = myProfit + startPrice - Close - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			lose++;
+			Print(win/(win+lose));
+			BuyToCover(0,0);
+		}
+		Else If(CurrentTime >=0.1455)//不持隔夜仓
+		{
+			PlotIcon(Close,1);
+			myProfit = myProfit + startPrice - Close - 1;
+			Print("My Profit: ");
+			Print(myProfit);
+			lose++;
+			Print(win/(win+lose));
+			BuyToCover(0,0);
+		}
+		
 	}
 	
 End

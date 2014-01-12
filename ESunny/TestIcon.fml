@@ -25,9 +25,9 @@ Vars
 	
 Begin
 	//²ßÂÔÖ´ÐÐÇø		
-	PlotDot(Low,i);
+	PlotIcon(Close,i);
 	i++;
-	If(i>14)
+	If(i>15)
 	{
 		i = 0;
 	}
