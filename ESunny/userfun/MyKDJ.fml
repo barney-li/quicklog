@@ -5,7 +5,7 @@
 // Êä³ö: Numeric
 //--------------------------------------------------------------
 Params
-	Numeric N(9);
+	Numeric N;
 	NumericRef RSV;
 	NumericRef KValue;
 	NumericRef DValue;
@@ -13,8 +13,9 @@ Params
 	Numeric offset;
 Vars
 	Numeric Num;
+	Numeric useless;
 Begin
-	RSV = (CLOSE[offset]-MyExtremes(LOW,False,N,offset))/(MyExtremes(HIGH,False,N,offset)-MyExtremes(LOW,False,N,offset))*100;
+	RSV = (CLOSE-Lowest(LOW,N))/(Highest(HIGH,N)-Lowest(LOW,N))*100;
 	KValue = SMA(RSV,3,1); 
 	DValue = SMA(KValue,3,1);
 	JValue = 3*KValue-2*DValue;

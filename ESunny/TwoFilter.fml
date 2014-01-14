@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------
-// 简称:ThreeFilterReverse
-// 名称:ThreeFilterReverse
+// 简称:TwoFilter
+// 名称:TwoFilter
 // 类别: 交易指令
 // 类型: 用户应用
 //------------------------------------------------------------------------
@@ -18,8 +18,8 @@ Params
 	Numeric minDelta(1);//计算MACD方向时的阈值
 	Numeric largePeriod(30);//第一层滤网中，长周期K线的周期
 	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
-	Numeric fixedProfit(6);//固定收益，达到收益即平仓
-	Numeric fixedStop(6);//固定止损，达到即平仓
+	Numeric fixedProfit(2);//固定收益，达到收益即平仓
+	Numeric fixedStop(2);//固定止损，达到即平仓
 GlobalVars	
 	//全局变量定义段
 	Numeric tradeDir(0);
@@ -73,9 +73,8 @@ Begin
 	theTR = myTR();
 	theATR = myATR(theTR, atrMa);
 	//求KDJ
-	MyKDJ(4, tempRSV, tempK, tempD, tempJ,0);
+	KDJ(9, tempRSV, tempK, tempD, tempJ);
 	RSV = tempRSV;
-	Print(tempRSV);
 	KValue = tempK;
 	DValue = tempD;
 	JValue = tempJ;
@@ -84,12 +83,12 @@ Begin
 	//检查持仓状况
 	tradeDir = MarketPosition();
 	//未开仓，进行开仓逻辑
-	//If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank && CurrentTime < timeBlank1)
+	//If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank )
 	If(tradeDir == 0 && CurrentTime > timeBlank && CurrentTime < timeBlank1)
 	{
 		//dir = myMACDDir(minDelta, largePeriod);
-		dir = myMADir(0, 5, 10);
-		If(dir == -1)
+		//dir = myMADir(0, 5, 10);
+		//If(dir == 1)
 		{
 			If(RSV[1]<=30)//进入超卖区
 			{
@@ -113,8 +112,8 @@ Begin
 				
 			}
 		}
-		If(dir == 1)
-		{
+		//If(dir == -1)
+		/*{
 			If(RSV[1]>=70)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
@@ -133,7 +132,7 @@ Begin
 					Buy(1,startPrice);
 				}
 			}
-		}
+		}*/
 	}
 	//买仓，进入卖平逻辑
 	If(tradeDir == 1)
@@ -156,8 +155,8 @@ Begin
 		}*/
 		If(High>=startPrice + fixedProfit*MinMove*PriceScale)
 		{
-			PlotIcon(startPrice + fixedProfit*MinMove*PriceScale - 1*MinMove*PriceScale, 15);
-			myProfit = myProfit + fixedProfit*MinMove*PriceScale - 1*MinMove*PriceScale;
+			PlotIcon(startPrice + fixedProfit*MinMove*PriceScale - 1, 15);
+			myProfit = myProfit + fixedProfit*MinMove*PriceScale - 1;
 			Print("My Profit: ");
 			Print(myProfit);
 			win++;
@@ -176,7 +175,7 @@ Begin
 			Sell(0,0);*/
 			//另一种情况，若盘中出现了最低点低于止损价，就在收盘时平仓
 			PlotIcon(Close,1);
-			myProfit = myProfit + Close - startPrice - 1*MinMove*PriceScale;
+			myProfit = myProfit + Close - startPrice - 1;
 			Print("My Profit: ");
 			Print(myProfit);
 			lose++;
@@ -186,7 +185,7 @@ Begin
 		Else If(CurrentTime >=0.1455)//不持隔夜仓
 		{
 			PlotIcon(Close,1);
-			myProfit = myProfit + Close - startPrice - 1*MinMove*PriceScale;
+			myProfit = myProfit + Close - startPrice - 1;
 			Print("My Profit: ");
 			Print(myProfit);
 			lose++;
@@ -216,8 +215,8 @@ Begin
 		}*/
 		If(Low<=startPrice - fixedProfit*MinMove*PriceScale)
 		{
-			PlotIcon(startPrice - fixedProfit*MinMove*PriceScale + 1*MinMove*PriceScale, 15);
-			myProfit = myProfit + fixedProfit*MinMove*PriceScale - 1*MinMove*PriceScale;
+			PlotIcon(startPrice - fixedProfit*MinMove*PriceScale + 1, 15);
+			myProfit = myProfit + fixedProfit*MinMove*PriceScale - 1;
 			Print("My Profit: ");
 			Print(myProfit);
 			win++;
@@ -236,7 +235,7 @@ Begin
 			BuyToCover(0,0);*/
 			//另一种情况
 			PlotIcon(Close,1);
-			myProfit = myProfit + startPrice - Close - 1*MinMove*PriceScale;
+			myProfit = myProfit + startPrice - Close - 1;
 			Print("My Profit: ");
 			Print(myProfit);
 			lose++;
@@ -246,7 +245,7 @@ Begin
 		Else If(CurrentTime >=0.1455)//不持隔夜仓
 		{
 			PlotIcon(Close,1);
-			myProfit = myProfit + startPrice - Close - 1*MinMove*PriceScale;
+			myProfit = myProfit + startPrice - Close - 1;
 			Print("My Profit: ");
 			Print(myProfit);
 			lose++;
