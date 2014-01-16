@@ -73,9 +73,8 @@ Begin
 	theTR = myTR();
 	theATR = myATR(theTR, atrMa);
 	//求KDJ
-	MyKDJ(4, tempRSV, tempK, tempD, tempJ,0);
+	MyKDJ(9, tempRSV, tempK, tempD, tempJ,0);
 	RSV = tempRSV;
-	Print(tempRSV);
 	KValue = tempK;
 	DValue = tempD;
 	JValue = tempJ;
@@ -91,7 +90,7 @@ Begin
 		dir = myMADir(0, 5, 10);
 		If(dir == -1)
 		{
-			If(RSV[1]<=30)//进入超卖区
+			If(RSV[1]<=20)//进入超卖区
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
 				//真实交易时，需要在此处添加限价单
@@ -115,7 +114,7 @@ Begin
 		}
 		If(dir == 1)
 		{
-			If(RSV[1]>=70)
+			If(RSV[1]>=80)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
 				//真实交易时，需要在此处添加限价单

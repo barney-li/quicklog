@@ -88,7 +88,7 @@ Begin
 	{
 		//dir = myMACDDir(minDelta, largePeriod);
 		dir = myMADir(0, 5, 10);
-		If(dir == -1)
+		If(dir == 1)
 		{
 			If(RSV[1]<=20)//½øÈë³¬ÂôÇø
 			{
@@ -114,7 +114,7 @@ Begin
 				
 			}
 		}
-		If(dir == 1)
+		If(dir == -1)
 		{
 			If(RSV[1]>=80)
 			{
