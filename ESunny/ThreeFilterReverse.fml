@@ -36,6 +36,7 @@ GlobalVars
 	Numeric myProfit(0);
 	Numeric win(0);
 	Numeric lose(0);
+	Numeric lastOpenFlag(0);//每两次开仓条件被满足的情况下，只开仓一次
 Vars		
 	//局部变量定义段
 	Numeric dir(0);
@@ -97,17 +98,23 @@ Begin
 				//If(Low < preHigh+1*MinMove*PriceScale && High > preHigh+1*MinMove*PriceScale)//价格覆盖过了上一根K线的顶点，此时不应有滑点
 				If(High >= openPoint)
 				{
-					//两天内的最低价减一跳作为stopPrice
-					stopPrice = recentLo - 1*MinMove*PriceScale;
-					startBar = CurrentBar;
-					If(Open >= openPoint)
+					If(lastOpenFlag == 0)//若上一次未盈利，则本次开仓
 					{
-						openPoint = Open;
+						//两天内的最低价减一跳作为stopPrice
+						stopPrice = recentLo - 1*MinMove*PriceScale;
+						startBar = CurrentBar;
+						If(Open >= openPoint)
+						{
+							openPoint = Open;
+						}
+						startPrice = openPoint - openSlide*MinMove*PriceScale;
+						PlotText(startPrice, "SELL");
+						SellShort(1,startPrice);
 					}
-					startPrice = openPoint - openSlide*MinMove*PriceScale;
-					PlotText(startPrice, "SELL");
-					SellShort(1,startPrice);
-					
+					Else
+					{
+						lastOpenFlag = 0;
+					}
 				}
 				
 			}
@@ -121,15 +128,22 @@ Begin
 				//If(High > preLow-1*MinMove*PriceScale && Low < preLow-1*MinMove*PriceScale)
 				If(Low <= openPoint)
 				{
-					stopPrice = recentHi + 1*MinMove*PriceScale;
-					startBar = CurrentBar;
-					If(Open <= openPoint)
+					If(lastOpenFlag == 0)
 					{
-						openPoint = Open;
+						stopPrice = recentHi + 1*MinMove*PriceScale;
+						startBar = CurrentBar;
+						If(Open <= openPoint)
+						{
+							openPoint = Open;
+						}
+						startPrice = openPoint + openSlide*MinMove*PriceScale;
+						PlotText(startPrice, "BUY");
+						Buy(1,startPrice);
 					}
-					startPrice = openPoint + openSlide*MinMove*PriceScale;
-					PlotText(startPrice, "BUY");
-					Buy(1,startPrice);
+					Else
+					{
+						lastOpenFlag = 0;
+					}
 				}
 			}
 		}
@@ -162,6 +176,7 @@ Begin
 			win++;
 			Print(win/(win+lose));
 			Sell(0,0);
+			lastOpenFlag = 1;//置位盈利标记
 		}
 		Else If(Low<=startPrice - fixedStop*MinMove*PriceScale)
 		{
@@ -222,6 +237,7 @@ Begin
 			win++;
 			Print(win/(win+lose));
 			BuyToCover(0,0);
+			lastOpenFlag = 1;
 		}
 		Else If(High>=startPrice + fixedStop*MinMove*PriceScale)
 		{

@@ -19,13 +19,13 @@ Begin
 	fastMA = myAveragePlus(largerScaleClose,shortLen,0);
 	fastMA1 = myAveragePlus(largerScaleClose,shortLen,1);
 	slowMA = myAveragePlus(largerScaleClose,longLen);
-	PlotNumeric("myMA", fastMA);
-	PlotNumeric("myMA1", fastMA1);
-	If(fastMA > fastMA1)
+	PlotNumeric("fastMA", fastMA);
+	PlotNumeric("slowMA", slowMA);
+	If(fastMA > slowMA)
 	{
 		dir = 1;
 	}
-	Else If(fastMA < fastMA1)
+	Else If(fastMA < slowMA)
 	{
 		dir = -1;
 	}
