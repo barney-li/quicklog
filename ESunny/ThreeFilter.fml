@@ -33,6 +33,8 @@ GlobalVars
 	Numeric myProfit(0);
 	Numeric win(0);
 	Numeric lose(0);
+	Numeric winStop(0);//止盈点
+	Bool winFlag(False);//盈亏平衡标记
 Vars		
 	//局部变量定义段
 	Numeric dir(0);
@@ -52,6 +54,7 @@ Vars
 	Numeric kAngle(0);
 	Numeric opiAngle(0);
 	Numeric openPoint(0);
+	Numeric virtualProfit(0);//浮动收益
 Begin
 	//策略执行区
 	//缓存序列变量，提高再次访问的效率
@@ -138,7 +141,44 @@ Begin
 	//买仓，进入卖平逻辑
 	If(tradeDir == 1)
 	{
-		If(CurrentBar - startBar > delayTimer)
+		virtualProfit = Low[1] - startPrice - closeSlide*MinMove*PriceScale;
+		If(virtualProfit>=1)
+		{
+			winFlag = True;//达到盈亏平衡点
+		}
+		If(winFlag == True)//达到盈亏平衡点之后，以上一根K的最低价作为止盈
+		{
+			If(Low>=Low[1])
+			{
+				PlotDot(Low[1], 0);
+			}
+			Else
+			{
+				//离场
+				virtualProfit = 0;
+				winFlag = False;
+				Sell(0,0);
+				endPrice = Low[1] - closeSlide*MinMove*PriceScale;
+				Print("Profit: ");
+				Print(endPrice - startPrice);
+				myProfit = myProfit + endPrice - startPrice;
+				Print("Total Profit: ");
+				Print(myProfit);
+				If(endPrice - startPrice > 0)
+				{
+					win++;
+					PlotIcon(endPrice,15);
+				}
+				Else
+				{
+					lose++;
+					PlotIcon(endPrice,1);
+				}
+				Print(win/(win+lose));
+				
+			}
+		}
+		Else If(CurrentBar - startBar > delayTimer)
 		{
 			//stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
 			//两种不同的atr计算方法
@@ -150,8 +190,8 @@ Begin
 			{
 				stopPrice = stopPrice + myDeltaPrice(tradeDir)*atrIndex;
 			}
+			PlotDot(stopPrice, 0);
 		}
-		PlotDot(stopPrice, 0);
 		If(Low<=stopPrice)//真实交易时，此处应使用Close而不是Low
 		{
 			//止损
@@ -165,20 +205,56 @@ Begin
 			If(endPrice - startPrice > 0)
 			{
 				win++;
+				PlotIcon(endPrice,15);
 			}
 			Else
 			{
 				lose++;
+				PlotIcon(endPrice,1);
 			}
 			Print(win/(win+lose));
-			PlotDot(stopPrice, 11);
 		}
 		
 	}
 	//卖仓，进入买平逻辑
 	If(tradeDir == -1)
 	{
-		If(CurrentBar - startBar > delayTimer)
+		virtualProfit = startPrice - High[1] - closeSlide*MinMove*PriceScale;
+		If(virtualProfit>=1)
+		{
+			winFlag = True;
+		}
+		If(winFlag == True)
+		{
+			If(High<=High[1])
+			{
+				PlotDot(High[1], 1);
+			}
+			Else
+			{
+				virtualProfit = 0;
+				winFlag = False;
+				BuyToCover(0,0);
+				endPrice = High[1] + closeSlide*MinMove*PriceScale;
+				Print("Profit: ");
+				Print(startPrice - endPrice);
+				myProfit = myProfit + startPrice - endPrice;
+				Print("Total Profit: ");
+				Print(myProfit);
+				If(startPrice - endPrice > 0)
+				{
+					win++;
+					PlotIcon(endPrice,15);
+				}
+				Else
+				{
+					lose++;
+					PlotIcon(endPrice,1);
+				}
+				Print(win/(win+lose));
+			}
+		}
+		Else If(CurrentBar - startBar > delayTimer)
 		{
 			//stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
 			If(atrType == 0)
@@ -189,8 +265,12 @@ Begin
 			{
 				stopPrice = stopPrice + myDeltaPrice(tradeDir)*atrIndex;
 			}
+			If(atrType == 2)
+			{
+				stopPrice = High[1];
+			}
+			PlotDot(stopPrice, 1);
 		}
-		PlotDot(stopPrice, 1);
 		If(High>=stopPrice)//真实交易时，此处应使用Close而不是High
 		{
 			//止损
@@ -204,13 +284,14 @@ Begin
 			If(startPrice - endPrice > 0)
 			{
 				win++;
+				PlotIcon(endPrice,15);
 			}
 			Else
 			{
 				lose++;
+				PlotIcon(endPrice,1);
 			}
 			Print(win/(win+lose));
-			PlotDot(stopPrice, 11);
 		}
 		
 	}
