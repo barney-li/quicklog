@@ -89,7 +89,7 @@ Begin
 		dir = myMADir(0, 5, 10);
 		If(dir == 1)
 		{
-			If(shortEMA<0)//进入超卖区
+			If(shortEMA>0)//进入超卖区
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
 				//真实交易时，需要在此处添加限价单
@@ -115,7 +115,7 @@ Begin
 		}
 		If(dir == -1)
 		{
-			If(shortEMA>0)
+			If(shortEMA<0)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
 				//真实交易时，需要在此处添加限价单
