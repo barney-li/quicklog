@@ -190,6 +190,10 @@ Begin
 			{
 				stopPrice = stopPrice + myDeltaPrice(tradeDir)*atrIndex;
 			}
+			If(atrType == 2)
+			{
+				stopPrice = Low[1];
+			}
 			PlotDot(stopPrice, 0);
 		}
 		If(Low<=stopPrice)//真实交易时，此处应使用Close而不是Low

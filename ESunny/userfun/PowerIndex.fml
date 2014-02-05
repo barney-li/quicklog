@@ -1,0 +1,25 @@
+//--------------------------------------------------------------
+// 简称: PowerIndex
+// 名称: PowerIndex
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericSeries shortEMA;
+	NumericSeries longEMA;
+	NumericSeries powerVal;
+	NumericRef shortEMARef;
+	NumericRef longEMARef;
+	NumericRef powerValRef;
+	Numeric shortPeriod(2);
+	Numeric longPeriod(13);
+Vars
+	Numeric val;
+	
+Begin
+	val = Vol*(Close-Close[1]);
+	shortEMARef = EMA(val,shortPeriod);
+	longEMA = EMA(val,longPeriod);
+	If(longEMA < 0)
+	Return Num;
+End

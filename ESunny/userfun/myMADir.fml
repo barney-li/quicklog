@@ -6,7 +6,7 @@
 //--------------------------------------------------------------
 Params
 	Numeric minDelta(0);
-	Numeric shortLen(5);
+	Numeric shortLen(3);
 	Numeric longLen(10);
 Vars
 	NumericArray largerScaleClose;
@@ -16,9 +16,9 @@ Vars
 	Numeric dir(0);
 Begin
 	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_Day(), "", longLen);
-	fastMA = myAveragePlus(largerScaleClose,shortLen,0);
-	fastMA1 = myAveragePlus(largerScaleClose,shortLen,1);
-	slowMA = myAveragePlus(largerScaleClose,longLen);
+	fastMA = myWMA(largerScaleClose,shortLen,0);
+	fastMA1 = myWMA(largerScaleClose,shortLen,1);
+	slowMA = myWMA(largerScaleClose,longLen);
 	PlotNumeric("fastMA", fastMA);
 	PlotNumeric("slowMA", slowMA);
 	If(fastMA > slowMA)
