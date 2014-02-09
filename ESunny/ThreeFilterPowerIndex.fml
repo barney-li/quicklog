@@ -92,7 +92,7 @@ Begin
 		dir = myMADir(0, 5, 10);
 		If(dir == 1)
 		{
-			If(shortEMA>0)//进入超卖区
+			If(shortEMA>0)
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
 				If(High >= openPoint)
@@ -145,7 +145,7 @@ Begin
 		{
 			winFlag = True;//达到盈亏平衡点
 		}
-		If(winFlag == True)//达到盈亏平衡点之后，以上一根K的最低价作为止盈
+		If(winFlag == True)//达到盈亏平衡点之后，以上一根K的最低价作为棘轮价格，一旦这一根K线跌破就平仓，否则在图上打个点意思一下
 		{
 			If(Low>=Low[1])
 			{
@@ -157,7 +157,7 @@ Begin
 				virtualProfit = 0;
 				winFlag = False;
 				Sell(0,0);
-				endPrice = Low[1] - closeSlide*MinMove*PriceScale;
+				endPrice = Low[1] - 2*closeSlide*MinMove*PriceScale;
 				Print("Profit: ");
 				Print(endPrice - startPrice);
 				myProfit = myProfit + endPrice - startPrice;
@@ -227,7 +227,7 @@ Begin
 		{
 			winFlag = True;
 		}
-		If(winFlag == True)
+		If(winFlag == True)//达到盈亏平衡点之后，以上一根K的最高价作为棘轮价格，一旦这一根K线突破就平仓，否则在图上打个点意思一下
 		{
 			If(High<=High[1])
 			{
@@ -238,7 +238,7 @@ Begin
 				virtualProfit = 0;
 				winFlag = False;
 				BuyToCover(0,0);
-				endPrice = High[1] + closeSlide*MinMove*PriceScale;
+				endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
 				Print("Profit: ");
 				Print(startPrice - endPrice);
 				myProfit = myProfit + startPrice - endPrice;
