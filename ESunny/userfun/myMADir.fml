@@ -16,9 +16,9 @@ Vars
 	Numeric dir(0);
 Begin
 	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_Day(), "", longLen);
-	fastMA = myWMA(largerScaleClose,shortLen,0);
-	fastMA1 = myWMA(largerScaleClose,shortLen,1);
-	slowMA = myWMA(largerScaleClose,longLen);
+	fastMA = myWMAPlus(largerScaleClose,shortLen,0);
+	fastMA1 = myWMAPlus(largerScaleClose,shortLen,1);
+	slowMA = myWMAPlus(largerScaleClose,longLen);
 	PlotNumeric("fastMA", fastMA);
 	PlotNumeric("slowMA", slowMA);
 	If(fastMA > slowMA)
