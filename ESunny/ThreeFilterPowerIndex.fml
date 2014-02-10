@@ -17,11 +17,14 @@ Params
 	Numeric minDelta(1);//计算MACD方向时的阈值
 	Numeric largePeriod(30);//第一层滤网中，长周期K线的周期
 	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
-	Numeric shortPeriod(2);
-	Numeric longPeriod(13);
+	Numeric longPeriod(13);//劲道指数长周期
+	Numeric shortPeriod(2);//劲道指数短周期
+	Numeric trendEmaLongPeriod(10);//趋势EMA长周期
+	Numeric trendEmaShortPeriod(5);//趋势EMA短周期
 GlobalVars	
 	//全局变量定义段
-	Numeric tradeDir(0);
+	Numeric tradeDir(0);//查询得到的持仓方向
+	Numeric auxTradeDir(0);//若系统在历史K线有持仓的情况下进入了真实交易，那么auxTradeDir将替代tradeDir生效直到当次交易完成
 	Numeric stopPrice(0);
 	NumericSeries theATR;
 	NumericSeries theTR;
@@ -40,6 +43,8 @@ GlobalVars
 	NumericSeries powerVal;
 	Numeric winStop(0);//止盈点
 	Bool winFlag(False);//盈亏平衡标记
+	Bool realTrade(False);//真实交易标记
+	
 Vars		
 	//局部变量定义段
 	Numeric dir(0);
@@ -60,6 +65,10 @@ Vars
 	Numeric opiAngle(0);
 	Numeric openPoint(0);
 	Numeric virtualProfit(0);//浮动收益
+	Numeric tempVal(0);
+RealInit
+	auxTradeDir = tradeDir;//将历史K线的持仓情况保存在auxTradeDir中，因为一旦进入真实交易，历史K线的持仓信息就会丢失
+	realTrade = True;
 Begin
 	//策略执行区
 	//缓存序列变量，提高再次访问的效率
@@ -86,31 +95,48 @@ Begin
 	tradeDir = MarketPosition();
 	//未开仓，进行开仓逻辑
 	//If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank )
-	If(tradeDir == 0 && CurrentTime > timeBlank )
+	//仅在持仓为0，且交易平仓了结后（真实或模拟）才进入开仓的判断
+	If(tradeDir == 0 && auxTradeDir == 0 && CurrentTime > timeBlank )
 	{
 		//dir = myMACDDir(minDelta, largePeriod);
-		dir = myMADir(0, 5, 10);
+		dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
 		If(dir == 1)
 		{
 			If(shortEMA>0)
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
-				If(High >= openPoint)
+				If(realTrade)
 				{
-					//两天内的最低价减一跳作为stopPrice
-					stopPrice = recentLo - 1*MinMove*PriceScale;
-					startBar = CurrentBar;
-					//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+					If(Close >= openPoint)
 					{
-						If(Open >= openPoint)
-						{
-							openPoint = Open;
-						}
-						startPrice = openPoint + openSlide*MinMove*PriceScale;
+						//两天内的最低价减一跳作为stopPrice
+						stopPrice = recentLo - 1*MinMove*PriceScale;
+						startBar = CurrentBar;
+						startPrice = Close + openSlide*MinMove*PriceScale;
 						PlotText(startPrice, "BUY");
-						Buy(1,startPrice);
+						Buy(1,0);
 					}
 				}
+				Else
+				{
+					If(High >= openPoint)
+					{
+						//两天内的最低价减一跳作为stopPrice
+						stopPrice = recentLo - 1*MinMove*PriceScale;
+						startBar = CurrentBar;
+						//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+						{
+							If(Open >= openPoint)
+							{
+								openPoint = Open;
+							}
+							startPrice = openPoint + openSlide*MinMove*PriceScale;
+							PlotText(startPrice, "BUY");
+							Buy(1,0);
+						}
+					}
+				}
+				
 				
 			}
 		}
@@ -119,26 +145,40 @@ Begin
 			If(shortEMA<0)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
-				If(Low <= openPoint)
+				If(realTrade)
 				{
-					stopPrice = recentHi + 1*MinMove*PriceScale;
-					startBar = CurrentBar;
-					//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
+					If(Close <= openPoint)
 					{
-						If(Open <= openPoint)
-						{
-							openPoint = Open;
-						}
-						startPrice = openPoint - openSlide*MinMove*PriceScale;
+						stopPrice = recentHi + 1*MinMove*PriceScale;
+						startBar = CurrentBar;
+						startPrice = Close - openSlide*MinMove*PriceScale;
 						PlotText(startPrice, "SELL");
-						SellShort(1,startPrice);
+						SellShort(1,0);
+					}
+				}
+				Else
+				{
+					If(Low <= openPoint)
+					{
+						stopPrice = recentHi + 1*MinMove*PriceScale;
+						startBar = CurrentBar;
+						//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
+						{
+							If(Open <= openPoint)
+							{
+								openPoint = Open;
+							}
+							startPrice = openPoint - openSlide*MinMove*PriceScale;
+							PlotText(startPrice, "SELL");
+							SellShort(1,0);
+						}
 					}
 				}
 			}
 		}
 	}
 	//买仓，进入卖平逻辑
-	If(tradeDir == 1)
+	If(tradeDir == 1 || auxTradeDir == 1)
 	{
 		virtualProfit = Low[1] - startPrice - closeSlide*MinMove*PriceScale;
 		If(virtualProfit>=1)
@@ -147,7 +187,15 @@ Begin
 		}
 		If(winFlag == True)//达到盈亏平衡点之后，以上一根K的最低价作为棘轮价格，一旦这一根K线跌破就平仓，否则在图上打个点意思一下
 		{
-			If(Low>=Low[1])
+			If(realTrade)
+			{
+				tempVal = Close;
+			}
+			Else
+			{
+				tempVal = Low;
+			}
+			If(tempVal>=Low[1])
 			{
 				PlotDot(Low[1], 0);
 			}
@@ -157,7 +205,15 @@ Begin
 				virtualProfit = 0;
 				winFlag = False;
 				Sell(0,0);
-				endPrice = Low[1] - 2*closeSlide*MinMove*PriceScale;
+				auxTradeDir = 0;
+				If(realTrade)
+				{
+					endPrice = Close - closeSlide*MinMove*PriceScale;
+				}
+				Else
+				{
+					endPrice = Low[1] - 2*closeSlide*MinMove*PriceScale;
+				}
 				Print("Profit: ");
 				Print(endPrice - startPrice);
 				myProfit = myProfit + endPrice - startPrice;
@@ -195,11 +251,27 @@ Begin
 			}
 			PlotDot(stopPrice, 0);
 		}
-		If(Low<=stopPrice)//真实交易时，此处应使用Close而不是Low
+		If(realTrade)
+		{
+			tempVal = Close;
+		}
+		Else
+		{
+			tempVal = Low;
+		}
+		If(tempVal<=stopPrice)//真实交易时，此处应使用Close而不是Low
 		{
 			//止损
 			Sell(0,0);
-			endPrice = stopPrice - closeSlide*MinMove*PriceScale;
+			auxTradeDir = 0;
+			If(realTrade)
+			{
+				endPrice = Close - closeSlide*MinMove*PriceScale;
+			}
+			Else
+			{
+				endPrice = stopPrice - closeSlide*MinMove*PriceScale;
+			}
 			Print("Profit: ");
 			Print(endPrice - startPrice);
 			myProfit = myProfit + endPrice - startPrice;
@@ -220,7 +292,7 @@ Begin
 		
 	}
 	//卖仓，进入买平逻辑
-	If(tradeDir == -1)
+	If(tradeDir == -1 || auxTradeDir == -1)
 	{
 		virtualProfit = startPrice - High[1] - closeSlide*MinMove*PriceScale;
 		If(virtualProfit>=1)
@@ -229,7 +301,15 @@ Begin
 		}
 		If(winFlag == True)//达到盈亏平衡点之后，以上一根K的最高价作为棘轮价格，一旦这一根K线突破就平仓，否则在图上打个点意思一下
 		{
-			If(High<=High[1])
+			If(realTrade)
+			{
+				tempVal = Close;
+			}
+			Else
+			{
+				tempVal = High;
+			}
+			If(tempVal<=High[1])
 			{
 				PlotDot(High[1], 1);
 			}
@@ -238,7 +318,15 @@ Begin
 				virtualProfit = 0;
 				winFlag = False;
 				BuyToCover(0,0);
-				endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
+				auxTradeDir = 0;
+				If(realTrade)
+				{
+					endPrice = Close + closeSlide*MinMove*PriceScale;
+				}
+				Else
+				{
+					endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
+				}
 				Print("Profit: ");
 				Print(startPrice - endPrice);
 				myProfit = myProfit + startPrice - endPrice;
@@ -274,11 +362,27 @@ Begin
 			}
 			PlotDot(stopPrice, 1);
 		}
-		If(High>=stopPrice)//真实交易时，此处应使用Close而不是High
+		If(realTrade)
+		{
+			tempVal = Close;
+		}
+		Else
+		{
+			tempVal = High;
+		}
+		If(tempVal>=stopPrice)//真实交易时，此处应使用Close而不是High
 		{
 			//止损
 			BuyToCover(0,0);
-			endPrice = stopPrice + closeSlide*MinMove*PriceScale;
+			auxTradeDir = 0;
+			If(realTrade)
+			{
+				endPrice = Close + closeSlide*MinMove*PriceScale;
+			}
+			Else
+			{
+				endPrice = stopPrice + closeSlide*MinMove*PriceScale;
+			}
 			Print("Profit: ");
 			Print(startPrice - endPrice);
 			myProfit = myProfit + startPrice - endPrice;
