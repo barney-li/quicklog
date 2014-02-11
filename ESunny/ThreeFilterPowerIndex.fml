@@ -26,7 +26,6 @@ GlobalVars
 	Numeric tradeDir(0);//查询得到的持仓方向
 	Numeric auxTradeDir(0);//若系统在历史K线有持仓的情况下进入了真实交易，那么auxTradeDir将替代tradeDir生效直到当次交易完成
 	Numeric stopPrice(0);//当前K的止损位
-	Numeric initStopPrice(0);//建仓K的止损位
 	NumericSeries theATR;
 	NumericSeries theTR;
 	Numeric startBar(0);
@@ -46,6 +45,7 @@ GlobalVars
 	Bool winFlag(False);//盈亏平衡标记
 	Bool realTrade(False);//真实交易标记
 	Numeric lastTradeBar(0);//最后一次交易发生的位置
+	Numeric lastAtrBar(0);//最后一次计算ATR的位置
 	
 Vars		
 	//局部变量定义段
@@ -111,8 +111,6 @@ Begin
 				{
 					If(Close >= openPoint)
 					{
-						//两天内的最低价减一跳作为stopPrice
-						initStopPrice = recentLo - 1*MinMove*PriceScale;
 						startBar = CurrentBar;
 						startPrice = Close + openSlide*MinMove*PriceScale;
 						PlotText(startPrice, "BUY");
@@ -124,8 +122,6 @@ Begin
 				{
 					If(High >= openPoint)
 					{
-						//两天内的最低价减一跳作为stopPrice
-						initStopPrice = recentLo - 1*MinMove*PriceScale;
 						startBar = CurrentBar;
 						//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
 						{
@@ -153,7 +149,6 @@ Begin
 				{
 					If(Close <= openPoint)
 					{
-						initStopPrice = recentHi + 1*MinMove*PriceScale;
 						startBar = CurrentBar;
 						startPrice = Close - openSlide*MinMove*PriceScale;
 						PlotText(startPrice, "SELL");
@@ -165,7 +160,6 @@ Begin
 				{
 					If(Low <= openPoint)
 					{
-						initStopPrice = recentHi + 1*MinMove*PriceScale;
 						startBar = CurrentBar;
 						//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
 						{
@@ -183,14 +177,16 @@ Begin
 			}
 		}
 	}
+	//检查持仓状况
+	tradeDir = MarketPosition();
 	//若在当前K的位置有开仓，那么在当前K的时段内，不断的更新初始止损位
 	If(CurrentBar == lastTradeBar && tradeDir == 1)
 	{
-		initStopPrice = recentLo - 1*MinMove*PriceScale;
+		stopPrice = recentLo - 1*MinMove*PriceScale;
 	}
 	If(CurrentBar == lastTradeBar && tradeDir == -1)
 	{
-		initStopPrice = recentHi + 1*MinMove*PriceScale;
+		stopPrice = recentHi + 1*MinMove*PriceScale;
 	}
 	//买仓，进入卖平逻辑
 	If((tradeDir == 1 || auxTradeDir == 1) && CurrentBar != lastTradeBar)
@@ -249,22 +245,23 @@ Begin
 				
 			}
 		}
-		Else If(CurrentBar - startBar >= delayTimer)
+		Else If((CurrentBar - startBar >= delayTimer) && lastAtrBar != CurrentBar)
 		{
 			//stopPrice = stopPrice + theATR[1]*theATR[1]*0.05;
 			//两种不同的atr计算方法
 			If(atrType == 0)
 			{
-				stopPrice = initStopPrice + (CurrentBar - startBar)*theATR[1]*atrIndex;
+				stopPrice = stopPrice + theATR[1]*atrIndex;
 			}
 			If(atrType == 1)
 			{
-				stopPrice = initStopPrice + (CurrentBar - startBar)*myDeltaPrice(tradeDir)*atrIndex;
+				stopPrice = stopPrice + myDeltaPrice(tradeDir)*atrIndex;
 			}
 			If(atrType == 2)
 			{
 				stopPrice = Low[1];
 			}
+			lastAtrBar = CurrentBar;//保证每一根K线只计算一次stopPrice
 			PlotDot(stopPrice, 0);
 		}
 		If(realTrade)
@@ -363,21 +360,22 @@ Begin
 				Print(win/(win+lose));
 			}
 		}
-		Else If(CurrentBar - startBar >= delayTimer)
+		Else If((CurrentBar - startBar >= delayTimer) && lastAtrBar != CurrentBar)
 		{
 			//stopPrice = stopPrice - theATR[1]*theATR[1]*0.05;
 			If(atrType == 0)
 			{
-				stopPrice = initStopPrice - (CurrentBar - startBar)*theATR[1]*atrIndex;
+				stopPrice = stopPrice - theATR[1]*atrIndex;
 			}
 			If(atrType == 1)
 			{
-				stopPrice = initStopPrice + (CurrentBar - startBar)*myDeltaPrice(tradeDir)*atrIndex;
+				stopPrice = stopPrice + myDeltaPrice(tradeDir)*atrIndex;
 			}
 			If(atrType == 2)
 			{
 				stopPrice = High[1];
 			}
+			lastAtrBar = CurrentBar;
 			PlotDot(stopPrice, 1);
 		}
 		If(realTrade)
