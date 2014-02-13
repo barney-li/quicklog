@@ -21,6 +21,8 @@ Params
 	Numeric shortPeriod(2);//劲道指数短周期
 	Numeric trendEmaLongPeriod(10);//趋势EMA长周期
 	Numeric trendEmaShortPeriod(5);//趋势EMA短周期
+	Numeric cost(0.00004);
+	Numeric minVolum(10);
 GlobalVars	
 	//全局变量定义段
 	Numeric tradeDir(0);//查询得到的持仓方向
@@ -90,7 +92,7 @@ Begin
 	//检查价格运行方向与持仓量运行方向
 	myAngle(kAngle,opiAngle, 1, 3, 0.0006, 0.001);
 	//计算劲道指数
-	powerVal = Vol*(Close-Close[1]);
+	powerVal = Vol*(Close[0]-Close[1]);
 	shortEMA = EMA(powerVal,shortPeriod);
 	longEMA = EMA(powerVal,longPeriod);
 	//检查持仓状况
@@ -104,7 +106,7 @@ Begin
 		dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
 		If(dir == 1)
 		{
-			If(shortEMA>0)
+			//If(shortEMA>0)
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
 				If(realTrade)
@@ -122,17 +124,24 @@ Begin
 				{
 					If(High >= openPoint)
 					{
-						startBar = CurrentBar;
-						//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+						powerVal = Vol*(openPoint-Close[1]);
+						shortEMA = EMA(powerVal,shortPeriod);
+						longEMA = EMA(powerVal,longPeriod);
+						If(shortEMA>0)
 						{
-							If(Open >= openPoint)
+							startBar = CurrentBar;
+							//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
 							{
-								openPoint = Open;
+								If(Open >= openPoint)
+								{
+									openPoint = Open;
+								}
+								startPrice = openPoint + openSlide*MinMove*PriceScale;
+								PlotText(startPrice, "BUY");
+								Buy(1,0);
+								lastTradeBar = CurrentBar;
 							}
-							startPrice = openPoint + openSlide*MinMove*PriceScale;
-							PlotText(startPrice, "BUY");
-							Buy(1,0);
-							lastTradeBar = CurrentBar;
+						
 						}
 					}
 				}
@@ -142,7 +151,7 @@ Begin
 		}
 		If(dir == -1)
 		{
-			If(shortEMA<0)
+			//If(shortEMA<0)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
 				If(realTrade)
@@ -160,17 +169,26 @@ Begin
 				{
 					If(Low <= openPoint)
 					{
-						startBar = CurrentBar;
-						//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
+						powerVal = Vol*(openPoint-Close[1]);
+						shortEMA = EMA(powerVal,shortPeriod);
+						longEMA = EMA(powerVal,longPeriod);
+						If(shortEMA < 0)
 						{
-							If(Open <= openPoint)
+							
+						
+							startBar = CurrentBar;
+							//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
 							{
-								openPoint = Open;
+								If(Open <= openPoint)
+								{
+									openPoint = Open;
+								}
+								startPrice = openPoint - openSlide*MinMove*PriceScale;
+								PlotText(startPrice, "SELL");
+								SellShort(1,0);
+								lastTradeBar = CurrentBar;
 							}
-							startPrice = openPoint - openSlide*MinMove*PriceScale;
-							PlotText(startPrice, "SELL");
-							SellShort(1,0);
-							lastTradeBar = CurrentBar;
+						
 						}
 					}
 				}
@@ -191,7 +209,7 @@ Begin
 	//买仓，进入卖平逻辑
 	If((tradeDir == 1 || auxTradeDir == 1) && CurrentBar != lastTradeBar)
 	{
-		virtualProfit = Low[1] - startPrice - closeSlide*MinMove*PriceScale;
+		virtualProfit = Low[1] - startPrice - closeSlide*MinMove*PriceScale - minVolum*cost*Close;
 		If(virtualProfit>=1)
 		{
 			winFlag = True;//达到盈亏平衡点
@@ -227,11 +245,11 @@ Begin
 					endPrice = Low[1] - 2*closeSlide*MinMove*PriceScale;
 				}
 				Print("Profit: ");
-				Print(endPrice - startPrice);
-				myProfit = myProfit + endPrice - startPrice;
+				Print(endPrice - startPrice - minVolum*cost*Close);
+				myProfit = myProfit + endPrice - startPrice - minVolum*cost*Close;;
 				Print("Total Profit: ");
 				Print(myProfit);
-				If(endPrice - startPrice > 0)
+				If(endPrice - startPrice - minVolum*cost*Close> 0)
 				{
 					win++;
 					PlotIcon(endPrice,15);
@@ -287,11 +305,11 @@ Begin
 				endPrice = stopPrice - closeSlide*MinMove*PriceScale;
 			}
 			Print("Profit: ");
-			Print(endPrice - startPrice);
-			myProfit = myProfit + endPrice - startPrice;
+			Print(endPrice - startPrice - minVolum*cost*Close);
+			myProfit = myProfit + endPrice - startPrice - minVolum*cost*Close;
 			Print("Total Profit: ");
 			Print(myProfit);
-			If(endPrice - startPrice > 0)
+			If(endPrice - startPrice - minVolum*cost*Close> 0)
 			{
 				win++;
 				PlotIcon(endPrice,15);
@@ -308,7 +326,7 @@ Begin
 	//卖仓，进入买平逻辑
 	If((tradeDir == -1 || auxTradeDir == -1) && CurrentBar != lastTradeBar)
 	{
-		virtualProfit = startPrice - High[1] - closeSlide*MinMove*PriceScale;
+		virtualProfit = startPrice - High[1] - closeSlide*MinMove*PriceScale - minVolum*cost*Close;
 		If(virtualProfit>=1)
 		{
 			winFlag = True;
@@ -343,11 +361,11 @@ Begin
 					endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
 				}
 				Print("Profit: ");
-				Print(startPrice - endPrice);
-				myProfit = myProfit + startPrice - endPrice;
+				Print(startPrice - endPrice - minVolum*cost*Close);
+				myProfit = myProfit + startPrice - endPrice - minVolum*cost*Close;
 				Print("Total Profit: ");
 				Print(myProfit);
-				If(startPrice - endPrice > 0)
+				If(startPrice - endPrice  - minVolum*cost*Close> 0)
 				{
 					win++;
 					PlotIcon(endPrice,15);
@@ -401,11 +419,11 @@ Begin
 				endPrice = stopPrice + closeSlide*MinMove*PriceScale;
 			}
 			Print("Profit: ");
-			Print(startPrice - endPrice);
-			myProfit = myProfit + startPrice - endPrice;
+			Print(startPrice - endPrice - minVolum*cost*Close);
+			myProfit = myProfit + startPrice - endPrice - minVolum*cost*Close;
 			Print("Total Profit: ");
 			Print(myProfit);
-			If(startPrice - endPrice > 0)
+			If(startPrice - endPrice  - minVolum*cost*Close> 0)
 			{
 				win++;
 				PlotIcon(endPrice,15);
