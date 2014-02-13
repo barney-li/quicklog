@@ -21,7 +21,7 @@ Params
 	Numeric shortPeriod(2);//劲道指数短周期
 	Numeric trendEmaLongPeriod(10);//趋势EMA长周期
 	Numeric trendEmaShortPeriod(5);//趋势EMA短周期
-	Numeric cost(0.00004);
+	Numeric cost(0.00012);
 	Numeric minVolum(10);
 	Numeric powerIndexExtremeLen(8);
 GlobalVars	
@@ -102,13 +102,15 @@ Begin
 	recentLoPowerIndex = Lowest(shortEMA,powerIndexExtremeLen);
 	//检查持仓状况
 	tradeDir = MarketPosition();
+	//计算趋势方向
+	dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
 	//未开仓，进行开仓逻辑
 	//If(tradeDir == 0 && kAngle != opiAngle && CurrentTime > timeBlank )
 	//仅在持仓为0，且交易平仓了结后（真实或模拟）才进入开仓的判断
 	If(tradeDir == 0 && auxTradeDir == 0 && CurrentTime > timeBlank && lastTradeBar != CurrentBar)
 	{
 		//dir = myMACDDir(minDelta, largePeriod);
-		dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
+		
 		If(dir == 1)
 		{
 			//If(shortEMA>0)
