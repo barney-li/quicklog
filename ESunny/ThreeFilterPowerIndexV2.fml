@@ -114,11 +114,12 @@ Begin
 	{
 		//dir = myMACDDir(minDelta, largePeriod);
 		
-		If(dir == 1)
+		//If(dir == 1)
 		{
 			If(shortEMA>0 && shortEMA == recentHiPowerIndex)
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
+				
 				If(realTrade)
 				{
 					If(Close >= openPoint)
@@ -132,7 +133,8 @@ Begin
 				}
 				Else
 				{
-					If(High >= openPoint)
+					dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod,openPoint);
+					If(High >= openPoint && dir==1)
 					{
 							startBar = CurrentBar;
 							//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
@@ -152,11 +154,12 @@ Begin
 				
 			}
 		}
-		If(dir == -1)
+		//If(dir == -1)
 		{
 			If(shortEMA<0 && shortEMA == recentLoPowerIndex)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
+				
 				If(realTrade)
 				{
 					If(Close <= openPoint)
@@ -170,7 +173,8 @@ Begin
 				}
 				Else
 				{
-					If(Low <= openPoint)
+					dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod,openPoint);
+					If(Low <= openPoint && dir==-1)
 					{						
 						
 							startBar = CurrentBar;
