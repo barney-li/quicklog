@@ -6,6 +6,14 @@
 //------------------------------------------------------------------------
 Params  	
 	//参数定义段
+	Numeric longPeriod(13);//劲道指数长周期
+	Numeric shortPeriod(2);//劲道指数短周期
+	Numeric trendEmaLongPeriod(20);//趋势EMA长周期
+	Numeric trendEmaShortPeriod(3);//趋势EMA短周期
+	Numeric cost(0.00012);//双边手续费
+	Numeric minVolum(10);//最小交易单位
+	Numeric powerIndexExtremeLen(8);//劲道指数极值计算周期
+	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
 	Numeric delayTimer(0);//从开仓到启动ATR棘轮之前的延迟时间
 	Numeric recentHiLoWide(2);//计算初始止损点时，选取最近低点的时间段
 	Numeric openSlide(1);//开仓滑点
@@ -15,15 +23,9 @@ Params
 	Numeric atrType(0);//计算ATR方式，0为标准ATR，1为Barney ATR
 	Numeric timeBlank(0.0903);//开始进行开仓判断的时间
 	Numeric minDelta(1);//计算MACD方向时的阈值
-	Numeric largePeriod(30);//第一层滤网中，长周期K线的周期
-	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
-	Numeric longPeriod(13);//劲道指数长周期
-	Numeric shortPeriod(2);//劲道指数短周期
-	Numeric trendEmaLongPeriod(10);//趋势EMA长周期
-	Numeric trendEmaShortPeriod(5);//趋势EMA短周期
-	Numeric cost(0.00012);//双边手续费
-	Numeric minVolum(10);
-	Numeric powerIndexExtremeLen(8);
+	Numeric largePeriod(30);//MACD滤网中，长周期K线的周期
+	
+	
 GlobalVars	
 	//全局变量定义段
 	Numeric tradeDir(0);//查询得到的持仓方向
@@ -49,10 +51,11 @@ GlobalVars
 	Bool realTrade(False);//真实交易标记
 	Numeric lastTradeBar(0);//最后一次交易发生的位置
 	Numeric lastAtrBar(0);//最后一次计算ATR的位置
+	Numeric dir(0);//趋势方向
 	
 Vars		
 	//局部变量定义段
-	Numeric dir(0);
+	
 	Numeric tempRSV;
 	Numeric tempK;
 	Numeric tempD;
@@ -188,6 +191,7 @@ Begin
 			}
 		}
 	}
+	
 	//检查持仓状况
 	tradeDir = MarketPosition();
 	//若在当前K的位置有开仓，那么在当前K的时段内，不断的更新初始止损位
