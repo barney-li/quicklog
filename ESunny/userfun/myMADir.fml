@@ -8,6 +8,7 @@ Params
 	Numeric minDelta(0);
 	Numeric shortLen(3);
 	Numeric longLen(10);
+	Numeric latestPrice(-1);
 Vars
 	NumericArray largerScaleClose;
 	Numeric fastMA(0);
@@ -16,6 +17,10 @@ Vars
 	Numeric dir(0);
 Begin
 	largerScaleClose = HisData(Enum_Data_Close(), Enum_Period_Day(), "", longLen);
+	If(latestPrice != -1)
+	{
+		largerScaleClose[0]=latestPrice;
+	}
 	fastMA = myWMAPlus(largerScaleClose,shortLen,0);
 	fastMA1 = myWMAPlus(largerScaleClose,shortLen,1);
 	slowMA = myWMAPlus(largerScaleClose,longLen);
