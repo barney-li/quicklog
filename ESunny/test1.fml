@@ -6,24 +6,11 @@
 //------------------------------------------------------------------------
 Params  	
 	//参数定义
-	Numeric upperLimite(0);
-	Numeric lowerLimite(0);
 GlobalVars	
 	//全局变量定义
-	Integer openedVolume(0);
 Vars		
 	//局部变量定义
 Begin		
 	//策略执行区
-	If(Close>=upperLimite && openedVolume == 0)
-	{
-		Buy(1, Close);
-		openedVolume = 1;
-	}
-	
-	If(Close<lowerLimite && openedVolume == 1)
-	{
-		Sell(1, Close);
-		openedVolume = 0;
-	}
+
 End
