@@ -1,0 +1,141 @@
+//------------------------------------------------------------------------
+// 简称: myRBreaker
+// 名称: myRBreaker
+// 类别: 公式应用
+// 类型: 用户应用
+// 输出:
+//------------------------------------------------------------------------
+Params
+	Numeric f1(0.35);
+	Numeric f2(0.07);
+	Numeric f3(0.25);
+	Numeric div(3);
+	Numeric realMinMov(1);//每跳变动量
+	Numeric stopOpenTime(14.30);//停止开仓时间
+	Numeric getOutTime(14.55);//强制离场时间
+	Numeric tradeSlide(1);//滑点
+	Numeric tradeBreak(1);//突破
+	Numeric stopLose(30);//
+	Numeric minRange(30);//前一日的最小允许波动
+
+Vars
+	NumericSeries bbreak(0);
+	NumericSeries ssetup(0);
+	NumericSeries senter(0);
+	NumericSeries benter(0);
+	NumericSeries bsetup(0);
+	NumericSeries sbreak(0);
+	NumericSeries bRealEnter(0);
+	NumericSeries sRealEnter(0);
+	NumericSeries loToday(99999999);
+	NumericSeries hiToday(0);
+	NumericSeries loYstday(0);
+	NumericSeries hiYstday(0);
+	NumericSeries clsYstday(0);
+	Numeric openDisable(0);//GlobalVar0
+	Bool selSet(False);//GlobalVar1
+	Numeric openPrice(0);//GlobalVar2
+	Numeric closePrice(0);//GlobalVar3
+	Numeric slide(0);
+	Numeric threshold(0);
+	
+
+Begin
+	openDisable = GetGlobalVar(0);
+	openPrice = GetGlobalVar(2);
+	If(time<time[1])
+	{
+		hiToday = 0;
+		loToday = 99999999;
+		loYstday = loToday[1];
+		hiYstday = hiToday[1];
+		clsYstday = Close[1];
+		openDisable = 0;
+	}
+	Else
+	{
+		hiToday = hiToday[1];
+		loToday = loToday[1];
+		hiYstday = hiYstday[1];
+		loYstday = loYstday[1];
+		clsYstday = clsYstday[1];
+	}
+	If(High>hiToday)
+	{
+		hiToday = high;
+	}
+	If(Low<loToday)
+	{
+		loToday = low;
+	}
+	ssetup = hiYstday + f1*(clsYstday - loYstday); 
+	senter = (1+f2)/2*(hiYstDay+loYstDay) - f2*loYstDay;
+	benter = (1+f2)/2*(hiYstDay+loYstDay) - f2*hiYstDay;
+	bsetup = loYstDay - f1*(hiYstDay - clsYstDay);
+	bbreak = ssetup + f3*(ssetup - bsetup);
+	sbreak = bsetup - f3*(ssetup-bsetup);
+	bRealEnter = benter - (bsetup - loToday)/div;
+	sRealEnter = senter + (hiToday - ssetup)/div;
+	PlotNumeric("bbreak", bbreak, 0, Blue);
+	PlotNumeric("ssetup", ssetup, 0, Cyan);
+	PlotNumeric("sRealEnter", sRealEnter, 0, Green);
+	PlotNumeric("bRealEnter", bRealEnter, 0, Yellow);
+	PlotNumeric("bsetup", bsetup, 0, Red);
+	PlotNumeric("sbreak", sbreak, 0, White);
+	slide = tradeSlide * realMinMov;
+	threshold = tradeBreak * realMinMov; 
+	if(hiYstDay-loYstDay < minRange)
+	{
+		openDisable = 1;
+	}
+	if(bRealEnter<=bsetup or sRealEnter>=ssetup)
+	{
+		openDisable = 1;
+	}
+	
+	If(MarketPosition == 0 and time < stopOpenTime/100 and openDisable == 0)
+	{
+		If(low[1]<=bbreak and high[0]>bbreak)
+		{
+			openPrice = bbreak+threshold+slide;
+			Buy(1, openPrice);
+		}
+		Else If(high[1]>=sbreak and low[0]<sbreak)
+		{
+			openPrice = sbreak-threshold-slide;
+			SellShort(1, openPrice);
+		}
+	}
+	
+	if(MarketPosition != 1 and Time<stopOpenTime/100 and openDisable == 0)
+	{
+		if(loToday>sbreak and loToday<bsetup 
+		and low[1]<=bRealEnter and high[0]>bRealEnter)
+		{
+			openPrice = bRealEnter+threshold+slide;
+			buy(1, openPrice);
+		}
+	}
+	if(MarketPosition != -1 and time<stopOpenTime/100 and openDisable == 0)
+	{
+		if(hiToday<bbreak and hiToday>ssetup
+		and high[1]>=sRealEnter and low[0]<sRealEnter)
+		{
+			openPrice = sRealEnter - threshold - slide;
+			SellShort(1, openPrice);
+		}
+	}
+	myStopLose(openPrice, stopLose, slide, 1);
+	myTimeOut(getOutTime, slide); 
+	SetGlobalVar(0, openDisable);
+	SetGlobalVar(2, openPrice);
+End
+
+
+//------------------------------------------------------------------------
+// 编译版本	GS2010.12.08
+// 用户版本	2014/02/17 08:10
+// 版权所有	lott209
+// 更改声明	TradeBlazer Software保留对TradeBlazer平台
+//			每一版本的TrabeBlazer公式修改和重写的权利
+//------------------------------------------------------------------------
