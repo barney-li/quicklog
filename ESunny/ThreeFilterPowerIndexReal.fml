@@ -1,20 +1,17 @@
 //------------------------------------------------------------------------
-// 简称:ThreeFilterPowerIndexV2
-// 名称:ThreeFilterPowerIndexV2
+// 简称:ThreeFilterPowerIndexReal
+// 名称:ThreeFilterPowerIndexReal
 // 类别: 交易指令
 // 类型: 用户应用
 //------------------------------------------------------------------------
 Params  	
 	//参数定义段
+	Numeric longPeriod(11);//劲道指数长周期 
+	Numeric shortPeriod(0);//劲道指数短周期 1
+	Numeric powerIndexExtremeLen(6);//劲道指数极值计算周期 6
 	
 	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
-	Numeric trendEmaShortPeriod(4);//趋势EMA短周期 1
-	
-	Numeric longPeriod(15);//劲道指数长周期 
-	Numeric shortPeriod(5);//劲道指数短周期 1
-	Numeric powerIndexExtremeLen(5);//劲道指数极值计算周期 6
-	
-	Numeric maxRiskPoint(70); //这笔交易可能的最大亏损
+	Numeric trendEmaShortPeriod(3);//趋势EMA短周期 1
 	
 	Numeric cost(0.00000);//双边手续费
 	Numeric minVolum(10);//最小交易单位
@@ -62,10 +59,6 @@ GlobalVars
 Vars		
 	//局部变量定义段
 	
-	Numeric tempRSV;
-	Numeric tempK;
-	Numeric tempD;
-	Numeric tempJ;
 	Numeric preClose(0);
 	Numeric preHigh(0);
 	Numeric preLow(0);
@@ -82,7 +75,6 @@ Vars
 	Numeric tempVal(0);
 	Numeric recentHiPowerIndex(0);
 	Numeric recentLoPowerIndex(0);
-	Numeric tempRiskPoint(0);
 RealInit
 	auxTradeDir = tradeDir;//将历史K线的持仓情况保存在auxTradeDir中，因为一旦进入真实交易，历史K线的持仓信息就会丢失
 	realTrade = True;
@@ -111,7 +103,7 @@ Begin
 	recentHiPowerIndex = Highest(shortEMA,powerIndexExtremeLen);
 	recentLoPowerIndex = Lowest(shortEMA,powerIndexExtremeLen);
 	//检查持仓状况
-	tradeDir = g_MarketPosition();
+	tradeDir = MarketPosition();
 	//计算趋势方向
 	dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
 	//未开仓，进行开仓逻辑
@@ -119,9 +111,7 @@ Begin
 	//仅在持仓为0，且交易平仓了结后（真实或模拟）才进入开仓的判断
 	If(tradeDir == 0 && auxTradeDir == 0 && CurrentTime > timeBlank && lastTradeBar != CurrentBar)
 	{
-		//dir = myMACDDir(minDelta, largePeriod);
-		
-		//If(dir == 1)
+		If(dir == 1)
 		{
 			If(shortEMA>0 && shortEMA == recentHiPowerIndex)
 			{
@@ -129,9 +119,7 @@ Begin
 				
 				If(realTrade)
 				{
-					dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
-					tempRiskPoint = Close + openSlide*MinMove*PriceScale-(recentLo-2*openSlide*MinMove*PriceScale);
-					If(Close >= openPoint && dir ==1 && tempRiskPoint<maxRiskPoint)
+					If(Close >= openPoint)
 					{
 						startBar = CurrentBar;
 						startPrice = Close + openSlide*MinMove*PriceScale;
@@ -143,8 +131,7 @@ Begin
 				Else
 				{
 					dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod,openPoint);
-					tempRiskPoint = openPoint + openSlide*MinMove*PriceScale-(recentLo-2*openSlide*MinMove*PriceScale);
-					If(High >= openPoint && dir==1 && tempRiskPoint<maxRiskPoint)
+					If(High >= openPoint && dir==1)
 					{
 							startBar = CurrentBar;
 							//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
@@ -172,9 +159,7 @@ Begin
 				
 				If(realTrade)
 				{
-					dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
-					tempRiskPoint = (recentHi+2*openSlide*MinMove*PriceScale) - (Close - openSlide*MinMove*PriceScale);
-					If(Close <= openPoint && dir == -1 && tempRiskPoint<maxRiskPoint)
+					If(Close <= openPoint)
 					{
 						startBar = CurrentBar;
 						startPrice = Close - openSlide*MinMove*PriceScale;
@@ -186,8 +171,7 @@ Begin
 				Else
 				{
 					dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod,openPoint);
-					tempRiskPoint = (recentHi+2*openSlide*MinMove*PriceScale) - (openPoint - openSlide*MinMove*PriceScale);
-					If(Low <= openPoint && dir==-1 && tempRiskPoint<maxRiskPoint)
+					If(Low <= openPoint && dir==-1)
 					{						
 						
 							startBar = CurrentBar;

@@ -38,4 +38,7 @@ Begin
 	{
 		//PlotText(Close, "NA");
 	}
+	Print("minmovefirst");
+	Print(MinMove);
+	Print(PriceScale);
 End
