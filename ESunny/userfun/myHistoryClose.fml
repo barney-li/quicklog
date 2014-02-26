@@ -1,0 +1,14 @@
+//--------------------------------------------------------------
+// 简称: myHistoryClose
+// 名称: myHistoryClose
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric days(0);
+Vars
+	NumericArray tempHisData;
+Begin
+	tempHisData = HisData(Enum_Data_Close(), Enum_Period_Day(), "", days+1);
+	Return tempHisData[days];
+End

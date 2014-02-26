@@ -6,13 +6,13 @@
 //------------------------------------------------------------------------
 Params  	
 	//参数定义段
-	Numeric longPeriod(13);//劲道指数长周期
-	Numeric shortPeriod(2);//劲道指数短周期
-	Numeric trendEmaLongPeriod(20);//趋势EMA长周期
-	Numeric trendEmaShortPeriod(3);//趋势EMA短周期
-	Numeric cost(0.00012);//双边手续费
+	Numeric longPeriod(11);//劲道指数长周期 
+	Numeric shortPeriod(0);//劲道指数短周期 1
+	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
+	Numeric trendEmaShortPeriod(3);//趋势EMA短周期 1
+	Numeric cost(0.00000);//双边手续费
 	Numeric minVolum(10);//最小交易单位
-	Numeric powerIndexExtremeLen(8);//劲道指数极值计算周期
+	Numeric powerIndexExtremeLen(6);//劲道指数极值计算周期 6
 	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
 	Numeric delayTimer(0);//从开仓到启动ATR棘轮之前的延迟时间
 	Numeric recentHiLoWide(2);//计算初始止损点时，选取最近低点的时间段
