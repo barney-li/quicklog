@@ -68,12 +68,12 @@ Begin
 		if(low[1]<=bbreak and high[0]>bbreak)
 		{
 			openPrice = bbreak+threshold+slide;
-			buy(1, openPrice);
+			//buy(1, openPrice);
 		}
 		else if(high[1]>=sbreak and low[0]<sbreak)
 		{
 			openPrice = sbreak-threshold-slide;
-			SellShort(1, openPrice);
+			//SellShort(1, openPrice);
 		}
 	}
 	if(MarketPosition != 1 and Time<stopOpenTime)

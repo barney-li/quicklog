@@ -147,21 +147,16 @@ Begin
 					If(High >= openPoint && dir==1 && tempRiskPoint<maxRiskPoint)
 					{
 							startBar = CurrentBar;
-							//If(Abs(Close - stopPrice) < 10*MinMove*PriceScale)//买入价格与止损价格差值小于10跳
+							If(Open >= openPoint)
 							{
-								If(Open >= openPoint)
-								{
-									openPoint = Open;
-								}
-								startPrice = openPoint + openSlide*MinMove*PriceScale;
-								PlotText(startPrice, "BUY");
-								Buy(1,0);
-								lastTradeBar = CurrentBar;
+								openPoint = Open;
 							}
+							startPrice = openPoint + openSlide*MinMove*PriceScale;
+							PlotText(startPrice, "BUY");
+							Buy(1,startPrice);
+							lastTradeBar = CurrentBar;
 					}
 				}
-				
-				
 			}
 		}
 		//If(dir == -1)
@@ -189,20 +184,15 @@ Begin
 					tempRiskPoint = (recentHi+2*openSlide*MinMove*PriceScale) - (openPoint - openSlide*MinMove*PriceScale);
 					If(Low <= openPoint && dir==-1 && tempRiskPoint<maxRiskPoint)
 					{						
-						
 							startBar = CurrentBar;
-							//If(Abs(stopPrice - Close) < 10*MinMove*PriceScale)
+							If(Open <= openPoint)
 							{
-								If(Open <= openPoint)
-								{
-									openPoint = Open;
-								}
-								startPrice = openPoint - openSlide*MinMove*PriceScale;
-								PlotText(startPrice, "SELL");
-								SellShort(1,0);
-								lastTradeBar = CurrentBar;
+								openPoint = Open;
 							}
-						
+							startPrice = openPoint - openSlide*MinMove*PriceScale;
+							PlotText(startPrice, "SELL");
+							SellShort(1,startPrice);
+							lastTradeBar = CurrentBar;
 					}
 				}
 			}
@@ -247,16 +237,17 @@ Begin
 				//离场
 				virtualProfit = 0;
 				winFlag = False;
-				Sell(0,0);
 				lastTradeBar = CurrentBar;
 				auxTradeDir = 0;
 				If(realTrade)
 				{
 					endPrice = Close - closeSlide*MinMove*PriceScale;
+					Sell(0,0);
 				}
 				Else
 				{
 					endPrice = Low[1] - 2*closeSlide*MinMove*PriceScale;
+					Sell(0,endPrice);
 				}
 				//Print("Profit: ");
 				//Print(endPrice - startPrice - minVolum*cost*Close);
@@ -307,16 +298,18 @@ Begin
 		If(tempVal<=stopPrice)//真实交易时，此处应使用Close而不是Low
 		{
 			//止损
-			Sell(0,0);
+			
 			lastTradeBar = CurrentBar;
 			auxTradeDir = 0;
 			If(realTrade)
 			{
 				endPrice = Close - closeSlide*MinMove*PriceScale;
+				Sell(0,0);
 			}
 			Else
 			{
 				endPrice = stopPrice - closeSlide*MinMove*PriceScale;
+				Sell(0,endPrice);
 			}
 			//Print("Profit: ");
 			//Print(endPrice - startPrice - minVolum*cost*Close);
@@ -363,16 +356,18 @@ Begin
 			{
 				virtualProfit = 0;
 				winFlag = False;
-				BuyToCover(0,0);
+				
 				lastTradeBar = CurrentBar;
 				auxTradeDir = 0;
 				If(realTrade)
 				{
 					endPrice = Close + closeSlide*MinMove*PriceScale;
+					BuyToCover(0,0);
 				}
 				Else
 				{
 					endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
+					BuyToCover(0,endPrice);
 				}
 				//Print("Profit: ");
 				//Print(startPrice - endPrice - minVolum*cost*Close);
@@ -421,16 +416,18 @@ Begin
 		If(tempVal>=stopPrice)//真实交易时，此处应使用Close而不是High
 		{
 			//止损
-			BuyToCover(0,0);
+			
 			lastTradeBar = CurrentBar;
 			auxTradeDir = 0;
 			If(realTrade)
 			{
 				endPrice = Close + closeSlide*MinMove*PriceScale;
+				BuyToCover(0,0);
 			}
 			Else
 			{
 				endPrice = stopPrice + closeSlide*MinMove*PriceScale;
+				BuyToCover(0,endPrice);
 			}
 			//Print("Profit: ");
 			//Print(startPrice - endPrice - minVolum*cost*Close);
