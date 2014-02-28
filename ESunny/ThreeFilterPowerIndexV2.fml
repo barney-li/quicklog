@@ -111,7 +111,7 @@ Begin
 	recentHiPowerIndex = Highest(shortEMA,powerIndexExtremeLen);
 	recentLoPowerIndex = Lowest(shortEMA,powerIndexExtremeLen);
 	//检查持仓状况
-	tradeDir = g_MarketPosition();
+	tradeDir = MarketPosition();
 	//计算趋势方向
 	dir = myMADir(0, trendEmaShortPeriod, trendEmaLongPeriod);
 	//未开仓，进行开仓逻辑

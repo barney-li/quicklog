@@ -9,10 +9,11 @@ Params
 	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
 	Numeric trendEmaShortPeriod(4);//趋势EMA短周期 1
 	
-	Numeric overBuy(80);
-	Numeric overSell(20);
+	Numeric overBuy(50);
+	Numeric overSell(50);
+	Numeric kdjPrd(9);//kdj的计算周期
 	
-	Numeric maxRiskPoint(70); //这笔交易可能的最大亏损
+	Numeric maxRiskPoint(30); //这笔交易可能的最大亏损
 	
 	Numeric cost(0.00000);//双边手续费
 	Numeric minVolum(10);//最小交易单位
@@ -96,7 +97,7 @@ Begin
 	theTR = myTR();
 	theATR = myATR(theTR, atrMa);
 	//求KDJ
-	KDJ(9, tempRSV, tempK, tempD, tempJ);
+	KDJ(kdjPrd, tempRSV, tempK, tempD, tempJ);
 	RSV = tempRSV;
 	KValue = tempK;
 	DValue = tempD;
