@@ -7,13 +7,15 @@
 Params  	
 	//参数定义段
 	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
-	Numeric trendEmaShortPeriod(4);//趋势EMA短周期 1
+	Numeric trendEmaShortPeriod(2);//趋势EMA短周期 1
 	
 	Numeric overBuy(50);
 	Numeric overSell(50);
-	Numeric kdjPrd(9);//kdj的计算周期
+	Numeric kdjPrd(2);//kdj的计算周期
 	
 	Numeric maxRiskPoint(30); //这笔交易可能的最大亏损
+	
+	Numeric shares(1);//交易量
 	
 	Numeric cost(0.00000);//双边手续费
 	Numeric minVolum(10);//最小交易单位
@@ -130,7 +132,7 @@ Begin
 						startBar = CurrentBar;
 						startPrice = Close + openSlide*MinMove*PriceScale;
 						PlotText(startPrice, "BUY");
-						Buy(1,0);
+						Buy(shares,0);
 						lastTradeBar = CurrentBar;
 					}
 				}
@@ -147,7 +149,7 @@ Begin
 							}
 							startPrice = openPoint + openSlide*MinMove*PriceScale;
 							PlotText(startPrice, "BUY");
-							Buy(1,startPrice);
+							Buy(shares,startPrice);
 							lastTradeBar = CurrentBar;
 					}
 				}
@@ -356,12 +358,12 @@ Begin
 				If(realTrade)
 				{
 					endPrice = Close + closeSlide*MinMove*PriceScale;
-					BuyToCover(0,0);
+					BuyToCover(shares,0);
 				}
 				Else
 				{
 					endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
-					BuyToCover(0,endPrice);
+					BuyToCover(shares,endPrice);
 				}
 				//Print("Profit: ");
 				//Print(startPrice - endPrice - minVolum*cost*Close);
@@ -416,12 +418,12 @@ Begin
 			If(realTrade)
 			{
 				endPrice = Close + closeSlide*MinMove*PriceScale;
-				BuyToCover(0,0);
+				BuyToCover(shares,0);
 			}
 			Else
 			{
 				endPrice = stopPrice + closeSlide*MinMove*PriceScale;
-				BuyToCover(0,endPrice);
+				BuyToCover(shares,endPrice);
 			}
 			//Print("Profit: ");
 			//Print(startPrice - endPrice - minVolum*cost*Close);

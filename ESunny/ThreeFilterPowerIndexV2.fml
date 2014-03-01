@@ -8,13 +8,15 @@ Params
 	//参数定义段
 	
 	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
-	Numeric trendEmaShortPeriod(4);//趋势EMA短周期 1
+	Numeric trendEmaShortPeriod(3);//趋势EMA短周期 1
 	
-	Numeric longPeriod(15);//劲道指数长周期 
-	Numeric shortPeriod(5);//劲道指数短周期 1
-	Numeric powerIndexExtremeLen(5);//劲道指数极值计算周期 6
+	Numeric longPeriod(13);//劲道指数长周期 
+	Numeric shortPeriod(3);//劲道指数短周期 1
+	Numeric powerIndexExtremeLen(3);//劲道指数极值计算周期 6
 	
-	Numeric maxRiskPoint(70); //这笔交易可能的最大亏损
+	Numeric maxRiskPoint(30); //这笔交易可能的最大亏损
+	
+	Numeric shares(1);//交易量
 	
 	Numeric cost(0.00000);//双边手续费
 	Numeric minVolum(10);//最小交易单位
@@ -105,7 +107,7 @@ Begin
 	//检查价格运行方向与持仓量运行方向
 	myAngle(kAngle,opiAngle, 1, 3, 0.0006, 0.001);
 	//计算劲道指数
-	powerVal = Vol*(Close[1]-Close[2]);
+	powerVal = Vol[1]*(Close[1]-Close[2]);
 	shortEMA = EMA(powerVal,shortPeriod);
 	longEMA = EMA(powerVal,longPeriod);
 	recentHiPowerIndex = Highest(shortEMA,powerIndexExtremeLen);
@@ -136,7 +138,7 @@ Begin
 						startBar = CurrentBar;
 						startPrice = Close + openSlide*MinMove*PriceScale;
 						PlotText(startPrice, "BUY");
-						Buy(1,0);
+						Buy(shares,0);
 						lastTradeBar = CurrentBar;
 					}
 				}
@@ -153,7 +155,7 @@ Begin
 							}
 							startPrice = openPoint + openSlide*MinMove*PriceScale;
 							PlotText(startPrice, "BUY");
-							Buy(1,startPrice);
+							Buy(shares,startPrice);
 							lastTradeBar = CurrentBar;
 					}
 				}
@@ -362,12 +364,12 @@ Begin
 				If(realTrade)
 				{
 					endPrice = Close + closeSlide*MinMove*PriceScale;
-					BuyToCover(0,0);
+					BuyToCover(shares,0);
 				}
 				Else
 				{
 					endPrice = High[1] + 2*closeSlide*MinMove*PriceScale;
-					BuyToCover(0,endPrice);
+					BuyToCover(shares,endPrice);
 				}
 				//Print("Profit: ");
 				//Print(startPrice - endPrice - minVolum*cost*Close);
@@ -422,12 +424,12 @@ Begin
 			If(realTrade)
 			{
 				endPrice = Close + closeSlide*MinMove*PriceScale;
-				BuyToCover(0,0);
+				BuyToCover(shares,0);
 			}
 			Else
 			{
 				endPrice = stopPrice + closeSlide*MinMove*PriceScale;
-				BuyToCover(0,endPrice);
+				BuyToCover(shares,endPrice);
 			}
 			//Print("Profit: ");
 			//Print(startPrice - endPrice - minVolum*cost*Close);
