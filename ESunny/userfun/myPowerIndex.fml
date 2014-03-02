@@ -1,0 +1,16 @@
+//--------------------------------------------------------------
+// 简称: myPowerIndex
+// 名称: myPowerIndex
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	Numeric volume;//成交量
+	Numeric thisClose;//今收
+	Numeric lastClose;//昨收
+Vars
+	Numeric powerVal;
+Begin
+	powerVal = volume*(thisClose - lastClose);
+	Return powerVal;
+End

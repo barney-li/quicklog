@@ -1,0 +1,85 @@
+//------------------------------------------------------------------------
+// 简称:ThreeFilterPowerIndexV3
+// 名称:ThreeFilterPowerIndexV3
+// 类别: 交易指令
+// 类型: 用户应用
+//------------------------------------------------------------------------
+Params  	
+	//参数定义段
+	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
+	Numeric trendEmaShortPeriod(3);//趋势EMA短周期 1
+	
+	Numeric longPeriod(13);//劲道指数长周期 
+	Numeric shortPeriod(3);//劲道指数短周期 1
+	Numeric powerIndexExtremeLen(5);//劲道指数极值计算周期 6
+	
+	Numeric maxRiskPoint(50); //这笔交易可能的最大亏损
+	
+	Numeric shares(1);//交易量
+	
+	Numeric openBreak(1);//突破开仓，当当前价位超过前一根K线+/-openBreak时开仓
+	Numeric delayTimer(0);//从开仓到启动ATR棘轮之前的延迟时间
+	Numeric recentHiLoWide(2);//计算初始止损点时，选取最近低点的时间段
+	Numeric openSlide(1);//开仓滑点
+	Numeric closeSlide(1);//平仓滑点
+	Numeric atrMa(1);//通过TR计算ATR时的均线周期
+	Numeric atrIndex(0.1);//将ATR转换为棘轮步长的系数
+	Numeric atrType(0);//计算ATR方式，0为标准ATR，1为Barney ATR
+	Numeric timeBlank(0.0903);//开始进行开仓判断的时间
+	Numeric minDelta(1);//计算MACD方向时的阈值
+	Numeric largePeriod(30);//MACD滤网中，长周期K线的周期
+	
+GlobalVars	
+	//全局变量定义段
+	Numeric tradeDir(0);//查询得到的持仓方向
+	Numeric auxTradeDir(0);//若系统在历史K线有持仓的情况下进入了真实交易，那么auxTradeDir将替代tradeDir生效直到当次交易完成
+	Numeric stopPrice(0);//当前K的止损位
+	NumericSeries theATR;
+	NumericSeries theTR;
+	Numeric startBar(0);
+	Numeric startPrice(0);
+	Numeric endPrice(0);
+	NumericArray powerShortEMA;
+	NumericArray powerLongEMA;
+	NumericArray powerVal;
+	Numeric winStop(0);//止盈点
+	Bool winFlag(False);//盈亏平衡标记
+	Bool realTrade(False);//真实交易标记
+	Numeric lastTradeBar(0);//最后一次交易发生的位置
+	Numeric lastAtrBar(0);//最后一次计算ATR的位置
+	Numeric dir(0);//趋势方向
+	
+RealInit	
+	//在模拟交易切换到真实交易时调用该段
+	auxTradeDir = tradeDir;//将历史K线的持仓情况保存在auxTradeDir中，因为一旦进入真实交易，历史K线的持仓信息就会丢失
+	realTrade = True;
+	
+Vars		
+	//局部变量定义段
+	Numeric preClose(0);
+	Numeric preHigh(0);
+	Numeric preLow(0);
+	Numeric lowLmt(0);
+	Numeric upLmt(0);
+	Numeric closePrice(0);
+	Numeric sysATR(0);
+	Numeric recentLo(0);
+	Numeric recentHi(0);
+	Numeric openPoint(0);
+	Numeric virtualProfit(0);//浮动收益
+	Numeric tempVal(0);
+	Numeric recentHiPowerIndex(0);
+	Numeric recentLoPowerIndex(0);
+	Numeric tempRiskPoint(0);
+	
+Begin
+	//策略执行区
+
+	//持续更新所有需要按小时bar回溯的array
+	myArraySerialize(powerVal);
+	myArraySerialize(powerShortEMA);
+	myArraySerialize(powerLongEMA);
+	dir = myMADir(0,trendEmaShortPeriod,trendEmaLongPeriod,Close);
+	
+	
+End
