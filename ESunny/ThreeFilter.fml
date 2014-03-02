@@ -9,8 +9,8 @@ Params
 	Numeric trendEmaLongPeriod(14);//趋势EMA长周期 16~24
 	Numeric trendEmaShortPeriod(2);//趋势EMA短周期 1
 	
-	Numeric overBuy(50);
-	Numeric overSell(50);
+	Numeric overBuyOrSell(25);
+
 	Numeric kdjPrd(2);//kdj的计算周期
 	
 	Numeric maxRiskPoint(30); //这笔交易可能的最大亏损
@@ -119,7 +119,7 @@ Begin
 		
 		//If(dir == 1)
 		{
-			If(RSV[1]<=overSell)//进入超卖区
+			If(RSV[1]<=50-overBuyOrSell)//进入超卖区
 			{
 				openPoint = preHigh+openBreak*MinMove*PriceScale;
 				
@@ -157,7 +157,7 @@ Begin
 		}
 		//If(dir == -1)
 		{
-			If(RSV[1]>=overBuy)
+			If(RSV[1]>=50+overBuyOrSell)
 			{
 				openPoint = preLow-openBreak*MinMove*PriceScale;
 				
