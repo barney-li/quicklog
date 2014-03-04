@@ -11,7 +11,7 @@ Vars
 Begin
 	If(CurrentBar == 0 or Hour != Hour[1])
 	{
-		ArrAdd(inputArray,0);
+		ArrInsert(inputArray,0,0);
 	}
 	Return inputArray[0];
 End

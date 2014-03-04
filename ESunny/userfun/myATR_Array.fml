@@ -1,0 +1,28 @@
+//--------------------------------------------------------------
+// 简称: myATR_Array
+// 名称: myATR_Array
+// 类型: 用户函数
+// 输出: Numeric
+//--------------------------------------------------------------
+Params
+	NumericArray theTR;
+	Numeric length;
+Vars
+	Numeric sum(0);
+	Numeric index;
+	Numeric theATR;
+Begin
+	if (length > ArrLength(theTR))
+	{
+		theATR = 0;
+	}
+	Else
+	{
+		For index=0 to length-1
+		{
+			sum = sum + theTR[index];
+		}
+		theATR = sum/length;
+	}
+	Return theATR;
+End

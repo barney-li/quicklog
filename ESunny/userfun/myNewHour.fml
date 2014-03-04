@@ -1,0 +1,22 @@
+//--------------------------------------------------------------
+// 简称: myNewHour
+// 名称: myNewHour
+// 类型: 用户函数
+// 输出: Bool
+//--------------------------------------------------------------
+Params
+	Numeric lastDate;
+	Numeric lastHour;
+Vars
+	Bool cond(false);
+Begin
+	If(lastDate == Date and lastHour == Hour)
+	{
+		cond = False;
+	}
+	Else
+	{
+		cond = True;
+	}
+	Return cond;
+End
