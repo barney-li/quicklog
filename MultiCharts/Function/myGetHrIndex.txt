@@ -1,0 +1,11 @@
+Input: hrBarIndex(NumericRef);
+var: intrabarpersist curTime(0), intrabarpersist lastUpdateHr(0);
+begin
+	curTime = time;
+	// Data from XX:01 to XX+1:00 goes into one hrIndex.ie. All the volume from 14:01 to 15:00 was added into 15:00 hour bar.
+	if ceiling(curTime/100) <> lastUpdateHr then 
+	begin
+		hrBarIndex = hrBarIndex + 1;
+		lastUpdateHr = ceiling(curTime/100); 
+	end;
+end;

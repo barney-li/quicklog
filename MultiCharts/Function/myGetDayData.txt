@@ -1,0 +1,10 @@
+input: 
+	dayClose[size](NumericArrayRef),
+	dayHi[Size](NumericArrayRef),
+	dayLo[Size](NumericArrayRef),
+	dayBarIndex(NumericSimple);
+begin
+	dayClose[dayBarIndex] = close;
+	if dayHi[dayBarIndex]<High then dayHi[dayBarIndex] = High;
+	if dayLo[dayBarIndex]>Low then dayLo[dayBarIndex] = Low;
+end;

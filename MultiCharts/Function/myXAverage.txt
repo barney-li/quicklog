@@ -1,0 +1,13 @@
+inputs: 
+	PriceValue( NumericSimple ), 
+	Len( numericsimple ),
+	index(NumericSimple),
+	emaVal[size](NumericArrayRef);                                             
+
+variables: 
+	var0( 2 / ( Len + 1 ) ) ;
+
+if CurrentBar = 1 then
+	emaVal[index]= PriceValue
+else
+	emaVal[index]= emaVal[index-1] + var0 * ( PriceValue - emaVal[index-1] ) ;

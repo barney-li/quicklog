@@ -1,0 +1,18 @@
+Input: 
+	dayClose(NumericSimple),
+	trendEmaStPrd(NumericSimple),
+	trendEmaLgPrd(NumericSimple),
+	minDelta(NumericSimple),
+	fastMA[size](NumericArrayRef),
+	slowMA[size](NumericArrayRef),
+	dayBarIndex(NumericSimple);
+vars: 
+	dir(0);
+begin
+	myXAverage(dayClose, trendEmaStPrd, dayBarIndex, fastMA);
+	myXAverage(dayClose, trendEmaLgPrd, dayBarIndex, slowMA);
+	dir = 0;
+	if fastMA[dayBarIndex] - slowMA[dayBarIndex] > minDelta then dir = 1;
+	if slowMA[dayBarIndex] - fastMA[dayBarIndex] > minDelta then dir = -1;
+	myMADir = dir;
+end;

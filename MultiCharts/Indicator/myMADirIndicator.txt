@@ -1,0 +1,76 @@
+inputs: 
+	trendEmaLongPeriod(14),// trend EMA long period
+	trendEmaShortPeriod(5), // trend EMA short period
+	minDelta(9),// threshold by exceeding which a trend could be recognized
+	
+	powerLongPeriod(12), // power index EMA long period
+	powerShortPeriod(1), // power index EMA short period
+	powerIndexExtremeLen(5), // power index EMA extreme period
+	
+	maxRiskPoint(50),// max possible lose
+	tradeShares(1),// trade shares
+	
+	cost(0),// cost rate
+	minVolumn(10),// min trade amount
+
+	
+	realTrade(false),
+	
+	timeBlank(903),
+	openBreak(1),
+	recentHiLoWide(2),// recent hi/lo period
+	slide(1),// open slide
+	atrIndex(0.1),// the coefficient that translate atr into price
+	atrMa(1);// ATR MA period
+
+vars:
+	
+	intrabarpersist dir(0),
+	intrabarpersist lastSerializeMin(0),
+	intrabarpersist dayBarIndex(10),
+	intrabarpersist hrBarIndex(0),
+	intrabarpersist recentLo(0),
+	intrabarpersist recentHi(0),
+	intrabarpersist openPoint(0),
+	intrabarpersist recentHiPowerIndex(0),
+	intrabarpersist recentLoPowerIndex(0);
+array: 
+	intrabarpersist fastDayMA[1000](close),
+	intrabarpersist slowDayMA[1000](close),
+	intrabarpersist dayClose[1000](close),
+	intrabarpersist dayHi[1000](0),
+	intrabarpersist dayLo[1000](999999),
+	intrabarpersist powerShortEma[5000](0), 
+	intrabarpersist powerLongEma[5000](0),
+	intrabarpersist powerVal[5000](0),
+	intrabarpersist theATR[5000](0),
+	intrabarpersist theTR[5000](0),
+	intrabarpersist hrClose[5000](0),
+	intrabarpersist hrHi[5000](0),
+	intrabarpersist hrLo[5000](999999),
+	intrabarpersist hrVol[5000](0);
+
+begin
+	myGetDayIndex(daybarindex);
+	myGetDayData(dayClose, dayHi, dayLo, dayBarIndex);
+	
+	myGetHrIndex(hrBarIndex);	
+	myGetHrData(hrClose, hrHi, hrLo, hrVol, hrBarIndex);
+	
+	powerVal[hrBarIndex] = myPowerIndex(hrVol[hrBarindex], hrClose[hrBarIndex], hrClose[hrBarIndex-1]);
+	myXAverage(powerVal[hrBarIndex], powerShortPeriod, hrBarIndex, powerShortEma);
+	myXAverage(powerVal[hrBarIndex], powerLongPeriod, hrBarIndex, powerLongEma);
+	
+	recentHiPowerIndex = myExtremesArray(powerShortEma, hrBarIndex, true, powerIndexExtremeLen);
+	recentLoPowerIndex = myExtremesArray(powerShortEma, hrBarIndex, false, powerIndexExtremeLen);
+	
+	recentHi = myExtremesArray(hrHi, hrBarIndex, true, recentHiLoWide);
+	recentLo = myExtremesArray(hrLo, hrBarIndex, false, recentHiLoWide);
+	
+	theTR[hrBarIndex] = myTR(hrHi, hrLo, hrClose, hrBarIndex);
+	myXAverage(theTR[hrBarIndex], atrMa, hrBarIndex, theATR);
+	
+	dir = myMADir(dayClose[dayBarIndex], trendEmaShortPeriod, trendEmaLongPeriod, mindelta, fastDayMA, slowDayMA, dayBarIndex);
+	plot1(powerShortEma[hrBarIndex], "powerShortEma", cyan);
+end
+	
