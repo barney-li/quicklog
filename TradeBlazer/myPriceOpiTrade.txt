@@ -7,8 +7,9 @@
 
 Params
 	Numeric distance(10);
-	Numeric minVibration(3);
-	Numeric minOpiVib(500);
+	Numeric minPriceVib(3);
+	Numeric minOpiPosVib(500);
+	Numeric minOpiNegVib(-500);
 	Numeric stopWin(3);
 	Numeric stopLose(3);
 Vars
@@ -27,7 +28,7 @@ Begin
 	hiBar = HighestBarFC(close, distance);
 	if (Close>Close[1] && Close==hiVal)
 	{
-		if (Close - loVal >= minVibration*MinMove*PriceScale)
+		if (Close - loVal >= minPriceVib*MinMove*PriceScale)
 		{
 			
 			priceVibration = Close-Close[loBar];
@@ -37,13 +38,26 @@ Begin
 	
 	if (Close<Close[1] && Close==loVal)
 	{
-		if (hiVal - Close >= minVibration*MinMove*PriceScale)
+		if (hiVal - Close >= minPriceVib*MinMove*PriceScale)
 		{
 			priceVibration = Close - Close[hiBar];
 			opiVibration = OpenInt-OpenInt[hiBar];
 		}
 	}
-	if(MarketPosition==0 and priceVibration[1]>0 and opiVibration[1]>minOpiVib and Close<Close[1])
+	if(MarketPosition==0 and priceVibration[1]>0 and opiVibration[1]>minOpiPosVib and Close<Close[1])//买方吸入
+	{
+		Buy(1, Close);
+	}
+	if(MarketPosition==0 and priceVibration[1]<0 and OpiVibration[1]<minOpiNegVib and Close>Close[1])//买方抛出
+	{
+		Sell(1, Close);
+	}
+	
+	if(MarketPosition==0 and priceVibration[1]<0 and opiVibration[1]>minOpiPosVib and Close>Close[1])//卖方吸入
+	{
+		SellShort(1, Close);
+	}
+	if(MarketPosition==0 and priceVibration[1]>0 and OpiVibration[1]<minOpiNegVib and Close<Close[1])//卖方抛出
 	{
 		Buy(1, Close);
 	}
@@ -57,10 +71,6 @@ Begin
 		{
 			Sell(1, Close);
 		}
-	}
-	if(MarketPosition==0 and priceVibration[1]<0 and opiVibration[1]>minOpiVib and Close>Close[1])
-	{
-		SellShort(1, Close);
 	}
 	if(MarketPosition==-1)
 	{
