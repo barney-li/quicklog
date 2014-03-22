@@ -1,0 +1,28 @@
+//------------------------------------------------------------------------
+// 简称: mySigmaSignedVol
+// 名称: SigmaSignedVol
+// 类别: 用户函数
+// 类型: 用户函数
+// 输出: 数值型
+//------------------------------------------------------------------------
+
+Params
+	Numeric barIndex(0);
+Vars
+	Numeric index(0);
+	Numeric sigmaVol(0);
+Begin
+	For index=0 to barIndex
+	{
+		sigmaVol = sigmaVol+IIF(openint[index]>openint[index+1], 1, -1)*Vol[index];
+	}
+	Return sigmaVol;
+End
+
+//------------------------------------------------------------------------
+// 编译版本	GS2010.12.08
+// 用户版本	2014-03-22 20:57:05
+// 版权所有	lott209
+// 更改声明	TradeBlazer Software保留对TradeBlazer平台
+//			每一版本的TrabeBlazer公式修改和重写的权利
+//------------------------------------------------------------------------
