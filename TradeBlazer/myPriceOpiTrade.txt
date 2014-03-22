@@ -1,0 +1,84 @@
+//------------------------------------------------------------------------
+// 简称: myPriceOpiTrade
+// 名称: PriceOpi
+// 类别: 公式应用
+// 类型: 用户应用
+//------------------------------------------------------------------------
+
+Params
+	Numeric distance(10);
+	Numeric minVibration(3);
+	Numeric minOpiVib(500);
+	Numeric stopWin(3);
+	Numeric stopLose(3);
+Vars
+	NumericSeries priceVibration(0);
+	NumericSeries opiVibration(0);
+	Numeric hiBar(0);
+	Numeric hiVal(0);
+	Numeric loBar(0);
+	Numeric loVal(0);
+Begin
+	priceVibration = 0;
+	OpiVibration = 0;
+	loVal = LowestFC(close, distance);
+	loBar = LowestBarFC(close, distance);
+	hiVal = HighestFC(close, distance);
+	hiBar = HighestBarFC(close, distance);
+	if (Close>Close[1] && Close==hiVal)
+	{
+		if (Close - loVal >= minVibration*MinMove*PriceScale)
+		{
+			
+			priceVibration = Close-Close[loBar];
+			opiVibration = OpenInt-OpenInt[loBar];
+		}
+	}
+	
+	if (Close<Close[1] && Close==loVal)
+	{
+		if (hiVal - Close >= minVibration*MinMove*PriceScale)
+		{
+			priceVibration = Close - Close[hiBar];
+			opiVibration = OpenInt-OpenInt[hiBar];
+		}
+	}
+	if(MarketPosition==0 and priceVibration[1]>0 and opiVibration[1]>minOpiVib and Close<Close[1])
+	{
+		Buy(1, Close);
+	}
+	if(MarketPosition==1)
+	{
+		if(Close-EntryPrice>=stopWin*MinMove*PriceScale)
+		{
+			Sell(1, Close);
+		}
+		if(EntryPrice-Close>=stopLose*MinMove*PriceScale)
+		{
+			Sell(1, Close);
+		}
+	}
+	if(MarketPosition==0 and priceVibration[1]<0 and opiVibration[1]>minOpiVib and Close>Close[1])
+	{
+		SellShort(1, Close);
+	}
+	if(MarketPosition==-1)
+	{
+		if(EntryPrice-Close>=stopWin*MinMove*PriceScale)
+		{
+			BuyToCover(1, Close);
+		}
+		if(Close-EntryPrice>=stopLose*MinMove*PriceScale)
+		{
+			BuyToCover(1, Close);
+		}
+	}
+End
+
+//------------------------------------------------------------------------
+// 编译版本	GS2010.12.08
+// 用户版本	2014-03-22 10:34:08
+// 版权所有	lott209
+// 更改声明	TradeBlazer Software保留对TradeBlazer平台
+//			每一版本的TrabeBlazer公式修改和重写的权利
+//------------------------------------------------------------------------
