@@ -30,6 +30,7 @@ Begin
 	readyToOut = GetGlobalVar(0);
 	lastHi = GetGlobalVar(1);
 	lastLo = GetGlobalVar(2);
+	lastPrice = GetGlobalVar(3);
 	askConsume = 0;
 	bidConsume = 0;
 	If (High == High[1])
@@ -120,6 +121,7 @@ Begin
 	SetGlobalVar(0, readyToOut);
 	SetGlobalVar(1, lastHi);
 	SetGlobalVar(2, lastLo);
+	SetGlobalVar(3, lastPrice);
 End
 
 //------------------------------------------------------------------------
