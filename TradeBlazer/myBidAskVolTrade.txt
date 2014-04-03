@@ -1,0 +1,131 @@
+//------------------------------------------------------------------------
+// 简称: myBidAskVolTrade
+// 名称: BidAskVolTrade
+// 类别: 公式应用
+// 类型: 用户应用
+//------------------------------------------------------------------------
+
+//本公式仅针对带有买一量与卖一量的数据有效，vol为买一，openint为卖一
+Params
+	Numeric distanceLong(100);
+	Numeric distanceShort(10);
+	Numeric denoiseLength(50);
+	
+Vars
+	Numeric stopWin(0);
+	Numeric stopLose(0);
+	NumericSeries askConsume(0);
+	NumericSeries bidConsume(0);
+	NumericSeries askConsumeDN(0);//denoised ask consume
+	NumericSeries bidConsumeDN(0);//denoised bid consume
+	NumericSeries askAvgSlow(0);
+	NumericSeries bidAvgSlow(0);
+	NumericSeries askAvgFast(0);
+	NumericSeries bidAvgFast(0);
+	Numeric readyToOut(0);
+	Numeric lastHi(0);
+	Numeric lastLo(0);
+	Numeric lastPrice(0);
+Begin
+	readyToOut = GetGlobalVar(0);
+	lastHi = GetGlobalVar(1);
+	lastLo = GetGlobalVar(2);
+	askConsume = 0;
+	bidConsume = 0;
+	If (High == High[1])
+	{
+		askConsume = OpenInt[1]-OpenInt;
+	}
+	If (Low == Low[1])
+	{
+		bidConsume = Vol[1]-Vol;
+	}
+	If (High > High[1])
+	{
+		askConsume = OpenInt[1];
+	}
+	If (Low < Low[1])
+	{
+		bidConsume = Vol[1];
+	}
+	askConsumeDN = myDenoise(askConsume, denoiseLength);
+	bidConsumeDN = myDenoise(bidConsume, denoiseLength);
+	askAvgSlow = AverageFC(askConsumeDN, distanceLong);
+	bidAvgSlow = AverageFC(bidConsumeDN, distanceLong);
+	askAvgFast = AverageFC(askConsumeDN, distanceShort);
+	bidAvgFast = AverageFC(bidConsumeDN, distanceShort);
+	if (MarketPosition==0 and Time<0.1450)
+	{
+		if (myCrossOver(askAvgSlow, bidAvgSlow, 1) and askAvgFast>bidAvgFast)
+		{
+			Buy(1, High);
+			PlotString("buy", "buy", High);
+			lastHi = Low;
+			readyToOut = 0;
+		}
+		if (myCrossOver(bidAvgSlow, askAvgSlow, 1) and askAvgFast<bidAvgFast)
+		{
+			SellShort(1, Low);
+			PlotString("sellshort", "sellshort", Low);
+			lastLo = High;
+			readyToOut = 0;
+		}
+		
+		
+	}
+	if (MarketPosition==1)
+	{
+		if(lastHi<Low)
+		{
+			lastHi=Low;
+		}
+		if(readyToOut==1 and Low!=lastPrice)
+		{
+			Sell(1, Low);
+			PlotString("sell", "sell", Low);
+		}
+		if(lastHi-Low>=2*minmove*pricescale)
+		{
+			readyToOut = 1;
+			lastPrice = Low;
+		}
+		if(time>=0.1459) 
+		{
+			Sell(1, Low);
+			PlotString("timeup", "timeup", Low);
+		}
+	}
+	if (MarketPosition==-1)
+	{
+		if(lastLo>High)
+		{
+			lastLo=High;
+		}
+		if(readyToOut==1 and High!=lastPrice)
+		{
+			BuyToCover(1, High);
+			PlotString("buytocover", "buytocover", High);
+		}
+		if(High-lastLo>=2*MinMove*PriceScale)
+		{
+			readyToOut = 1;
+			lastPrice = High;
+		}
+		if(time>=0.1459) 
+		{
+			BuyToCover(1, High);
+			PlotString("timeup", "timeup", High);
+		}
+	}
+	SetGlobalVar(0, readyToOut);
+	SetGlobalVar(1, lastHi);
+	SetGlobalVar(2, lastLo);
+End
+
+//------------------------------------------------------------------------
+// 编译版本	GS2010.12.08
+// 用户版本	2014-04-01 21:27:08
+// 版权所有	lott209
+// 更改声明	TradeBlazer Software保留对TradeBlazer平台
+//			每一版本的TrabeBlazer公式修改和重写的权利
+//------------------------------------------------------------------------
