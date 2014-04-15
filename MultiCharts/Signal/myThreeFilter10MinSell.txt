@@ -25,7 +25,7 @@ inputs:
 	logSwitch(True),// enable or disable log
 	
 	existingTrade(false),
-	existinglastTradeIndex(0),// can specify existing trade bar index
+	existingLastTradeHour(0),// can specify existing trade bar index
 	existingTradeDir(0),// can specify existing position before 
 	existingStartPrice(0);// can specify existing entry price
 
@@ -43,13 +43,12 @@ vars:
 	intrabarpersist lose(0),
 	intrabarpersist dir(0),
 	intrabarpersist lastTradeDate(0),
-	intrabarpersist lastTradeIndex(existinglastTradeIndex),
+	intrabarpersist lastTradeHour(existingLastTradeHour),
 	intrabarpersist lastAtrHour(0),
 	intrabarpersist lastAtrDate(0),
 	intrabarpersist lastSerializeMin(0),
 	intrabarpersist dayBarIndex(10),
 	intrabarpersist hrBarIndex(0),
-	intrabarpersist m10BarIndex(0),
 	intrabarpersist recentLo(0),
 	intrabarpersist recentHi(0),
 	intrabarpersist openPoint(0),
@@ -72,10 +71,6 @@ array:
 	intrabarpersist powerVal[30000](0),
 	intrabarpersist theATR[30000](0),
 	intrabarpersist theTR[30000](0),
-	intrabarpersist m10Close[30000](0),
-	intrabarpersist m10Hi[30000](0),
-	intrabarpersist m10Lo[30000](0),
-	intrabarpersist m10Vol[30000](0),
 	intrabarpersist hrClose[30000](0),
 	intrabarpersist hrHi[30000](0),
 	intrabarpersist hrLo[30000](999999),
@@ -99,10 +94,7 @@ begin
 	myGetDayIndex(daybarindex);
 	myGetFullDayData(dayOpen, dayClose, dayHi, dayLo, dayBarIndex);
 	
-	last10mStart = myGet10mIndex(m10BarIndex);
-	myGet10mData(m10Close, m10Hi, m10Lo, m10Vol, m10BarIndex);
-	
-	myGetHrIndex(hrBarIndex);
+	last10mStart = myGet10mIndex(hrBarIndex);	
 	myGetHrData(hrClose, hrHi, hrLo, hrVol, hrBarIndex);
 	
 	powerVal[hrBarIndex] = myPowerIndex(hrVol[hrBarindex], hrClose[hrBarIndex], hrClose[hrBarIndex-1]);
@@ -112,8 +104,8 @@ begin
 	recentHiPowerIndex = myExtremesArray(powerShortEma, hrBarIndex, true, powerIndexExtremeLen);
 	recentLoPowerIndex = myExtremesArray(powerShortEma, hrBarIndex, false, powerIndexExtremeLen);
 	
-	recentHi = myExtremesArray(m10Hi, m10BarIndex, true, recentHiLoWide);
-	recentLo = myExtremesArray(m10Lo, m10BarIndex, false, recentHiLoWide);
+	recentHi = myExtremesArray(hrHi, hrBarIndex, true, recentHiLoWide);
+	recentLo = myExtremesArray(hrLo, hrBarIndex, false, recentHiLoWide);
 	
 	theTR[hrBarIndex] = myTR(hrHi, hrLo, hrClose, hrBarIndex);
 	myXAverage(theTR[hrBarIndex], atrMa, hrBarIndex, theATR);
@@ -123,7 +115,7 @@ begin
 	if not unfinishedTrade then tradeDir = marketposition();
 	
 	//will not open twice in a same hour bar
-	if tradeDir = 0 and Time > timeBlank and hrBarIndex>lastTradeIndex then
+	if tradeDir = 0 and Time > timeBlank and hrBarIndex>lastTradeHour then
 	begin
 	//	if dir = 1 and powerShortEma[hrBarIndex]>0 and powerShortEma[hrBarIndex] = recentHiPowerIndex then
 	//	begin
@@ -133,7 +125,7 @@ begin
 	//		begin
 	//			buy tradeShares share at next bar at market;
 	//			myLogTradeInfo(hrbarindex, "buy at market", logenable);
-	//			lastTradeIndex = hrBarIndex;
+	//			lastTradeHour = hrBarIndex;
 	//			newExtremeCnt = 0;
 	//			stopPrice = 0;
 	//		end;
@@ -147,7 +139,7 @@ begin
 			begin
 				sellshort tradeShares share at next bar at market;
 				myLogTradeInfo(hrbarindex, "sell short at market", logenable);
-				lastTradeIndex = hrBarIndex;
+				lastTradeHour = hrBarIndex;
 				newExtremeCnt = 0;
 				stopPrice = 0;
 			end;
@@ -155,14 +147,14 @@ begin
 	end;
 	
 	// updating stop price when it's in the same hour har
-//	if lastTradeIndex=hrBarIndex and tradeDir=1 then
+//	if lastTradeHour=hrBarIndex and tradeDir=1 then
 //	begin
 //		stopPrice = recentLo - 1*MinMove/PriceScale;
 //		if stopPrice<stopPrice[1] then newExtremeCnt = newExtremeCnt+1;
 //		if newExtremeCnt >= 3 then sell("too many new low") at next bar at market; 
 //		//Arw_New (date, time, stopPrice, true); 
 //	end;
-	if lastTradeIndex=hrbarindex and tradeDir=-1 then
+	if lastTradeHour=hrbarindex and tradeDir=-1 then
 	begin
 		stopPrice = recentHi + 1*MinMove/PriceScale;
 //		if stopPrice>stopPrice[1] then newExtremeCnt = newExtremeCnt+1;
@@ -179,29 +171,29 @@ begin
 	end;
 	
 	// sell close judge
-//	if tradeDir=1 and startPrice<>0 and m10BarIndex>=lastTradeIndex then
+//	if tradeDir=1 and startPrice<>0 and hrBarIndex>=lastTradeHour then
 //	begin
-//		virtualProfit = m10Lo[m10BarIndex-1] - slide*MinMove/PriceScale - startPrice;
+//		virtualProfit = hrLo[hrBarIndex-1] - slide*MinMove/PriceScale - startPrice;
 //		if virtualProfit>=0 then winFlag = true;
 //		if winFlag = true then
 //		begin
 //			// if still making money
-//			if Close>= m10Lo[m10BarIndex-1] then tl_new(date, floor(time/100)*100, m10Lo[m10BarIndex-1], date, time, m10Lo[m10BarIndex-1])
+//			if Close>= hrLo[hrBarIndex-1] then tl_new(date, floor(time/100)*100, hrLo[hrBarIndex-1], date, time, hrLo[hrBarIndex-1])
 //			else // otherwise get out
 //			begin
 //				winFlag=False;
-//				lastTradeIndex=m10BarIndex;
+//				lastTradeHour=hrBarIndex;
 //				sell("stop win sell") at next bar at market;
-//				myLogTradeInfo(m10barindex, "stop win sell", logenable);
+//				myLogTradeInfo(hrbarindex, "stop win sell", logenable);
 //				unfinishedTrade = False;
 //			end;
 //		end
 //		else // if it did not make any profit yet, calculate stop lose point
 //		begin
-//			if lastAtrHour<m10BarIndex then 
+//			if lastAtrHour<hrBarIndex then 
 //			begin
-//				stopPrice=stopPrice+theATR[m10BarIndex-1]*atrIndex;
-//				lastAtrHour=m10BarIndex;
+//				stopPrice=stopPrice+theATR[hrBarIndex-1]*atrIndex;
+//				lastAtrHour=hrBarIndex;
 //			end;
 //			tl_new(date, floor(time/100)*100, stopPrice, date, time, stopPrice);
 //		end;
@@ -209,37 +201,37 @@ begin
 //		if close <= stopPrice then
 //		begin
 //			winFlag=False;
-//			lastTradeIndex = m10BarIndex;
+//			lastTradeHour = hrBarIndex;
 //			sell("stop lose sell") at next bar at market;
-//			myLogTradeInfo(m10barindex, "stop lose sell", logenable);
+//			myLogTradeInfo(hrbarindex, "stop lose sell", logenable);
 //			unfinishedTrade = False;
 //		end;
 //	end;
 	
 	// buy to cover close
-	if tradeDir=-1 and startPrice<>0 and m10BarIndex>=lastTradeIndex then
+	if tradeDir=-1 and startPrice<>0 and hrBarIndex>=lastTradeHour then
 	begin
-		virtualProfit = startPrice - m10Hi[m10BarIndex-1] - slide*MinMove/PriceScale;
+		virtualProfit = startPrice - hrHi[hrBarIndex-1] - slide*MinMove/PriceScale;
 		if virtualProfit>=0 then winFlag = true;
 		if winFlag = true then
 		begin
 			// if still making money
-			if Close <= m10Hi[m10BarIndex-1] then tl_new(date, last10mStart, m10Hi[m10BarIndex-1], date, time, m10Hi[m10BarIndex-1])
+			if Close <= hrHi[hrBarIndex-1] then tl_new(date, last10mStart, hrHi[hrBarIndex-1], date, time, hrHi[hrBarIndex-1])
 			else // otherwise get out
 			begin
 				winFlag=False;
-				lastTradeIndex=m10BarIndex;
+				lastTradeHour=hrBarIndex;
 				buytocover("stop win buy") at next bar at market;
-				myLogTradeInfo(m10barindex, "stop win buy to cover", logenable);
+				myLogTradeInfo(hrbarindex, "stop win buy to cover", logenable);
 				unfinishedTrade = False;
 			end;
 		end
 		else // if it did not make any profit yet, calculate stop lose point
 		begin
-			if lastAtrHour<m10BarIndex then 
+			if lastAtrHour<hrBarIndex then 
 			begin
-				stopPrice=stopPrice-theATR[m10BarIndex-1]*atrIndex;
-				lastAtrHour=m10BarIndex;
+				stopPrice=stopPrice-theATR[hrBarIndex-1]*atrIndex;
+				lastAtrHour=hrBarIndex;
 			end;
 			tl_new(date, last10mStart, stopPrice, date, time, stopPrice);
 		end;
@@ -247,26 +239,26 @@ begin
 		if Close >= stopPrice then
 		begin
 			winFlag=False;
-			lastTradeIndex = m10BarIndex;
+			lastTradeHour = hrBarIndex;
 			buytocover("stop lose buy") at next bar at market;
-			myLogTradeInfo(m10barindex, "stop lose buy to cover", logenable);
+			myLogTradeInfo(hrbarindex, "stop lose buy to cover", logenable);
 			unfinishedTrade = False;
 		end;
 	end;
 	
 	// safety net
-	if m10BarIndex>=lastTradeIndex then
+	if hrBarIndex>=lastTradeHour then
 	begin
 //		if tradeDir=1 and startPrice-Close>maxRiskPoint then 
 //		begin 
 //			sell("safety net sell") at next bar at market;
-//			myLogTradeInfo(m10barindex, "safety net sell", logenable);
+//			myLogTradeInfo(hrbarindex, "safety net sell", logenable);
 //			unfinishedTrade = False;
 //		end;
 		if tradeDir=-1 and Close-startPrice>maxRiskPoint then 
 		begin
 			buytocover("safety net buy") at next bar at market;
-			myLogTradeInfo(m10barindex, "safety net buy to cover", logenable);
+			myLogTradeInfo(hrbarindex, "safety net buy to cover", logenable);
 			unfinishedTrade = False;
 		end;
 	end;
