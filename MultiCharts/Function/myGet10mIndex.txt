@@ -1,0 +1,12 @@
+Input: m10BarIndex(NumericRef);
+var: intrabarpersist curTime(0), intrabarpersist lastUpdateTime(0);
+begin
+	curTime = time;
+	// Data from XX:01 to XX:10 goes into one m10BarIndex.ie. All the volume from 14:01 to 14:10 was added into 14:10 bar.
+	if ceiling(curTime/10) <> ceiling(lastUpdateTime/10) and Mod(curTime,100) <> 0 then 
+	begin
+		m10BarIndex= m10BarIndex+ 1;
+		lastUpdateTime= curTime; 
+	end;
+	myGet10mIndex = lastUpdateTime;
+end;
