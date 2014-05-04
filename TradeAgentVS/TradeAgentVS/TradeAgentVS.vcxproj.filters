@@ -106,6 +106,18 @@
     <ClInclude Include="src\common\Timer.h">
       <Filter>src\common</Filter>
     </ClInclude>
+    <ClInclude Include="src\Stratergy\PASAux.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\PrimeryAndSecondary.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\BollingerBands.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\PasStateMachine.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="src\CTPAPI\thostmduserapi.lib">

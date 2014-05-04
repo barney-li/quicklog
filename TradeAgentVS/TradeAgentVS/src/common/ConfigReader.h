@@ -165,4 +165,42 @@ public:
 		}
 		return -1;
 	}
+	// read an integer from configuration
+	int ReadString(string& outputString, string startSymble, string endSymble = ";")
+	{
+		startSymble.append("=");
+		string dataLine;
+		string lastLine;
+		unsigned int payloadStart = 0;
+		unsigned int payloadEnd = 0;
+		string payload;
+		fstream configFile;
+		configFile.open(ConfigFullName, ios::in);
+		if(configFile.is_open() != true)
+		{
+			cout<<"Open configuration file failed, please make sure the file directory and name is consistent with your input."<<endl;
+			return 0;
+		}
+		else
+		{
+			do
+			{
+				lastLine = dataLine;
+				getline(configFile, dataLine);
+				// find the start location of start symble and end symble, return -1 if not found
+				payloadStart = dataLine.find(startSymble);
+				payloadEnd = dataLine.find(endSymble);
+				// make sure both locations are valid and there are no overlap between them 
+				if(((payloadStart+startSymble.length())<payloadEnd)&&(payloadStart != string::npos)&&(payloadEnd != string::npos))
+				{
+					// abstract the payload from whole line
+					payload = dataLine.substr(payloadStart+startSymble.length(), payloadEnd-(payloadStart+startSymble.length()));
+					outputString = payload;
+					// once the symble has been found, return with 0
+					return 0;
+				}
+			}while(lastLine != dataLine);
+		}
+		return -1;
+	}
 };

@@ -1,12 +1,12 @@
 ﻿// TradeAgentVS.cpp : 
 //
 //#define BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG //开启后，计时精度为纳秒
-#define BOOST_DATE_TIME_SOURCE
+//#define BOOST_DATE_TIME_SOURCE
 #include "stdafx.h"
 #include <iostream>
 #include <TradeProcess.h>
 #include <MarketProcess.h>
-#include <CloseAndFar.h>
+#include <PrimeryAndSecondary.h>
 #include <ConfigReader.h>
 #include <boost\thread.hpp>
 #include <boost\progress.hpp>
@@ -27,10 +27,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	Log logger;
-	logger.LogThisFast("start test...");
+	logger.LogThisFast("arbitrage stratergy started...");
+	logger.Sync();
 
-	CloseAndFar caf;
-	caf.StartStratergy();
+	PrimeryAndSecondary strategy;
+	strategy.StartStrategy();
 
 	return 0;
 }

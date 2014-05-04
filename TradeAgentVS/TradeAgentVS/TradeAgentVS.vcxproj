@@ -119,7 +119,11 @@
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h" />
     <ClInclude Include="src\MarketProcess\MarketProcess.h" />
     <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\Stratergy\BollingerBands.h" />
     <ClInclude Include="src\Stratergy\CloseAndFar.h" />
+    <ClInclude Include="src\Stratergy\PASAux.h" />
+    <ClInclude Include="src\Stratergy\PasStateMachine.h" />
+    <ClInclude Include="src\Stratergy\PrimeryAndSecondary.h" />
     <ClInclude Include="src\Stratergy\StrategyAux.h" />
     <ClInclude Include="src\Stratergy\Stratergy.h" />
     <ClInclude Include="src\targetver.h" />
