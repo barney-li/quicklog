@@ -30,7 +30,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	logger.LogThisFast("arbitrage stratergy started...");
 	logger.Sync();
 
-	PrimeryAndSecondary strategy;
+	Pas::PrimeryAndSecondary strategy;
 	strategy.StartStrategy();
 
 	return 0;

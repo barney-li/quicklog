@@ -9,12 +9,12 @@ private:
 public:
 	PasStateMachine()
 	{
-
+		return;
 	}
 public:
 	void SetEvent(TRADE_EVENT aLastEvent)
 	{
-
+		return;
 	}
 };
 }

@@ -8,20 +8,25 @@ namespace Finicial
 
 typedef struct BollingerBandData
 {
-	double mUpperLine;
-	double mLowerLine;
 	double mMidLine;
+	double mStdDev;
+	double mOutterUpperLine;
+	double mInnerUpperLine;
+	double mInnerLowerLine;
+	double mOutterLowerLine;
 };
-
+typedef struct BollingerBandDataInt
+{
+		long long mMidLine;
+		double mStdDev;
+		long long  mOutterUpperLine;
+		long long  mInnerUpperLine;
+		long long  mInnerLowerLine;
+		long long  mOutterLowerLine;
+}; 
 class BollingerBands
 {
 private:
-	typedef struct BollingerBandDataInt
-	{
-		long long mUpperLine;
-		long long mLowerLine;
-		long long mMidLine;
-	}; 
 	vector<BollingerBandDataInt> mIntBollData;
 	vector<long long> mPrice;
 	long long mIndex;
@@ -37,20 +42,8 @@ public:
 	}
 public:
 	// calculate Bollinger Band, must be invoked for every coming data
-	BollingerBandData CalcBoll(double aLastPrice, int aPeriod, int aAmp)
+	BollingerBandData CalcBoll(double aLastPrice, int aPeriod, int aOutterAmp, int aInnerAmp)
 	{
-		BollingerBandData lReturn;
-		long long lLastPrice = (long long)aLastPrice;
-		mPrice[mIndex] = lLastPrice;
-		mIntBollData[mIndex].mMidLine = Average(aPeriod);
-		long long lStdDev = StandardDev(aPeriod, mIntBollData[mIndex].mMidLine);
-		mIntBollData[mIndex].mUpperLine = mIntBollData[mIndex].mMidLine + lStdDev;
-		mIntBollData[mIndex].mLowerLine = mIntBollData[mIndex].mMidLine - lStdDev;
-
-		lReturn.mUpperLine = (double)mIntBollData[mIndex].mUpperLine;
-		lReturn.mMidLine = (double)mIntBollData[mIndex].mMidLine;
-		lReturn.mLowerLine = (double)mIntBollData[mIndex].mLowerLine;
-
 		// allocate another mSizeIncrease every time the buffer is almost full
 		mIndex++;
 		if(mPrice.size() - mIndex < 100)
@@ -61,6 +54,44 @@ public:
 		{
 			mIntBollData.resize(mIntBollData.size()+mSizeIncrease);
 		}
+		long long lLastPrice = (long long)aLastPrice;
+		mPrice[mIndex] = lLastPrice;
+		mIntBollData[mIndex].mMidLine = Average(aPeriod);
+		mIntBollData[mIndex].mStdDev = StandardDev(aPeriod, mIntBollData[mIndex].mMidLine);
+		mIntBollData[mIndex].mOutterUpperLine = mIntBollData[mIndex].mMidLine + (long long)(aOutterAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		mIntBollData[mIndex].mOutterLowerLine = mIntBollData[mIndex].mMidLine - (long long)(aOutterAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		mIntBollData[mIndex].mInnerUpperLine = mIntBollData[mIndex].mMidLine + (long long)(aInnerAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		mIntBollData[mIndex].mInnerLowerLine = mIntBollData[mIndex].mMidLine - (long long)(aInnerAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		
+		return GetBoll(0);
+	}
+	// calculate Bollinger Band, must be invoked for every coming data
+	BollingerBandDataInt CalcBollInt(double aLastPrice, int aPeriod, int aOutterAmp, int aInnerAmp)
+	{
+		BollingerBandDataInt lReturn;
+		// allocate another mSizeIncrease every time the buffer is almost full
+		mIndex++;
+		if(mPrice.size() - mIndex < 100)
+		{
+			mPrice.resize(mPrice.size()+mSizeIncrease, 0);
+		}
+		if(mIntBollData.size() - mIndex < 100)
+		{
+			mIntBollData.resize(mIntBollData.size()+mSizeIncrease);
+		}
+
+		long long lLastPrice = (long long)aLastPrice;
+		mPrice[mIndex] = lLastPrice;
+		mIntBollData[mIndex].mMidLine = Average(aPeriod);
+		mIntBollData[mIndex].mStdDev = StandardDev(aPeriod, mIntBollData[mIndex].mMidLine);
+		mIntBollData[mIndex].mOutterUpperLine = mIntBollData[mIndex].mMidLine + (long long)(aOutterAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		mIntBollData[mIndex].mOutterLowerLine = mIntBollData[mIndex].mMidLine - (long long)(aOutterAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		mIntBollData[mIndex].mInnerUpperLine = mIntBollData[mIndex].mMidLine + (long long)(aInnerAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		mIntBollData[mIndex].mInnerLowerLine = mIntBollData[mIndex].mMidLine - (long long)(aInnerAmp * mIntBollData[mIndex].mStdDev + 0.5);
+		
+		memcpy(&lReturn, &mIntBollData[mIndex], sizeof(lReturn));
+
+		
 		return lReturn;
 	}
 private:
@@ -82,7 +113,7 @@ private:
 	}
 private:
 	// calculate standard deviation
-	long long StandardDev(int aPeriod, long long aAvg)
+	double StandardDev(int aPeriod, long long aAvg)
 	{
 		long long lSum = 0;
 		double lAvg = 0;
@@ -91,9 +122,10 @@ private:
 		{
 			for(int i=lStartIndex; i<=mIndex; i++)
 			{
+				/* this loop should be the biggest time consumer*/
 				lSum += (mPrice[i]-aAvg)*(mPrice[i]-aAvg);
 			}
-			lAvg = sqrt((double)lSum/aPeriod)+0.5;// round up
+			lAvg = sqrt((double)lSum/(double)aPeriod);
 		}
 		return lAvg;
 	}
@@ -103,9 +135,20 @@ public:
 	{
 		long long index = mIndex - back;
 		BollingerBandData lReturn;
-		lReturn.mUpperLine = (double)mIntBollData[index].mUpperLine;
 		lReturn.mMidLine = (double)mIntBollData[index].mMidLine;
-		lReturn.mLowerLine = (double)mIntBollData[index].mLowerLine;
+		lReturn.mStdDev = (double)mIntBollData[index].mStdDev;
+		lReturn.mOutterUpperLine = (double)mIntBollData[index].mOutterUpperLine;
+		lReturn.mOutterLowerLine = (double)mIntBollData[index].mOutterLowerLine;
+		lReturn.mInnerUpperLine = (double)mIntBollData[index].mInnerUpperLine;
+		lReturn.mInnerLowerLine = (double)mIntBollData[index].mInnerLowerLine;
+		return lReturn;
+	}
+	// get history Bollinger Band data by index
+	BollingerBandDataInt GetBollInt(long long back)
+	{
+		long long index = mIndex - back;
+		BollingerBandDataInt lReturn;
+		memcpy(&lReturn, &mIntBollData[mIndex], sizeof(lReturn));
 		return lReturn;
 	}
 };

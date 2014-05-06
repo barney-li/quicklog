@@ -7,6 +7,12 @@ using namespace boost::posix_time;
 using namespace std;
 namespace Pas
 {
+	// trading direction
+	typedef enum TRADE_DIR
+	{
+		BUY_PRIM_SELL_SCND,
+		BUY_SCND_SELL_PRIM
+	};
 	// all the state type used in state machine
 	typedef enum TRADE_STATE
 	{
@@ -78,7 +84,8 @@ namespace Pas
 		string		primaryInst;		// 主力合约
 		string		secondaryInst;		// 次主力合约
 		int			bollPeriod;			// 布林带标准差计算长度
-		int			bollAmp;			// 布林带振幅
+		int			outterBollAmp;		// 布林带外部振幅
+		int			innerBollAmp;		// 布林带内部振幅
 		int			openShares;			// 开仓手数
 		double		ceilingPrice;		// 合理价格上限
 		double		floorPrice;			// 合理价格下限
