@@ -228,3 +228,8 @@ void Log::AutoSync(Log* logger)
 	}
 	
 }
+void Log::SetLogFile(string aDir, string aLogName)
+{
+	this->logDir = aDir;
+	this->logName = aLogName;
+}

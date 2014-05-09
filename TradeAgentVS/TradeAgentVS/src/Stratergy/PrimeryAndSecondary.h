@@ -20,6 +20,9 @@
 #include <BollingerBands.h>
 #include <vector>
 #include <PasStateMachine.h>
+#include <boost/bind.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 using namespace boost;
@@ -40,7 +43,7 @@ namespace Pas
 		OTHER_ERROR
 
 	};
-class PrimeryAndSecondary : public TradeProcess, public Hook,public Timer
+class PrimeryAndSecondary : public TradeProcess, public Hook, public Timer
 {
 private:
 	// initialize state
@@ -74,7 +77,17 @@ private:
 	// trade direction
 	TRADE_DIR mTradeDir;
 	//记录最新一次的订单索引，用来更改、查询、撤销订单
-	ORDER_INDEX_TYPE lastOrder;
+	ORDER_INDEX_TYPE lastPrimOrder;
+	ORDER_INDEX_TYPE lastScndOrder;
+	// 用来阻塞等待开、平操作的线程指针
+	boost::thread* mWaitPrimOpenThread;
+	boost::thread* mWaitScndOpenThread;
+	boost::thread* mWaitPrimCloseThread;
+	boost::thread* mWaitScndCloseThread;
+	// 用来保护状态机的互斥锁
+	boost::mutex mStateMachineMutex;
+	// 用来保护数据存储的互斥锁
+	boost::mutex mBufferDataMutex;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -82,9 +95,12 @@ public:
 		
 	}
 private:
+	/*****************************/
+	/* auxalary routines */
 	// store market data into local buffer
 	bool BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
+		boost::lock_guard<boost::mutex> lLockGuard(mBufferDataMutex);
 		if (VerifyMarketData(*pDepthMarketData))
 		{
 			//recognize instrument id and put data into where they should go
@@ -160,7 +176,6 @@ private:
 		if(pData.LowerLimitPrice>stgArg.ceilingPrice || pData.LowerLimitPrice<stgArg.floorPrice) return false;
 		return true;
 	}
-
 	// check if it is good time to open
 	void OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
@@ -170,35 +185,89 @@ private:
 		{
 			/* condition 1 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1");
-			mStateMachine.SetEvent(OPEN_PRICE_GOOD);
+			SetEvent(OPEN_PRICE_GOOD);
 		}
 		else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
 			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
 		{
 			/* condition 2 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2");
-			mStateMachine.SetEvent(OPEN_PRICE_GOOD);
+			SetEvent(OPEN_PRICE_GOOD);
 		}
 		else if( scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > 0 &&
 			scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
 		{
 			/* condition 3 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND3");
-			mStateMachine.SetEvent(OPEN_PRICE_GOOD);
+			SetEvent(OPEN_PRICE_GOOD);
 		}
 		else if( scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice > 0 &&
 			scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
 		{
 			/* condition 4 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND4");
-			mStateMachine.SetEvent(OPEN_PRICE_GOOD);
+			SetEvent(OPEN_PRICE_GOOD);
 		}
+		else
 		{
+			// maybe this shouldn't be here
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-			mStateMachine.SetEvent(OPEN_PRICE_BAD);
+			SetEvent(OPEN_PRICE_BAD);
 		}
 	}
-	// open secondary instrument
+	/*****************************/
+
+	/*****************************/
+	/* all the action routines and state machine interface */
+	void SetEvent(TRADE_EVENT aLatestEvent)
+	{
+		// using lock guard to call lock and unlock automatically
+		boost::lock_guard<boost::mutex> lLockGuard(mStateMachineMutex);
+		TRADE_STATE lLastState = mStateMachine.GetState();
+		TRADE_STATE lNextState = mStateMachine.SetEvent(aLatestEvent);
+		if(lNextState == lLastState)
+		{
+			return;
+		}
+		else
+		{
+			switch(lNextState)
+			{
+			case IDLE_STATE:
+				/* do nothing */
+				break;
+			case OPENING_SCND_STATE:
+				OpenScnd();
+				break;
+			case OPENING_PRIM_STATE:
+				OpenPrim();
+				break;
+			case PENDING_STATE:
+				/* do nothing */
+				break;
+			case CLOSING_BOTH_STATE:
+				CloseBoth();
+				break;
+			case CANCELLING_SCND_STATE:
+				CancelScnd();
+				break;
+			case CLOSING_SCND_STATE:
+				CloseScnd();
+				break;
+			case CANCELLING_PRIM_STATE:
+				CancelPrim();
+				break;
+			case WAITING_SCND_CLOSE_STATE:
+				/* do nothing */
+				break;
+			case WAITING_PRIM_CLOSE_STATE:
+				/* do nothing */
+				break;
+			default:
+				break;
+			}
+		}
+	}
 	void OpenScnd()
 	{
 		if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
@@ -207,45 +276,44 @@ private:
 			/* condition 1 */
 			logger.LogThisFast("[ACTION]: BUY_SCND");
 			mTradeDir = BUY_SCND_SELL_PRIM;
-			ReqOrderInsert(	primDataBuf[scndBufIndex].instrumentId, 
+			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
 							scndDataBuf[scndBufIndex].bidPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Buy,
 							THOST_FTDC_OF_Open,
-							&lastOrder,
+							&lastScndOrder,
 							THOST_FTDC_HF_Speculation);
+			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 		}
 		else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
 			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
 		{
 			/* condition 2 */
-			logger.LogThisFast("[ACTION]: SELL_SCND");
+			logger.LogThisFast("[ACTION]: SHORT_SCND");
 			mTradeDir = BUY_PRIM_SELL_SCND;
-			ReqOrderInsert(	primDataBuf[scndBufIndex].instrumentId, 
+			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
 							scndDataBuf[scndBufIndex].askPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Sell,
 							THOST_FTDC_OF_Open,
-							&lastOrder,
+							&lastScndOrder,
 							THOST_FTDC_HF_Speculation);
-		}
-		void OpenPrim()
-		{
-			
+			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 		}
 		else if( scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > 0 &&
 			scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
 		{
 			/* condition 3 */
-			logger.LogThisFast("[ACTION]: SELL_SCND");
+			logger.LogThisFast("[ACTION]: SHORT_SCND");
 			mTradeDir = BUY_PRIM_SELL_SCND;
-			ReqOrderInsert(	primDataBuf[scndBufIndex].instrumentId, 
+			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
 							scndDataBuf[scndBufIndex].askPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Sell,
 							THOST_FTDC_OF_Open,
-							&lastOrder,
+							&lastScndOrder,
 							THOST_FTDC_HF_Speculation);
+			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 		}
 		else if( scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice > 0 &&
 			scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
@@ -253,29 +321,136 @@ private:
 			/* condition 4 */
 			logger.LogThisFast("[ACTION]: BUY_SCND");
 			mTradeDir = BUY_SCND_SELL_PRIM;
-			ReqOrderInsert(	primDataBuf[scndBufIndex].instrumentId, 
+			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
 							scndDataBuf[scndBufIndex].bidPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Buy,
 							THOST_FTDC_OF_Open,
-							&lastOrder,
+							&lastScndOrder,
 							THOST_FTDC_HF_Speculation);
+			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 		}
-	}
-	// strategy should be initiated by market data
-	virtual void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
-	{
-		if(BufferData(pDepthMarketData) 
-			&& strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+		else
 		{
-			//calculate Boll Band
-			mBoll.CalcBoll(abs(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice), stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-			OpenJudge(pDepthMarketData);
+			logger.LogThisFast("[ERROR]: wrong open scnd condition");
+			cout<<"[ERROR]: wrong open scnd condition"<<endl;
 		}
-		BollingerBandData lBoll = mBoll.GetBoll(0);
-		cout<<pDepthMarketData->LastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
 	}
+	void OpenPrim()
+	{
+		if(BUY_SCND_SELL_PRIM == mTradeDir)
+		{
+			logger.LogThisFast("[ACTION]: SHORT_PRIM");
+			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
+							primDataBuf[primBufIndex].lowerLimit,
+							stgArg.openShares,
+							THOST_FTDC_D_Sell,
+							THOST_FTDC_OF_Open,
+							&lastPrimOrder,
+							THOST_FTDC_HF_Speculation);
+			mWaitPrimOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimOpen, this));
+		}
+		else if(BUY_PRIM_SELL_SCND == mTradeDir)
+		{
+			logger.LogThisFast("[ACTION]: BUY_PRIM");
+			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
+							primDataBuf[primBufIndex].upperLimit,
+							stgArg.openShares,
+							THOST_FTDC_D_Buy,
+							THOST_FTDC_OF_Open,
+							&lastPrimOrder,
+							THOST_FTDC_HF_Speculation);
+			mWaitPrimOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimOpen, this));
+		}
+		else
+		{
+			logger.LogThisFast("[FATAL ERROR]: wrong open prim condition");
+			cout<<"[FATAL ERROR]: wrong open prim condition"<<endl;
+		}
+	}
+	void CloseScnd()
+	{
+		if(BUY_SCND_SELL_PRIM == mTradeDir)
+		{
+			logger.LogThisFast("[ACTION]: SELL_SCND");
+			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
+							scndDataBuf[scndBufIndex].lowerLimit,
+							stgArg.openShares,
+							THOST_FTDC_D_Sell,
+							THOST_FTDC_OF_CloseToday,
+							&lastScndOrder,
+							THOST_FTDC_HF_Speculation);
+			mWaitScndCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndClose, this));
+		}
+		else if(BUY_PRIM_SELL_SCND == mTradeDir)
+		{
+			logger.LogThisFast("[ACTION]: COVER_SCND");
+			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
+							scndDataBuf[scndBufIndex].upperLimit,
+							stgArg.openShares,
+							THOST_FTDC_D_Buy,
+							THOST_FTDC_OF_CloseToday,
+							&lastScndOrder,
+							THOST_FTDC_HF_Speculation);
+			mWaitScndCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndClose, this));
+		}
+		else
+		{
+			logger.LogThisFast("[FATAL ERROR]: wrong close scnd condition");
+			cout<<"[FATAL ERROR]: wrong close scnd condition"<<endl;
+		}
+	}
+	void ClosePrim()
+	{
+		if(BUY_SCND_SELL_PRIM == mTradeDir)
+		{
+			logger.LogThisFast("[ACTION]: COVER_PRIM");
+			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
+							primDataBuf[primBufIndex].upperLimit,
+							stgArg.openShares,
+							THOST_FTDC_D_Buy,
+							THOST_FTDC_OF_CloseToday,
+							&lastPrimOrder,
+							THOST_FTDC_HF_Speculation);
+			mWaitPrimCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimClose, this));
+		}
+		else if(BUY_PRIM_SELL_SCND == mTradeDir)
+		{
+			logger.LogThisFast("[ACTION]: SELL_SCND");
+			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
+							primDataBuf[primBufIndex].lowerLimit,
+							stgArg.openShares,
+							THOST_FTDC_D_Sell,
+							THOST_FTDC_OF_CloseToday,
+							&lastPrimOrder,
+							THOST_FTDC_HF_Speculation);
+			mWaitPrimCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimClose, this));
+		}
+		else
+		{
+			logger.LogThisFast("[FATAL ERROR]: wrong close prim condition");
+			cout<<"[FATAL ERROR]: wrong close prim condition"<<endl;
+		}
+	}
+	void CancelScnd()
+	{
+		ReqOrderAction( scndDataBuf[scndBufIndex].instrumentId,
+						lastScndOrder.orderRef);
+	}
+	void CancelPrim()
+	{
+		ReqOrderAction(	primDataBuf[primBufIndex].instrumentId,
+						lastPrimOrder.orderRef);
+	}
+	void CloseBoth()
+	{
+		CloseScnd();
+		ClosePrim();
+	}
+	/*****************************/
 	
+	/*****************************/
+	/* below are all the initialization routines */
 	// read configuration, set strategy argument, etc.
 	InitErrorType InitOtherCrap()
 	{
@@ -322,10 +497,40 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"OpenShares\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-		if(config.ReadInteger(stgArg.maxOpenTime, "MaxOpenTime") != 0)
+		if(config.ReadInteger(stgArg.primOpenTime, "PrimOpenTime") != 0)
 		{
-			cout<<"[ERROR]: Can't find symble \"MaxOpenTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"MaxOpenTime\" in config file");
+			cout<<"[ERROR]: Can't find symble \"PrimOpenTime\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"PrimOpenTime\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.scndOpenTime, "ScndOpenTime") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"ScndOpenTime\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"ScndOpenTime\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.primCloseTime, "PrimCloseTime") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"PrimCloseTime\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"PrimCloseTime\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.scndCloseTime, "ScndCloseTime") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"ScndCloseTime\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"ScndCloseTime\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.primCancelTime, "PrimCancelTime") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"PrimCancelTime\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"PrimCancelTime\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.scndCancelTime, "ScndCancelTime") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"ScndCancelTime\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"ScndCancelTime\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
 		if(config.ReadDouble(stgArg.floatToleration, "FloatToleration") != 0)
@@ -358,7 +563,6 @@ private:
 		return initStatus;
 
 	}
-
 	void InitTradeProcess()
 	{
 		char* tempBroker = new char[20];
@@ -399,6 +603,23 @@ private:
 		marketObj.StartMarketProcess();
 		delete tempConfig;
 	}
+	/*****************************/
+
+	/*****************************/
+	/* below are all the callback routines*/
+	// strategy should be initiated by market data
+	virtual void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
+	{
+		if(BufferData(pDepthMarketData) 
+			&& strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+		{
+			//calculate Boll Band
+			mBoll.CalcBoll(abs(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice), stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
+			OpenJudge(pDepthMarketData);
+		}
+		BollingerBandData lBoll = mBoll.GetBoll(0);
+		cout<<pDepthMarketData->LastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
+	}
 	// overload the timer callback of Class Timer
 	void TimerCallback(const system::error_code& errorCode)
 	{
@@ -432,12 +653,12 @@ private:
 			if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: SCND_OPENED");
-				mStateMachine.SetEvent(SCND_OPENED);
+				SetEvent(SCND_OPENED);
 			}
 			if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: PRIM_OPENED");
-				mStateMachine.SetEvent(PRIM_OPENED);
+				SetEvent(PRIM_OPENED);
 			}
 		}
 
@@ -457,12 +678,12 @@ private:
 			if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: SCND_CANCELLED");
-				mStateMachine.SetEvent(SCND_CANCELLED);
+				SetEvent(SCND_CANCELLED);
 			}
 			if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: PRIM_CANCELLED");
-				mStateMachine.SetEvent(PRIM_CANCELLED);
+				SetEvent(PRIM_CANCELLED);
 			}
 			
 		}
@@ -474,12 +695,12 @@ private:
 			if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: SCND_CLOSED");
-				//mStateMachine.SetEvent(SCND_CLOSED);
+				SetEvent(SCND_CLOSED);
 			}
 			if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: PRIM_CLOSED");
-				//mStateMachine.SetEvent(PRIM_CLOSED);
+				SetEvent(PRIM_CLOSED);
 			}
 		}
 		if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
@@ -490,16 +711,42 @@ private:
 			if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: SCND_OPENED");
-				mStateMachine.SetEvent(SCND_OPENED);
+				SetEvent(SCND_OPENED);
 			}
 			if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 			{
 				logger.LogThisFast("[EVENT]: PRIM_OPENED");
-				mStateMachine.SetEvent(PRIM_OPENED);
+				SetEvent(PRIM_OPENED);
 			}
 		}
 	}
+	/*****************************/
+
+	/*****************************/
+	/* below are all the thread routines */
+	void WaitPrimOpen()
+	{
+		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.primOpenTime));
+		SetEvent(PRIM_OPEN_TIMEOUT);
+	}
+	void WaitScndOpen()
+	{
+		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.scndOpenTime));
+		SetEvent(SCND_OPEN_TIMEOUT);
+	}
+	void WaitPrimClose()
+	{
+		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.primCloseTime));
+		SetEvent(PRIM_CLOSE_TIMEOUT);
+	}
+	void WaitScndClose()
+	{
+		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.primCloseTime));
+		SetEvent(PRIM_CLOSE_TIMEOUT);
+	}
+	/*****************************/
 public:
+	/* strategy entry */
 	void StartStrategy(void)
 	{
 		bool trading = true;
@@ -507,7 +754,7 @@ public:
 		if(InitOtherCrap() == ALL_GOOD)
 		{
 			InitMarketProcess();
-			//InitTradeProcess();
+			InitTradeProcess();
 		}
 		while(trading)
 		{

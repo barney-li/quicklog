@@ -49,6 +49,8 @@ public:
 	void LogThisFastNoTimeStamp(string message, bool enter = true);
 	// sync the buffer to disk immediately
 	void Sync(void);
+	// set log file name
+	void SetLogFile(string aDir, string aFileName);
 private:
 	// monitor the buffer in the background, if there are any data need to be synced, it will sync them.
 	static void AutoSync(Log* logger);

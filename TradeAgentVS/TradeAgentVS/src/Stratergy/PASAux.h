@@ -23,7 +23,9 @@ namespace Pas
 		CLOSING_BOTH_STATE,
 		CANCELLING_SCND_STATE,
 		CLOSING_SCND_STATE,
-		CANCELLING_PRIM,
+		CANCELLING_PRIM_STATE,
+		WAITING_SCND_CLOSE_STATE,
+		WAITING_PRIM_CLOSE_STATE,
 		MAX_STATE
 	};
 
@@ -33,11 +35,17 @@ namespace Pas
 		OPEN_PRICE_GOOD,
 		OPEN_PRICE_BAD,
 		PRIM_OPENED,
+		PRIM_OPEN_TIMEOUT,
 		PRIM_CANCELLED,
+		PRIM_CLOSED,
 		SCND_OPENED,
+		SCND_OPEN_TIMEOUT,
 		SCND_CANCELLED,
+		SCND_CLOSED,
 		CLOSE_PRICE_GOOD,
 		MUST_STOP,
+		PRIM_CLOSE_TIMEOUT,
+		SCND_CLOSE_TIMEOUT,
 		MAX_EVENT
 	};
 
@@ -94,7 +102,12 @@ namespace Pas
 		double		closePriceConst;	// 平仓时的价格上浮常数
 		double		floatToleration;	// 浮点数误差
 		int			secVolumeDiff;		// 当前盘口的买卖数量差
-		int			maxOpenTime;		// 最大开仓等待时间
+		int			primOpenTime;		// 主力合约最大开仓等待时间
+		int			scndOpenTime;		// 次主力合约最大开仓等待时间
+		int			primCloseTime;		// 主力合约最大平仓等待时间
+		int			scndCloseTime;		// 次主力合约最大平仓等待时间
+		int			primCancelTime;		// 主力合约最大撤单等待时间
+		int			scndCancelTime;		// 次主力合约最大撤单等待时间
 		int			minMove;			// 最小价格变动
 	};
 
@@ -119,73 +132,114 @@ protected:
 		lastTrade.offsetFlag = pTrade->OffsetFlag;
 	}
 	// transfer the current trade state into string
-	char* ShowTradeState(void)
+	string ShowTradeState(void)
 	{
+		string lTradeState;
 		switch(tradeState)
 		{
 		case IDLE_STATE:
-			return "IDLE_STATE";
+			lTradeState = "IDLE_STATE";
 			break;
 		case OPENING_SCND_STATE:
-			return "OPENING_SCND_STATE";
+			lTradeState = "OPENING_SCND_STATE";
 			break;
 		case OPENING_PRIM_STATE:
-			return "OPENING_PRIM_STATE";
+			lTradeState = "OPENING_PRIM_STATE";
 			break;
 		case PENDING_STATE:
-			return "PENDING_STATE";
+			lTradeState = "PENDING_STATE";
 			break;
 		case CLOSING_BOTH_STATE:
-			return "CLOSING_BOTH_STATE";
+			lTradeState = "CLOSING_BOTH_STATE";
 			break;
 		case CANCELLING_SCND_STATE:
-			return "CANCELLING_SCND_STATE";
+			lTradeState = "CANCELLING_SCND_STATE";
 			break;
 		case CLOSING_SCND_STATE:
-			return "CLOSING_SCND_STATE";
+			lTradeState = "CLOSING_SCND_STATE";
 			break;
-		case CANCELLING_PRIM:
-			return "CANCELLING_PRIM";
+		case CANCELLING_PRIM_STATE:
+			lTradeState = "CANCELLING_PRIM";
 			break;
 		default:
-			return "UNKNOWN_STATE";
+			lTradeState = "UNKNOWN_STATE";
 			break;
 
 		}
+		return lTradeState;
+	}
+public:
+	static string ShowTradeState(TRADE_STATE aTradeState)
+	{
+		string lTradeState;
+		switch(aTradeState)
+		{
+		case IDLE_STATE:
+			lTradeState = "IDLE_STATE";
+			break;
+		case OPENING_SCND_STATE:
+			lTradeState = "OPENING_SCND_STATE";
+			break;
+		case OPENING_PRIM_STATE:
+			lTradeState = "OPENING_PRIM_STATE";
+			break;
+		case PENDING_STATE:
+			lTradeState = "PENDING_STATE";
+			break;
+		case CLOSING_BOTH_STATE:
+			lTradeState = "CLOSING_BOTH_STATE";
+			break;
+		case CANCELLING_SCND_STATE:
+			lTradeState = "CANCELLING_SCND_STATE";
+			break;
+		case CLOSING_SCND_STATE:
+			lTradeState = "CLOSING_SCND_STATE";
+			break;
+		case CANCELLING_PRIM_STATE:
+			lTradeState = "CANCELLING_PRIM";
+			break;
+		default:
+			lTradeState = "UNKNOWN_STATE";
+			break;
+
+		}
+		return lTradeState;
 	}
 	// transfer the input trade event into string
-	char* ShowTradeEvent(TRADE_EVENT thisEvent)
+	static string ShowTradeEvent(TRADE_EVENT thisEvent)
 	{
+		string lThisEvent;
 		switch(thisEvent)
 		{
 		case OPEN_PRICE_GOOD:
-			return "OPEN_PRICE_GOOD";
+			lThisEvent = "OPEN_PRICE_GOOD";
 			break;
 		case OPEN_PRICE_BAD:
-			return "OPEN_PRICE_BAD";
+			lThisEvent = "OPEN_PRICE_BAD";
 			break;
 		case PRIM_OPENED:
-			return "PRIM_OPENED";
+			lThisEvent = "PRIM_OPENED";
 			break;
 		case PRIM_CANCELLED:
-			return "PRIM_CANCELLED";
+			lThisEvent = "PRIM_CANCELLED";
 			break;
 		case SCND_OPENED:
-			return "SCND_OPENED";
+			lThisEvent = "SCND_OPENED";
 			break;
 		case SCND_CANCELLED:
-			return "SCND_CANCELLED";
+			lThisEvent = "SCND_CANCELLED";
 			break;
 		case CLOSE_PRICE_GOOD:
-			return "CLOSE_PRICE_GOOD";
+			lThisEvent = "CLOSE_PRICE_GOOD";
 			break;
 		case MUST_STOP:
-			return "MUST_STOP";
+			lThisEvent = "MUST_STOP";
 			break;
 		default:
-			return "UNKNOWN_EVENT";
+			lThisEvent = "UNKNOWN_EVENT";
 			break;
 		}
+		return lThisEvent;
 	}
 	// overtime call back routine
 
