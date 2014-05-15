@@ -76,14 +76,14 @@ private:
 	PasStateMachine mStateMachine;
 	// trade direction
 	TRADE_DIR mTradeDir;
+	// open condition
+	OPEN_CONDITION mOpenCond;
 	//记录最新一次的订单索引，用来更改、查询、撤销订单
 	ORDER_INDEX_TYPE lastPrimOrder;
 	ORDER_INDEX_TYPE lastScndOrder;
-	// 用来阻塞等待开、平操作的线程指针
+	// 用来阻塞等待开仓操作的线程指针
 	boost::thread* mWaitPrimOpenThread;
 	boost::thread* mWaitScndOpenThread;
-	boost::thread* mWaitPrimCloseThread;
-	boost::thread* mWaitScndCloseThread;
 	// 用来保护状态机的互斥锁
 	boost::mutex mStateMachineMutex;
 	// 用来保护数据存储的互斥锁
@@ -97,6 +97,48 @@ public:
 private:
 	/*****************************/
 	/* auxalary routines */
+	// check if this trade must be ended now
+	bool StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
+	{
+		bool lIsClose = false;
+		if(mStateMachine.GetState() == PENDING_STATE)
+		{
+			if(OPEN_COND1 == mOpenCond)
+			{
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine);
+				{
+					SetEvent(MUST_STOP);
+					lIsClose = true;
+				}
+			}
+			else if(OPEN_COND2 == mOpenCond)
+			{
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine)
+				{
+					SetEvent(MUST_STOP);
+					lIsClose = true;
+				}
+			}
+			else if(OPEN_COND3 == mOpenCond)
+			{
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine)
+				{
+					SetEvent(MUST_STOP);
+					lIsClose = true;
+				}
+			}
+			else if(OPEN_COND4 == mOpenCond)
+			{
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine)
+				{
+					SetEvent(MUST_STOP);
+					lIsClose = true;
+				}
+			}
+		}
+		
+		return lIsClose;
+	}
 	// store market data into local buffer
 	bool BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
@@ -176,9 +218,69 @@ private:
 		if(pData.LowerLimitPrice>stgArg.ceilingPrice || pData.LowerLimitPrice<stgArg.floorPrice) return false;
 		return true;
 	}
-	// check if it is good time to open
+	/************************************************************************/
+	// 判断开仓条件是否已经不再满足。当价差突破外层布林带时，认为开仓条件满足，
+	// 但是为了避免价差处在布林带边缘时反复触发price bad的条件，因此一旦开仓
+	// 条件被满足后，直到价差落回内层布林带以内才触发price bad。
+	/************************************************************************/
+	void StopOpenJudge()
+	{
+		if(mStateMachine.GetState() != OPENING_SCND_STATE)
+		{
+			return;
+		}
+		else
+		{
+			if(OPEN_COND1 == mOpenCond)
+			{
+				if(primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice < mBoll.GetBollInt(0).mInnerUpperLine);
+				{
+					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
+					SetEvent(OPEN_PRICE_BAD);
+				}
+			}
+			else if(OPEN_COND2 == mOpenCond)
+			{
+				if(primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > mBoll.GetBollInt(0).mInnerLowerLine)
+				{
+					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
+					SetEvent(OPEN_PRICE_BAD);
+				}
+			}
+			else if(OPEN_COND3 == mOpenCond)
+			{
+				if(scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice < mBoll.GetBollInt(0).mInnerUpperLine)
+				{
+					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
+					SetEvent(OPEN_PRICE_BAD);
+				}
+			}
+			else if(OPEN_COND4 == mOpenCond)
+			{
+				if(scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > mBoll.GetBollInt(0).mInnerLowerLine)
+				{
+					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
+					SetEvent(OPEN_PRICE_BAD);
+				}
+			}
+			else
+			{
+				logger.LogThisFast("[FATAL ERROR]: ILLEGAL OPEN COND");
+			}
+		}
+	}
+	/************************************************************************/
+	// 开仓仲裁函数，若布林带宽度达到设定值，且主力与次主力合约的价差满足
+	// 4种开仓条件之一，则抛出事件OPEN_PRICE_GOOD。在开仓次主力合约时，开仓
+	// 条件会被再次验证。
+	/************************************************************************/
 	void OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
+		// if the bollinger band is not wide enough, then return
+		if(mBoll.GetBollInt(0).mOutterUpperLine - mBoll.GetBollInt(0).mOutterLowerLine < stgArg.bollAmpLimit)
+		{
+			return;
+		}
 		// using bid_price - ask_price to do the open timing judge, this is rougher to meet
 		if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
 			primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
@@ -194,90 +296,141 @@ private:
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2");
 			SetEvent(OPEN_PRICE_GOOD);
 		}
-		else if( scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > 0 &&
-			scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
+		else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
+			scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
 		{
 			/* condition 3 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND3");
 			SetEvent(OPEN_PRICE_GOOD);
 		}
-		else if( scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice > 0 &&
-			scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
+		else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
+			scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
 		{
 			/* condition 4 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND4");
 			SetEvent(OPEN_PRICE_GOOD);
 		}
-		else
-		{
-			// maybe this shouldn't be here
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-			SetEvent(OPEN_PRICE_BAD);
-		}
 	}
-	/*****************************/
-
-	/*****************************/
-	/* all the action routines and state machine interface */
+	/************************************************************************/
+	// 止盈判断函数，当价差超过对侧的布林带时，止盈条件成立。
+	/************************************************************************/
+	bool StopWinJudge()
+	{
+		bool lGoodToClose = false;
+		if(mStateMachine.GetState() == PENDING_STATE)
+		{
+			if(OPEN_COND1 == mOpenCond)
+			{
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice <= mBoll.GetBollInt(0).mOutterLowerLine);
+				{
+					SetEvent(MUST_STOP);
+					lGoodToClose = true;
+				}
+			}
+			else if(OPEN_COND2 == mOpenCond)
+			{
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice >= mBoll.GetBollInt(0).mOutterUpperLine)
+				{
+					SetEvent(MUST_STOP);
+					lGoodToClose = true;
+				}
+			}
+			else if(OPEN_COND3 == mOpenCond)
+			{
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice <= mBoll.GetBollInt(0).mOutterLowerLine)
+				{
+					SetEvent(MUST_STOP);
+					lGoodToClose = true;
+				}
+			}
+			else if(OPEN_COND4 == mOpenCond)
+			{
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice >= mBoll.GetBollInt(0).mOutterUpperLine)
+				{
+					SetEvent(MUST_STOP);
+					lGoodToClose = true;
+				}
+			}
+		}
+		return lGoodToClose;
+	}
+	/************************************************************************/
+	// 交易事件接口。
+	/************************************************************************/
 	void SetEvent(TRADE_EVENT aLatestEvent)
 	{
-		// using lock guard to call lock and unlock automatically
+		// using lock guard to invoke lock and unlock automatically
 		boost::lock_guard<boost::mutex> lLockGuard(mStateMachineMutex);
 		TRADE_STATE lLastState = mStateMachine.GetState();
 		TRADE_STATE lNextState = mStateMachine.SetEvent(aLatestEvent);
-		if(lNextState == lLastState)
+		
+		switch(lNextState)
 		{
-			return;
-		}
-		else
-		{
-			switch(lNextState)
+		case IDLE_STATE:
+			/* do nothing */
+			break;
+		case OPENING_SCND_STATE:
+			// avoiding multiple open
+			if(lNextState == lLastState)
 			{
-			case IDLE_STATE:
-				/* do nothing */
-				break;
-			case OPENING_SCND_STATE:
-				OpenScnd();
-				break;
-			case OPENING_PRIM_STATE:
-				OpenPrim();
-				break;
-			case PENDING_STATE:
-				/* do nothing */
-				break;
-			case CLOSING_BOTH_STATE:
-				CloseBoth();
-				break;
-			case CANCELLING_SCND_STATE:
-				CancelScnd();
-				break;
-			case CLOSING_SCND_STATE:
-				CloseScnd();
-				break;
-			case CANCELLING_PRIM_STATE:
-				CancelPrim();
-				break;
-			case WAITING_SCND_CLOSE_STATE:
-				/* do nothing */
-				break;
-			case WAITING_PRIM_CLOSE_STATE:
-				/* do nothing */
-				break;
-			default:
-				break;
+				break;/* do nothing */
 			}
+			else
+			{
+				OpenScnd();
+			}
+			break;
+		case OPENING_PRIM_STATE:
+			// avoiding multiple open
+			if(lNextState == lLastState)
+			{
+				break;/* do nothing */
+			}
+			else
+			{
+				OpenPrim();
+			}
+			break;
+		case PENDING_STATE:
+			/* do nothing */
+			break;
+		case CLOSING_BOTH_STATE:
+			CloseBoth();
+			break;
+		case CANCELLING_SCND_STATE:
+			CancelScnd();
+			break;
+		case CLOSING_SCND_STATE:
+			CloseScnd();
+			break;
+		case CANCELLING_PRIM_STATE:
+			CancelPrim();
+			break;
+		case WAITING_SCND_CLOSE_STATE:
+			/* do nothing */
+			break;
+		case WAITING_PRIM_CLOSE_STATE:
+			/* do nothing */
+			break;
+		default:
+			break;
 		}
+		
 	}
+	/************************************************************************/
+	// 次主力开仓函数。
+	/************************************************************************/
 	void OpenScnd()
 	{
 		if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
 			primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
 		{
 			/* condition 1 */
+			mOpenCond = OPEN_COND1;
 			logger.LogThisFast("[ACTION]: BUY_SCND");
 			mTradeDir = BUY_SCND_SELL_PRIM;
 			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].bidPrice,
+							scndDataBuf[scndBufIndex].lastPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Buy,
 							THOST_FTDC_OF_Open,
@@ -289,10 +442,11 @@ private:
 			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
 		{
 			/* condition 2 */
+			mOpenCond = OPEN_COND2;
 			logger.LogThisFast("[ACTION]: SHORT_SCND");
 			mTradeDir = BUY_PRIM_SELL_SCND;
 			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].askPrice,
+							scndDataBuf[scndBufIndex].lastPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Sell,
 							THOST_FTDC_OF_Open,
@@ -300,14 +454,15 @@ private:
 							THOST_FTDC_HF_Speculation);
 			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 		}
-		else if( scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > 0 &&
-			scndDataBuf[primBufIndex].bidPrice - primDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
+		else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
+			scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
 		{
 			/* condition 3 */
+			mOpenCond = OPEN_COND3;
 			logger.LogThisFast("[ACTION]: SHORT_SCND");
 			mTradeDir = BUY_PRIM_SELL_SCND;
 			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].askPrice,
+							scndDataBuf[scndBufIndex].lastPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Sell,
 							THOST_FTDC_OF_Open,
@@ -315,14 +470,15 @@ private:
 							THOST_FTDC_HF_Speculation);
 			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 		}
-		else if( scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice > 0 &&
-			scndDataBuf[primBufIndex].askPrice - primDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
+		else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
+			scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
 		{
 			/* condition 4 */
+			mOpenCond = OPEN_COND4;
 			logger.LogThisFast("[ACTION]: BUY_SCND");
 			mTradeDir = BUY_SCND_SELL_PRIM;
 			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].bidPrice,
+							scndDataBuf[scndBufIndex].lastPrice,
 							stgArg.openShares,
 							THOST_FTDC_D_Buy,
 							THOST_FTDC_OF_Open,
@@ -336,6 +492,9 @@ private:
 			cout<<"[ERROR]: wrong open scnd condition"<<endl;
 		}
 	}
+	/************************************************************************/
+	// 主力开仓函数。
+	/************************************************************************/
 	void OpenPrim()
 	{
 		if(BUY_SCND_SELL_PRIM == mTradeDir)
@@ -380,7 +539,6 @@ private:
 							THOST_FTDC_OF_CloseToday,
 							&lastScndOrder,
 							THOST_FTDC_HF_Speculation);
-			mWaitScndCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndClose, this));
 		}
 		else if(BUY_PRIM_SELL_SCND == mTradeDir)
 		{
@@ -392,7 +550,6 @@ private:
 							THOST_FTDC_OF_CloseToday,
 							&lastScndOrder,
 							THOST_FTDC_HF_Speculation);
-			mWaitScndCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndClose, this));
 		}
 		else
 		{
@@ -412,7 +569,6 @@ private:
 							THOST_FTDC_OF_CloseToday,
 							&lastPrimOrder,
 							THOST_FTDC_HF_Speculation);
-			mWaitPrimCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimClose, this));
 		}
 		else if(BUY_PRIM_SELL_SCND == mTradeDir)
 		{
@@ -424,7 +580,6 @@ private:
 							THOST_FTDC_OF_CloseToday,
 							&lastPrimOrder,
 							THOST_FTDC_HF_Speculation);
-			mWaitPrimCloseThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimClose, this));
 		}
 		else
 		{
@@ -489,6 +644,18 @@ private:
 		{
 			cout<<"[ERROR]: Can't find symble \"InnerBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"InnerBollAmp\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.stopBollAmp, "StopBollAmp") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"StopBollAmp\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"StopBollAmp\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadInteger(stgArg.bollAmpLimit, "BollAmpLimit") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"BollAmpLimit\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"BollAmpLimit\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
 		if(config.ReadInteger(stgArg.openShares, "OpenShares") != 0)
@@ -615,10 +782,18 @@ private:
 		{
 			//calculate Boll Band
 			mBoll.CalcBoll(abs(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice), stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-			OpenJudge(pDepthMarketData);
+			/* put open judge here*/
+			if(mBoll.IsBollReady())
+			{
+				OpenJudge(pDepthMarketData);
+				StopOpenJudge();
+				StopLoseJudge(pDepthMarketData);
+				StopWinJudge();
+			}
+			
 		}
 		BollingerBandData lBoll = mBoll.GetBoll(0);
-		cout<<pDepthMarketData->LastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
+		cout<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
 	}
 	// overload the timer callback of Class Timer
 	void TimerCallback(const system::error_code& errorCode)
@@ -733,16 +908,6 @@ private:
 	{
 		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.scndOpenTime));
 		SetEvent(SCND_OPEN_TIMEOUT);
-	}
-	void WaitPrimClose()
-	{
-		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.primCloseTime));
-		SetEvent(PRIM_CLOSE_TIMEOUT);
-	}
-	void WaitScndClose()
-	{
-		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.primCloseTime));
-		SetEvent(PRIM_CLOSE_TIMEOUT);
 	}
 	/*****************************/
 public:

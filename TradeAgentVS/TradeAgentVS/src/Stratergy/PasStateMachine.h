@@ -12,6 +12,7 @@ public:
 	PasStateMachine()
 	{
 		mLogger.SetLogFile("./Data/Log/", "StateMachine.log");
+		mTradeState = IDLE_STATE;
 		return;
 	}
 public:
@@ -48,6 +49,7 @@ public:
 			lNewState = HandleWaitingScndCloseState(aLatestEvent);
 			break;
 		case WAITING_PRIM_CLOSE_STATE:
+			lNewState = HandleWaitingPrimCloseState(aLatestEvent);
 			break;
 		default:
 			break;

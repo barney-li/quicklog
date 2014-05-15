@@ -31,6 +31,7 @@ private:
 	vector<long long> mPrice;
 	long long mIndex;
 	long long mSizeIncrease;
+	long long mBollPeriod;
 public:
 	// constructor
 	BollingerBands()
@@ -39,11 +40,17 @@ public:
 		mPrice.resize(mSizeIncrease, 0);
 		mIntBollData.resize(mSizeIncrease);
 		mIndex = 0;
+		mBollPeriod = 0;
 	}
 public:
+	bool IsBollReady()
+	{
+		return (mIndex>=mBollPeriod);
+	}
 	// calculate Bollinger Band, must be invoked for every coming data
 	BollingerBandData CalcBoll(double aLastPrice, int aPeriod, int aOutterAmp, int aInnerAmp)
 	{
+		mBollPeriod = aPeriod;
 		// allocate another mSizeIncrease every time the buffer is almost full
 		mIndex++;
 		if(mPrice.size() - mIndex < 100)
@@ -135,12 +142,24 @@ public:
 	{
 		long long index = mIndex - back;
 		BollingerBandData lReturn;
-		lReturn.mMidLine = (double)mIntBollData[index].mMidLine;
-		lReturn.mStdDev = (double)mIntBollData[index].mStdDev;
-		lReturn.mOutterUpperLine = (double)mIntBollData[index].mOutterUpperLine;
-		lReturn.mOutterLowerLine = (double)mIntBollData[index].mOutterLowerLine;
-		lReturn.mInnerUpperLine = (double)mIntBollData[index].mInnerUpperLine;
-		lReturn.mInnerLowerLine = (double)mIntBollData[index].mInnerLowerLine;
+		if(index>=0)
+		{
+			lReturn.mMidLine = (double)mIntBollData[index].mMidLine;
+			lReturn.mStdDev = (double)mIntBollData[index].mStdDev;
+			lReturn.mOutterUpperLine = (double)mIntBollData[index].mOutterUpperLine;
+			lReturn.mOutterLowerLine = (double)mIntBollData[index].mOutterLowerLine;
+			lReturn.mInnerUpperLine = (double)mIntBollData[index].mInnerUpperLine;
+			lReturn.mInnerLowerLine = (double)mIntBollData[index].mInnerLowerLine;
+		}
+		else
+		{
+			lReturn.mMidLine = 0.0;
+			lReturn.mStdDev = 0.0;
+			lReturn.mOutterUpperLine = 0.0;
+			lReturn.mOutterLowerLine = 0.0;
+			lReturn.mInnerUpperLine = 0.0;
+			lReturn.mInnerLowerLine = 0.0;
+		}
 		return lReturn;
 	}
 	// get history Bollinger Band data by index
@@ -148,7 +167,14 @@ public:
 	{
 		long long index = mIndex - back;
 		BollingerBandDataInt lReturn;
-		memcpy(&lReturn, &mIntBollData[mIndex], sizeof(lReturn));
+		if(index>=0)
+		{
+			memcpy(&lReturn, &mIntBollData[mIndex], sizeof(lReturn));
+		}
+		else
+		{
+			memset(&lReturn, 0, sizeof(lReturn));
+		}
 		return lReturn;
 	}
 };

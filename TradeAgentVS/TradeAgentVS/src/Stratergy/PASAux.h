@@ -7,6 +7,15 @@ using namespace boost::posix_time;
 using namespace std;
 namespace Pas
 {
+	// open condition
+	typedef enum OPEN_CONDITION
+	{
+		OPEN_COND1,
+		OPEN_COND2,
+		OPEN_COND3,
+		OPEN_COND4,
+		ILLEGAL_COND
+	};
 	// trading direction
 	typedef enum TRADE_DIR
 	{
@@ -44,8 +53,6 @@ namespace Pas
 		SCND_CLOSED,
 		CLOSE_PRICE_GOOD,
 		MUST_STOP,
-		PRIM_CLOSE_TIMEOUT,
-		SCND_CLOSE_TIMEOUT,
 		MAX_EVENT
 	};
 
@@ -94,6 +101,8 @@ namespace Pas
 		int			bollPeriod;			// 布林带标准差计算长度
 		int			outterBollAmp;		// 布林带外部振幅
 		int			innerBollAmp;		// 布林带内部振幅
+		int			stopBollAmp;		// 止损振幅
+		int			bollAmpLimit;		// 开仓时的布林带要达到的振幅
 		int			openShares;			// 开仓手数
 		double		ceilingPrice;		// 合理价格上限
 		double		floorPrice;			// 合理价格下限
@@ -159,7 +168,13 @@ protected:
 			lTradeState = "CLOSING_SCND_STATE";
 			break;
 		case CANCELLING_PRIM_STATE:
-			lTradeState = "CANCELLING_PRIM";
+			lTradeState = "CANCELLING_PRIM_STATE";
+			break;
+		case WAITING_SCND_CLOSE_STATE:
+			lTradeState = "WAITING_SCND_CLOSE_STATE";
+			break;
+		case WAITING_PRIM_CLOSE_STATE:
+			lTradeState = "WAITING_PRIM_CLOSE_STATE";
 			break;
 		default:
 			lTradeState = "UNKNOWN_STATE";
@@ -196,7 +211,13 @@ public:
 			lTradeState = "CLOSING_SCND_STATE";
 			break;
 		case CANCELLING_PRIM_STATE:
-			lTradeState = "CANCELLING_PRIM";
+			lTradeState = "CANCELLING_PRIM_STATE";
+			break;
+		case WAITING_SCND_CLOSE_STATE:
+			lTradeState = "WAITING_SCND_CLOSE_STATE";
+			break;
+		case WAITING_PRIM_CLOSE_STATE:
+			lTradeState = "WAITING_PRIM_CLOSE_STATE";
 			break;
 		default:
 			lTradeState = "UNKNOWN_STATE";
@@ -220,14 +241,26 @@ public:
 		case PRIM_OPENED:
 			lThisEvent = "PRIM_OPENED";
 			break;
+		case PRIM_OPEN_TIMEOUT:
+			lThisEvent = "PRIM_OPEN_TIMEOUT";
+			break;
 		case PRIM_CANCELLED:
 			lThisEvent = "PRIM_CANCELLED";
+			break;
+		case PRIM_CLOSED:
+			lThisEvent = "PRIM_CLOSED";
 			break;
 		case SCND_OPENED:
 			lThisEvent = "SCND_OPENED";
 			break;
+		case SCND_OPEN_TIMEOUT:
+			lThisEvent = "SCND_OPEN_TIMEOUT";
+			break;
 		case SCND_CANCELLED:
 			lThisEvent = "SCND_CANCELLED";
+			break;
+		case SCND_CLOSED:
+			lThisEvent = "SCND_CLOSED";
 			break;
 		case CLOSE_PRICE_GOOD:
 			lThisEvent = "CLOSE_PRICE_GOOD";
