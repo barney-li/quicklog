@@ -1,5 +1,6 @@
 #pragma once
-
+#include <string>
+using namespace std;
 #define NULL 0
 #define null NULL
 
@@ -45,11 +46,14 @@ typedef enum CommandType
 	cmdReqOrderInsertArbitrage	=	11
 };
 // order identifier, used for order action, qoury
-struct ORDER_INDEX_TYPE
+typedef struct ORDER_INDEX_TYPE
 {
 	// any order can be identified with three parameters below
-	TThostFtdcSessionIDType sessionId;
-	TThostFtdcFrontIDType frontId;
-	TThostFtdcOrderRefType orderRef;
+	int sessionId;
+	int frontId;
+	string orderRef;
+	string exchangeId;
+	string orderSysId;
+	string instrument;
 };
 

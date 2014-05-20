@@ -17,7 +17,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/bind.hpp>
 #include <Timer.h>
-#include <BollingerBands.h>
+#include <BollingerBand.h>
 #include <vector>
 #include <PasStateMachine.h>
 #include <boost/bind.hpp>
@@ -61,7 +61,8 @@ private:
 	long long primBufIndex;
 	long long scndBufIndex;
 	// log
-	Log logger;
+	//Log logger;
+	Log mBollLog;
 	//由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
 	TThostFtdcVolumeType primLastVolume;
 	TThostFtdcVolumeType scndLastVolume;
@@ -70,7 +71,7 @@ private:
 	// temp string stream, used for storing messages
 	stringstream tempStream;
 	// BollingerBand object, used to generate Bollinger Band
-	BollingerBands mBoll;
+	BollingerBand mBoll;
 	BollingerBandData mBollData;
 	// state machine object
 	PasStateMachine mStateMachine;
@@ -88,13 +89,27 @@ private:
 	boost::mutex mStateMachineMutex;
 	// 用来保护数据存储的互斥锁
 	boost::mutex mBufferDataMutex;
+	int mPrimTodayPosition;
+	int mPrimYdPosition;
+	int mScndTodayPosition;
+	int mScndYdPosition;
+	char mPrimPosDir;
+	char mScndPosDir;
+	bool mStart;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
 	{
-		
+		mBollLog.SetLogFile("./Data/Log/", "Boll.log");
 	}
 private:
+	void OpenScnd();
+	void OpenPrim();
+	void CloseScnd();
+	void ClosePrim();
+	void CloseBoth();
+	void CancelScnd();
+	void CancelPrim();
 	/*****************************/
 	/* auxalary routines */
 	// check if this trade must be ended now
@@ -105,7 +120,7 @@ private:
 		{
 			if(OPEN_COND1 == mOpenCond)
 			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine);
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine);
 				{
 					SetEvent(MUST_STOP);
 					lIsClose = true;
@@ -113,7 +128,7 @@ private:
 			}
 			else if(OPEN_COND2 == mOpenCond)
 			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine)
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
 				{
 					SetEvent(MUST_STOP);
 					lIsClose = true;
@@ -121,7 +136,7 @@ private:
 			}
 			else if(OPEN_COND3 == mOpenCond)
 			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine)
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
 				{
 					SetEvent(MUST_STOP);
 					lIsClose = true;
@@ -129,7 +144,7 @@ private:
 			}
 			else if(OPEN_COND4 == mOpenCond)
 			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBollInt(0).mStdDev + mBoll.GetBollInt(0).mMidLine)
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
 				{
 					SetEvent(MUST_STOP);
 					lIsClose = true;
@@ -233,7 +248,7 @@ private:
 		{
 			if(OPEN_COND1 == mOpenCond)
 			{
-				if(primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice < mBoll.GetBollInt(0).mInnerUpperLine);
+				if(primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice < mBoll.GetBoll(0).mInnerUpperLine);
 				{
 					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
 					SetEvent(OPEN_PRICE_BAD);
@@ -241,7 +256,7 @@ private:
 			}
 			else if(OPEN_COND2 == mOpenCond)
 			{
-				if(primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > mBoll.GetBollInt(0).mInnerLowerLine)
+				if(primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > mBoll.GetBoll(0).mInnerLowerLine)
 				{
 					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
 					SetEvent(OPEN_PRICE_BAD);
@@ -249,7 +264,7 @@ private:
 			}
 			else if(OPEN_COND3 == mOpenCond)
 			{
-				if(scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice < mBoll.GetBollInt(0).mInnerUpperLine)
+				if(scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice < mBoll.GetBoll(0).mInnerUpperLine)
 				{
 					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
 					SetEvent(OPEN_PRICE_BAD);
@@ -257,7 +272,7 @@ private:
 			}
 			else if(OPEN_COND4 == mOpenCond)
 			{
-				if(scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > mBoll.GetBollInt(0).mInnerLowerLine)
+				if(scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > mBoll.GetBoll(0).mInnerLowerLine)
 				{
 					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
 					SetEvent(OPEN_PRICE_BAD);
@@ -277,34 +292,34 @@ private:
 	void OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
 		// if the bollinger band is not wide enough, then return
-		if(mBoll.GetBollInt(0).mOutterUpperLine - mBoll.GetBollInt(0).mOutterLowerLine < stgArg.bollAmpLimit)
+		if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < stgArg.bollAmpLimit)
 		{
 			return;
 		}
 		// using bid_price - ask_price to do the open timing judge, this is rougher to meet
 		if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
-			primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
+			primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
 		{
 			/* condition 1 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1");
 			SetEvent(OPEN_PRICE_GOOD);
 		}
 		else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
-			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
+			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
 		{
 			/* condition 2 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2");
 			SetEvent(OPEN_PRICE_GOOD);
 		}
 		else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
-			scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
+			scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
 		{
 			/* condition 3 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND3");
 			SetEvent(OPEN_PRICE_GOOD);
 		}
 		else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
-			scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
+			scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
 		{
 			/* condition 4 */
 			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND4");
@@ -321,7 +336,7 @@ private:
 		{
 			if(OPEN_COND1 == mOpenCond)
 			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice <= mBoll.GetBollInt(0).mOutterLowerLine);
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine);
 				{
 					SetEvent(MUST_STOP);
 					lGoodToClose = true;
@@ -329,7 +344,7 @@ private:
 			}
 			else if(OPEN_COND2 == mOpenCond)
 			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice >= mBoll.GetBollInt(0).mOutterUpperLine)
+				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
 				{
 					SetEvent(MUST_STOP);
 					lGoodToClose = true;
@@ -337,7 +352,7 @@ private:
 			}
 			else if(OPEN_COND3 == mOpenCond)
 			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice <= mBoll.GetBollInt(0).mOutterLowerLine)
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine)
 				{
 					SetEvent(MUST_STOP);
 					lGoodToClose = true;
@@ -345,7 +360,7 @@ private:
 			}
 			else if(OPEN_COND4 == mOpenCond)
 			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice >= mBoll.GetBollInt(0).mOutterUpperLine)
+				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
 				{
 					SetEvent(MUST_STOP);
 					lGoodToClose = true;
@@ -371,25 +386,20 @@ private:
 			break;
 		case OPENING_SCND_STATE:
 			// avoiding multiple open
-			if(lNextState == lLastState)
-			{
-				break;/* do nothing */
-			}
-			else
+			if(lNextState != lLastState)
 			{
 				OpenScnd();
 			}
+			ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
 			break;
 		case OPENING_PRIM_STATE:
 			// avoiding multiple open
-			if(lNextState == lLastState)
-			{
-				break;/* do nothing */
-			}
-			else
+			if(lNextState != lLastState)
 			{
 				OpenPrim();
+				
 			}
+			ReqQryInvestorPosition(stgArg.primaryInst.c_str());
 			break;
 		case PENDING_STATE:
 			/* do nothing */
@@ -417,193 +427,7 @@ private:
 		}
 		
 	}
-	/************************************************************************/
-	// 次主力开仓函数。
-	/************************************************************************/
-	void OpenScnd()
-	{
-		if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
-			primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
-		{
-			/* condition 1 */
-			mOpenCond = OPEN_COND1;
-			logger.LogThisFast("[ACTION]: BUY_SCND");
-			mTradeDir = BUY_SCND_SELL_PRIM;
-			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].lastPrice,
-							stgArg.openShares,
-							THOST_FTDC_D_Buy,
-							THOST_FTDC_OF_Open,
-							&lastScndOrder,
-							THOST_FTDC_HF_Speculation);
-			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
-		}
-		else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
-			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
-		{
-			/* condition 2 */
-			mOpenCond = OPEN_COND2;
-			logger.LogThisFast("[ACTION]: SHORT_SCND");
-			mTradeDir = BUY_PRIM_SELL_SCND;
-			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].lastPrice,
-							stgArg.openShares,
-							THOST_FTDC_D_Sell,
-							THOST_FTDC_OF_Open,
-							&lastScndOrder,
-							THOST_FTDC_HF_Speculation);
-			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
-		}
-		else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
-			scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBollInt(0).mOutterUpperLine )
-		{
-			/* condition 3 */
-			mOpenCond = OPEN_COND3;
-			logger.LogThisFast("[ACTION]: SHORT_SCND");
-			mTradeDir = BUY_PRIM_SELL_SCND;
-			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].lastPrice,
-							stgArg.openShares,
-							THOST_FTDC_D_Sell,
-							THOST_FTDC_OF_Open,
-							&lastScndOrder,
-							THOST_FTDC_HF_Speculation);
-			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
-		}
-		else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
-			scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBollInt(0).mOutterLowerLine )
-		{
-			/* condition 4 */
-			mOpenCond = OPEN_COND4;
-			logger.LogThisFast("[ACTION]: BUY_SCND");
-			mTradeDir = BUY_SCND_SELL_PRIM;
-			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].lastPrice,
-							stgArg.openShares,
-							THOST_FTDC_D_Buy,
-							THOST_FTDC_OF_Open,
-							&lastScndOrder,
-							THOST_FTDC_HF_Speculation);
-			mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
-		}
-		else
-		{
-			logger.LogThisFast("[ERROR]: wrong open scnd condition");
-			cout<<"[ERROR]: wrong open scnd condition"<<endl;
-		}
-	}
-	/************************************************************************/
-	// 主力开仓函数。
-	/************************************************************************/
-	void OpenPrim()
-	{
-		if(BUY_SCND_SELL_PRIM == mTradeDir)
-		{
-			logger.LogThisFast("[ACTION]: SHORT_PRIM");
-			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
-							primDataBuf[primBufIndex].lowerLimit,
-							stgArg.openShares,
-							THOST_FTDC_D_Sell,
-							THOST_FTDC_OF_Open,
-							&lastPrimOrder,
-							THOST_FTDC_HF_Speculation);
-			mWaitPrimOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimOpen, this));
-		}
-		else if(BUY_PRIM_SELL_SCND == mTradeDir)
-		{
-			logger.LogThisFast("[ACTION]: BUY_PRIM");
-			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
-							primDataBuf[primBufIndex].upperLimit,
-							stgArg.openShares,
-							THOST_FTDC_D_Buy,
-							THOST_FTDC_OF_Open,
-							&lastPrimOrder,
-							THOST_FTDC_HF_Speculation);
-			mWaitPrimOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimOpen, this));
-		}
-		else
-		{
-			logger.LogThisFast("[FATAL ERROR]: wrong open prim condition");
-			cout<<"[FATAL ERROR]: wrong open prim condition"<<endl;
-		}
-	}
-	void CloseScnd()
-	{
-		if(BUY_SCND_SELL_PRIM == mTradeDir)
-		{
-			logger.LogThisFast("[ACTION]: SELL_SCND");
-			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].lowerLimit,
-							stgArg.openShares,
-							THOST_FTDC_D_Sell,
-							THOST_FTDC_OF_CloseToday,
-							&lastScndOrder,
-							THOST_FTDC_HF_Speculation);
-		}
-		else if(BUY_PRIM_SELL_SCND == mTradeDir)
-		{
-			logger.LogThisFast("[ACTION]: COVER_SCND");
-			ReqOrderInsert(	scndDataBuf[scndBufIndex].instrumentId, 
-							scndDataBuf[scndBufIndex].upperLimit,
-							stgArg.openShares,
-							THOST_FTDC_D_Buy,
-							THOST_FTDC_OF_CloseToday,
-							&lastScndOrder,
-							THOST_FTDC_HF_Speculation);
-		}
-		else
-		{
-			logger.LogThisFast("[FATAL ERROR]: wrong close scnd condition");
-			cout<<"[FATAL ERROR]: wrong close scnd condition"<<endl;
-		}
-	}
-	void ClosePrim()
-	{
-		if(BUY_SCND_SELL_PRIM == mTradeDir)
-		{
-			logger.LogThisFast("[ACTION]: COVER_PRIM");
-			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
-							primDataBuf[primBufIndex].upperLimit,
-							stgArg.openShares,
-							THOST_FTDC_D_Buy,
-							THOST_FTDC_OF_CloseToday,
-							&lastPrimOrder,
-							THOST_FTDC_HF_Speculation);
-		}
-		else if(BUY_PRIM_SELL_SCND == mTradeDir)
-		{
-			logger.LogThisFast("[ACTION]: SELL_SCND");
-			ReqOrderInsert(	primDataBuf[primBufIndex].instrumentId, 
-							primDataBuf[primBufIndex].lowerLimit,
-							stgArg.openShares,
-							THOST_FTDC_D_Sell,
-							THOST_FTDC_OF_CloseToday,
-							&lastPrimOrder,
-							THOST_FTDC_HF_Speculation);
-		}
-		else
-		{
-			logger.LogThisFast("[FATAL ERROR]: wrong close prim condition");
-			cout<<"[FATAL ERROR]: wrong close prim condition"<<endl;
-		}
-	}
-	void CancelScnd()
-	{
-		ReqOrderAction( scndDataBuf[scndBufIndex].instrumentId,
-						lastScndOrder.orderRef);
-	}
-	void CancelPrim()
-	{
-		ReqOrderAction(	primDataBuf[primBufIndex].instrumentId,
-						lastPrimOrder.orderRef);
-	}
-	void CloseBoth()
-	{
-		CloseScnd();
-		ClosePrim();
-	}
-	/*****************************/
-	
+
 	/*****************************/
 	/* below are all the initialization routines */
 	// read configuration, set strategy argument, etc.
@@ -775,138 +599,32 @@ private:
 	/*****************************/
 	/* below are all the callback routines*/
 	// strategy should be initiated by market data
-	virtual void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
+	//void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData);
+	
+	void LogBollData()
 	{
-		if(BufferData(pDepthMarketData) 
-			&& strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
-		{
-			//calculate Boll Band
-			mBoll.CalcBoll(abs(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice), stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-			/* put open judge here*/
-			if(mBoll.IsBollReady())
-			{
-				OpenJudge(pDepthMarketData);
-				StopOpenJudge();
-				StopLoseJudge(pDepthMarketData);
-				StopWinJudge();
-			}
-			
-		}
-		BollingerBandData lBoll = mBoll.GetBoll(0);
-		cout<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
-	}
-	// overload the timer callback of Class Timer
-	void TimerCallback(const system::error_code& errorCode)
-	{
-		if(errorCode)
-		{
-			cout<<"Trade On Time"<<endl;
-		}
-		else
-		{
-			//StateMachine(MAX_EVENT);
-		}
+		BollingerBandData tempData = mBoll.GetBoll(0);
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<primDataBuf[primBufIndex].lastPrice<<"	"<<scndDataBuf[scndBufIndex].lastPrice<<"	"<<tempData.mMidLine<<"	"<<tempData.mStdDev<<"	"<<tempData.mOutterUpperLine<<"	"<<tempData.mOutterLowerLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mInnerLowerLine;
+		mBollLog.LogThisFast(tempStream.str());
 	}
 	///成交通知
-	void OnRtnTrade(CThostFtdcTradeField* pTrade)
-	{
-		if((pTrade->OffsetFlag == THOST_FTDC_OF_CloseToday)||
-			(pTrade->OffsetFlag == THOST_FTDC_OF_Close)||
-			(pTrade->OffsetFlag == THOST_FTDC_OF_ForceClose))
-		{
-			if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: SCND_CLOSED");
-			}
-			if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: PRIM_CLOSED");
-			}
-		}
-		if(pTrade->OffsetFlag == THOST_FTDC_OF_Open)
-		{
-			if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: SCND_OPENED");
-				SetEvent(SCND_OPENED);
-			}
-			if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: PRIM_OPENED");
-				SetEvent(PRIM_OPENED);
-			}
-		}
-
-	}
+	//void OnRtnTrade(CThostFtdcTradeField* pTrade);
 	///报单通知
-    virtual void OnRtnOrder(CThostFtdcOrderField* pOrder)
-	{
-		//cout<<"---> OnRtnOrder: "<<std::endl;
-		//cout<<"------> Instrument ID: "<<pOrder->InstrumentID<<endl;
-		//cout<<"------> Order Status: "<<pOrder->OrderStatus<<endl;
-		//cout<<"------> Cancel Time: "<<pOrder->CancelTime<<endl;
-		//cout<<"------> Status Message: "<<pOrder->StatusMsg<<endl;
-		//cout<<"------> Order Submit Status: "<<pOrder->OrderSubmitStatus<<endl;
-		if((pOrder->OrderStatus == THOST_FTDC_OST_Canceled) && (pOrder->OrderSubmitStatus == THOST_FTDC_OSS_Accepted))
-		{
-			//撤单回报
-			if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: SCND_CANCELLED");
-				SetEvent(SCND_CANCELLED);
-			}
-			if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: PRIM_CANCELLED");
-				SetEvent(PRIM_CANCELLED);
-			}
-			
-		}
-		if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
-			&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
-			&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_CloseToday))
-		{
-			//平仓回报
-			if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: SCND_CLOSED");
-				SetEvent(SCND_CLOSED);
-			}
-			if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: PRIM_CLOSED");
-				SetEvent(PRIM_CLOSED);
-			}
-		}
-		if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
-			&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
-			&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_Open))
-		{
-			//开仓回报
-			if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: SCND_OPENED");
-				SetEvent(SCND_OPENED);
-			}
-			if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-			{
-				logger.LogThisFast("[EVENT]: PRIM_OPENED");
-				SetEvent(PRIM_OPENED);
-			}
-		}
-	}
-	/*****************************/
+    //virtual void OnRtnOrder(CThostFtdcOrderField* pOrder);
+	// 查询仓位的应答函数
+	//void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorPosition, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast);
 
-	/*****************************/
 	/* below are all the thread routines */
 	void WaitPrimOpen()
 	{
-		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.primOpenTime));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.primOpenTime));
 		SetEvent(PRIM_OPEN_TIMEOUT);
 	}
 	void WaitScndOpen()
 	{
-		boost::this_thread::sleep_for(boost::chrono::microseconds(stgArg.scndOpenTime));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.scndOpenTime));
 		SetEvent(SCND_OPEN_TIMEOUT);
 	}
 	/*****************************/
@@ -915,6 +633,7 @@ public:
 	void StartStrategy(void)
 	{
 		bool trading = true;
+		mStart = true;
 		string input;
 		if(InitOtherCrap() == ALL_GOOD)
 		{
@@ -924,6 +643,85 @@ public:
 		while(trading)
 		{
 			cin>>input;
+			if(input == "start")
+			{
+				mStart = true;
+				cout<<"strategy has been started manually"<<endl;
+			}
+			if(input == "pause")
+			{
+				mStart = false;
+				cout<<"strategy has been paused manually"<<endl;
+			}
+			if(input == "exit")
+			{
+				mStart = false;
+				CloseBoth();
+			}
+			if(input == "position")
+			{
+				string lInstrument;
+				cout<<"input instrument: "<<endl;
+				cin>>lInstrument;
+				ReqQryInvestorPosition(lInstrument.c_str());
+			}
+			if(input == "buy")
+			{
+				string lInstrument;
+				cout<<"input instrument: "<<endl;
+				cin>>lInstrument;
+				double lPrice;
+				cout<<"input price: "<<endl;
+				cin>>lPrice;
+				int lVolume;
+				cout<<"input volume: "<<endl;
+				cin>>lVolume;
+				Buy(lInstrument, lPrice, lVolume, &lastPrimOrder);
+			}
+			if(input == "sell")
+			{
+				string lInstrument;
+				cout<<"input instrument: "<<endl;
+				cin>>lInstrument;
+				double lPrice;
+				cout<<"input price: "<<endl;
+				cin>>lPrice;
+				int lVolume;
+				cout<<"input volume: "<<endl;
+				cin>>lVolume;
+				Sell(lInstrument, lPrice, lVolume, &lastPrimOrder);
+			}
+			if(input == "short")
+			{
+				string lInstrument;
+				cout<<"input instrument: "<<endl;
+				cin>>lInstrument;
+				double lPrice;
+				cout<<"input price: "<<endl;
+				cin>>lPrice;
+				int lVolume;
+				cout<<"input volume: "<<endl;
+				cin>>lVolume;
+				SellShort(lInstrument, lPrice, lVolume, &lastPrimOrder);
+			}
+			if(input == "cover")
+			{
+				string lInstrument;
+				cout<<"input instrument: "<<endl;
+				cin>>lInstrument;
+				double lPrice;
+				cout<<"input price: "<<endl;
+				cin>>lPrice;
+				int lVolume;
+				cout<<"input volume: "<<endl;
+				cin>>lVolume;
+				BuyToCover(lInstrument, lPrice, lVolume, &lastPrimOrder);
+			}
+			if(input == "cancel")
+			{
+				CancelOrder(&lastPrimOrder);
+			}
+			input.clear();
 		}
 	}
 };

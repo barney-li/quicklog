@@ -13,16 +13,17 @@
 #include <Log.h>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+//#include <CloseAndFar.h>
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 using namespace std;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	boost::progress_display progressDisp(1000);
-	for(int i=0;i<1000;i++)
+	boost::progress_display progressDisp(100);
+	for(int i=0;i<100;i++)
 	{
-		boost::this_thread::sleep_for(boost::chrono::nanoseconds(100000));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(1));
 		progressDisp+=1;
 	}
 
@@ -32,6 +33,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	Pas::PrimeryAndSecondary strategy;
 	strategy.StartStrategy();
+	//CloseAndFar caf;
+	//caf.StartStratergy();
+
 
 	return 0;
 }

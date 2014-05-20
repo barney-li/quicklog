@@ -18,7 +18,7 @@ public:
 public:
 	TRADE_STATE SetEvent(TRADE_EVENT aLatestEvent)
 	{
-		TRADE_STATE lNewState;
+		TRADE_STATE lNewState = IDLE_STATE;
 		switch(mTradeState)
 		{
 		case IDLE_STATE:

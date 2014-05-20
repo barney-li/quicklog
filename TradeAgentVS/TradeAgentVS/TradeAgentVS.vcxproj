@@ -100,11 +100,13 @@
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
     <ClCompile Include="src\Stratergy\Stratergy.cpp" />
+    <ClCompile Include="src\Stratergy\TradeOperation.cpp" />
     <ClCompile Include="src\TradeAgentVS.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\TradeProcess\TradeProcess.cpp" />
+    <ClCompile Include="src\TradeProcess\TradeService.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\common\ConfigReader.h" />
@@ -119,7 +121,7 @@
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h" />
     <ClInclude Include="src\MarketProcess\MarketProcess.h" />
     <ClInclude Include="src\stdafx.h" />
-    <ClInclude Include="src\Stratergy\BollingerBands.h" />
+    <ClInclude Include="src\Stratergy\BollingerBand.h" />
     <ClInclude Include="src\Stratergy\CloseAndFar.h" />
     <ClInclude Include="src\Stratergy\PASAux.h" />
     <ClInclude Include="src\Stratergy\PasStateMachine.h" />

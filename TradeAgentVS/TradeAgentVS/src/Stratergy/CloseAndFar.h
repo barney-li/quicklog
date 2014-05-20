@@ -70,8 +70,8 @@ public:
 	// strategy should be initiated by market data
 	virtual void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 	{
-		BufferData(pDepthMarketData);
-		CAFStrategy(pDepthMarketData);
+		//BufferData(pDepthMarketData);
+		//CAFStrategy(pDepthMarketData);
 
 		std::cout<<pDepthMarketData->InstrumentID<<" last bid: "<<pDepthMarketData->BidPrice1<<std::endl;
 	}
@@ -252,7 +252,7 @@ private:
 				tempStream.str("");
 				tempStream<<"Trying to cancel ["<<instrumentList[SEC_INSTRUMENT]<<"], order reference is ["<<lastOrder.orderRef<<"].";
 				logger.LogThisFast(tempStream.str());
-				ReqOrderAction(instrumentList[SEC_INSTRUMENT],lastOrder.orderRef);
+				//ReqOrderAction(instrumentList[SEC_INSTRUMENT],lastOrder.orderRef);
 				SetState(CANCEL_OPEN_STATE);
 			}
 			break;

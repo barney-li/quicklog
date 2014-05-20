@@ -53,6 +53,12 @@
     <ClCompile Include="src\common\Log.cpp">
       <Filter>src\common</Filter>
     </ClCompile>
+    <ClCompile Include="src\TradeProcess\TradeService.cpp">
+      <Filter>src\TradeProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stratergy\TradeOperation.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h">
@@ -112,10 +118,10 @@
     <ClInclude Include="src\Stratergy\PrimeryAndSecondary.h">
       <Filter>src\Stratergy</Filter>
     </ClInclude>
-    <ClInclude Include="src\Stratergy\BollingerBands.h">
+    <ClInclude Include="src\Stratergy\PasStateMachine.h">
       <Filter>src\Stratergy</Filter>
     </ClInclude>
-    <ClInclude Include="src\Stratergy\PasStateMachine.h">
+    <ClInclude Include="src\Stratergy\BollingerBand.h">
       <Filter>src\Stratergy</Filter>
     </ClInclude>
   </ItemGroup>
