@@ -3,7 +3,7 @@
 using namespace std;
 namespace Finicial
 {
-typedef struct BollingerBandData
+typedef struct 
 {
 	double mMidLine;
 	double mStdDev;
@@ -11,7 +11,7 @@ typedef struct BollingerBandData
 	double mInnerUpperLine;
 	double mInnerLowerLine;
 	double mOutterLowerLine;
-};
+}BollingerBandData;
 class BollingerBand
 {
 private:

@@ -11,7 +11,6 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 		/* put open judge here*/
 		if(mBoll.IsBollReady() && mStart)
 		{
-				
 			OpenJudge(pDepthMarketData);
 			StopOpenJudge();
 			StopLoseJudge(pDepthMarketData);
@@ -19,27 +18,26 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 		}
 			
 	}
-	CheckPosition();
+	//CheckPosition();
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	cout<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
 }
 ///成交通知
 void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 {
-	// 不要通过成交回报来确定平仓结果，要通过查询仓位来确定，因为有可能没有全部平掉
-	//if((pTrade->OffsetFlag == THOST_FTDC_OF_CloseToday)||
-	//	(pTrade->OffsetFlag == THOST_FTDC_OF_Close)||
-	//	(pTrade->OffsetFlag == THOST_FTDC_OF_ForceClose))
-	//{
-	//	if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	//	{
-	//		logger.LogThisFast("[EVENT]: SCND_CLOSED");
-	//	}
-	//	if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
-	//	{
-	//		logger.LogThisFast("[EVENT]: PRIM_CLOSED");
-	//	}
-	//}
+	if((pTrade->OffsetFlag == THOST_FTDC_OF_CloseToday)||
+		(pTrade->OffsetFlag == THOST_FTDC_OF_Close)||
+		(pTrade->OffsetFlag == THOST_FTDC_OF_ForceClose))
+	{
+		if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		{
+			logger.LogThisFast("[EVENT]: SCND_CLOSED");
+		}
+		if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+		{
+			logger.LogThisFast("[EVENT]: PRIM_CLOSED");
+		}
+	}
 	if(pTrade->OffsetFlag == THOST_FTDC_OF_Open)
 	{
 		if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
@@ -68,50 +66,50 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	cout<<"------> Cancel Time: "<<pOrder->CancelTime<<endl;
 	cout<<"------> Status Message: "<<pOrder->StatusMsg<<endl;
 	cout<<"------> Order Submit Status: "<<pOrder->OrderSubmitStatus<<endl;
-	// 记录次主力订单信息
-	if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	{
-		lastScndOrder.instrument = stgArg.secondaryInst;
-		if(pOrder->ExchangeID != NULL)
-		{
-			lastScndOrder.exchangeId = "";
-			lastScndOrder.exchangeId.append(pOrder->ExchangeID, sizeof(TThostFtdcExchangeIDType));
-		}
-		if(pOrder->OrderRef != NULL)
-		{
-			lastScndOrder.orderRef = "";
-			lastScndOrder.orderRef.append(pOrder->OrderRef, sizeof(TThostFtdcOrderRefType));
-		}
-		if(pOrder->OrderSysID != NULL)
-		{
-			lastScndOrder.orderSysId = "";
-			lastScndOrder.orderSysId.append(pOrder->OrderSysID, sizeof(TThostFtdcOrderSysIDType));
-		}
-		lastScndOrder.sessionId = pOrder->SessionID;
-		lastScndOrder.frontId = pOrder->FrontID;
-	}
-	// 记录主力订单信息
-	if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	{
-		lastPrimOrder.instrument = stgArg.primaryInst;
-		if(pOrder->ExchangeID != NULL)
-		{
-			lastPrimOrder.exchangeId = "";
-			lastPrimOrder.exchangeId.append(pOrder->ExchangeID, sizeof(TThostFtdcExchangeIDType));
-		}
-		if(pOrder->OrderRef != NULL)
-		{
-			lastPrimOrder.orderRef = "";
-			lastPrimOrder.orderRef.append(pOrder->OrderRef, sizeof(TThostFtdcOrderRefType));
-		}
-		if(pOrder->OrderSysID != NULL)
-		{
-			lastPrimOrder.orderSysId = "";
-			lastPrimOrder.orderSysId.append(pOrder->OrderSysID, sizeof(TThostFtdcOrderSysIDType));
-		}
-		lastPrimOrder.sessionId = pOrder->SessionID;
-		lastPrimOrder.frontId = pOrder->FrontID;
-	}
+	//// 记录次主力订单信息
+	//if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+	//{
+	//	lastScndOrder.instrument = stgArg.secondaryInst;
+	//	if(pOrder->ExchangeID != NULL)
+	//	{
+	//		lastScndOrder.exchangeId = "";
+	//		lastScndOrder.exchangeId.append(pOrder->ExchangeID, sizeof(TThostFtdcExchangeIDType));
+	//	}
+	//	if(pOrder->OrderRef != NULL)
+	//	{
+	//		lastScndOrder.orderRef = "";
+	//		lastScndOrder.orderRef.append(pOrder->OrderRef, sizeof(TThostFtdcOrderRefType));
+	//	}
+	//	if(pOrder->OrderSysID != NULL)
+	//	{
+	//		lastScndOrder.orderSysId = "";
+	//		lastScndOrder.orderSysId.append(pOrder->OrderSysID, sizeof(TThostFtdcOrderSysIDType));
+	//	}
+	//	lastScndOrder.sessionId = pOrder->SessionID;
+	//	lastScndOrder.frontId = pOrder->FrontID;
+	//}
+	//// 记录主力订单信息
+	//if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+	//{
+	//	lastPrimOrder.instrument = stgArg.primaryInst;
+	//	if(pOrder->ExchangeID != NULL)
+	//	{
+	//		lastPrimOrder.exchangeId = "";
+	//		lastPrimOrder.exchangeId.append(pOrder->ExchangeID, sizeof(TThostFtdcExchangeIDType));
+	//	}
+	//	if(pOrder->OrderRef != NULL)
+	//	{
+	//		lastPrimOrder.orderRef = "";
+	//		lastPrimOrder.orderRef.append(pOrder->OrderRef, sizeof(TThostFtdcOrderRefType));
+	//	}
+	//	if(pOrder->OrderSysID != NULL)
+	//	{
+	//		lastPrimOrder.orderSysId = "";
+	//		lastPrimOrder.orderSysId.append(pOrder->OrderSysID, sizeof(TThostFtdcOrderSysIDType));
+	//	}
+	//	lastPrimOrder.sessionId = pOrder->SessionID;
+	//	lastPrimOrder.frontId = pOrder->FrontID;
+	//}
 	//撤单回报
 	if((pOrder->OrderStatus == THOST_FTDC_OST_Canceled) && (pOrder->OrderSubmitStatus == THOST_FTDC_OSS_Accepted))
 	{
@@ -126,23 +124,22 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 			SetEvent(PRIM_CANCELLED);
 		}
 	}
-	// 不要通过成交回报来确定平仓结果，要通过查询仓位来确定，因为有可能没有全部平掉
 	////平仓回报
-	//if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
-	//	&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
-	//	&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_CloseToday))
-	//{
-	//	if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	//	{
-	//		logger.LogThisFast("[EVENT]: SCND_CLOSED");
-	//		SetEvent(SCND_CLOSED);
-	//	}
-	//	if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	//	{
-	//		logger.LogThisFast("[EVENT]: PRIM_CLOSED");
-	//		SetEvent(PRIM_CLOSED);
-	//	}
-	//}
+	if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
+		&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
+		&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_CloseToday || pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_Close))
+	{
+		if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		{
+			logger.LogThisFast("[EVENT]: SCND_CLOSED");
+			SetEvent(SCND_CLOSED);
+		}
+		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		{
+			logger.LogThisFast("[EVENT]: PRIM_CLOSED");
+			SetEvent(PRIM_CLOSED);
+		}
+	}
 	//开仓回报
 	if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
 		&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
@@ -315,5 +312,30 @@ void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdc
 		logger.LogThisFast("[EVENT]: SCND_CANCELLED (no order record)");
 		SetEvent(PRIM_CANCELLED);
 		SetEvent(SCND_CANCELLED);
+	}
+}
+// 撤单的应答函数
+void PrimeryAndSecondary::OnRspOrderAction(CThostFtdcInputOrderActionField* pInputOrderAction, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
+{
+	//ErrorID = 25, ErrorMsg = 综合交易平台：撤单找不到相应报单
+	if(pRspInfo->ErrorID == 25)
+	{
+		if(pInputOrderAction != null)
+		{
+			if(strncmp(pInputOrderAction->OrderRef, lastPrimOrder.orderRef.c_str(), lastPrimOrder.orderRef.size()) == 0
+				&& pInputOrderAction->SessionID == lastPrimOrder.sessionId
+				&& strncmp(pInputOrderAction->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.size()) == 0)
+			{
+				logger.LogThisFast("[EVENT]: PRIM_CANCELLED (from cancel response)");
+				SetEvent(PRIM_CANCELLED);
+			}
+			if(strncmp(pInputOrderAction->OrderRef, lastScndOrder.orderRef.c_str(),  lastScndOrder.orderRef.size()) == 0
+				&& pInputOrderAction->SessionID == lastScndOrder.sessionId
+				&& strncmp(pInputOrderAction->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
+			{
+				logger.LogThisFast("[EVENT]: PRIM_CANCELLED (from cancel response)");
+				SetEvent(PRIM_CANCELLED);
+			}
+		}
 	}
 }

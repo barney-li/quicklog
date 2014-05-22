@@ -4,11 +4,10 @@
 /************************************************************************/
 void PrimeryAndSecondary::OpenScnd()
 {
-	if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
-		primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
+	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
-		mOpenCond = OPEN_COND1;
+		
 		logger.LogThisFast("[ACTION]: BUY_SCND");
 		mTradeDir = BUY_SCND_SELL_PRIM;
 		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
@@ -17,37 +16,34 @@ void PrimeryAndSecondary::OpenScnd()
 		}
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 	}
-	else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
-		primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
+	else if( OPEN_COND2 == mOpenCond )
 	{
 		/* condition 2 */
-		mOpenCond = OPEN_COND2;
+		
 		logger.LogThisFast("[ACTION]: SHORT_SCND");
 		mTradeDir = BUY_PRIM_SELL_SCND;
-		if(Sell(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
+		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell scnd error");
 		}
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 	}
-	else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
-		scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
+	else if( OPEN_COND3 == mOpenCond )
 	{
 		/* condition 3 */
-		mOpenCond = OPEN_COND3;
+		
 		logger.LogThisFast("[ACTION]: SHORT_SCND");
 		mTradeDir = BUY_PRIM_SELL_SCND;
-		if(Sell(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
+		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell scnd error");
 		}
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this));
 	}
-	else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
-		scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
+	else if( OPEN_COND4 == mOpenCond )
 	{
 		/* condition 4 */
-		mOpenCond = OPEN_COND4;
+		
 		logger.LogThisFast("[ACTION]: BUY_SCND");
 		mTradeDir = BUY_SCND_SELL_PRIM;
 		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
@@ -70,7 +66,7 @@ void PrimeryAndSecondary::OpenPrim()
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
 		logger.LogThisFast("[ACTION]: SHORT_PRIM");
-		if(Sell(stgArg.primaryInst, primDataBuf[primBufIndex].lowerLimit, stgArg.openShares, &lastPrimOrder) != true)
+		if(SellShort(stgArg.primaryInst, primDataBuf[primBufIndex].lowerLimit, stgArg.openShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell prim error");
 		}
@@ -187,13 +183,19 @@ void PrimeryAndSecondary::CloseBoth()
 	CloseScnd();
 	ClosePrim();
 }
-void PrimeryAndSecondary::CheckPosition()
+void PrimeryAndSecondary::CheckPrimPosition()
 {
-	ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
 	ReqQryInvestorPosition(stgArg.primaryInst.c_str());
 }
-void PrimeryAndSecondary::CheckOrder()
+void PrimeryAndSecondary::CheckScndPosition()
+{
+	ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
+}
+void PrimeryAndSecondary::CheckPrimOrder()
+{
+	ReqQryOrder(stgArg.primaryInst.c_str());
+}
+void PrimeryAndSecondary::CheckScndOrder()
 {
 	ReqQryOrder(stgArg.secondaryInst.c_str());
-	ReqQryOrder(stgArg.primaryInst.c_str());
 }

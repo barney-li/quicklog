@@ -33,7 +33,7 @@ typedef enum ORDER_TYPE
 	CLOSE_TODAY
 };
 #define CMD_LEN 50
-typedef enum CommandType
+typedef enum 
 {
 	cmdInitializeProcess		=	0,
 	cmdReqConnect				=	1,
@@ -44,9 +44,9 @@ typedef enum CommandType
 	cmdReqQryOrder				=	9,
 	cmdReqQryInvestorPosition	=	10,
 	cmdReqOrderInsertArbitrage	=	11
-};
+}CommandType;
 // order identifier, used for order action, qoury
-typedef struct ORDER_INDEX_TYPE
+typedef struct 
 {
 	// any order can be identified with three parameters below
 	int sessionId;
@@ -55,5 +55,5 @@ typedef struct ORDER_INDEX_TYPE
 	string exchangeId;
 	string orderSysId;
 	string instrument;
-};
+}ORDER_INDEX_TYPE;
 

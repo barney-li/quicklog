@@ -98,6 +98,7 @@ private:
 	int mScndTodayShortPosition;
 	int mScndYdShortPosition;
 	bool mStart;
+	boost::thread* mPeriodicCheckPositionThread;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -112,8 +113,10 @@ private:
 	void CloseBoth();
 	void CancelScnd();
 	void CancelPrim();
-	void CheckPosition();
-	void CheckOrder();
+	void CheckPrimPosition();
+	void CheckScndPosition();
+	void CheckPrimOrder();
+	void CheckScndOrder();
 	/*****************************/
 	/* auxalary routines */
 	// check if this trade must be ended now
@@ -158,6 +161,7 @@ private:
 	virtual void OnRtnOrder(CThostFtdcOrderField* pOrder);
 	virtual void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorPosition, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast);
 	virtual void OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast) ;
+	virtual void OnRspOrderAction(CThostFtdcInputOrderActionField* pInputOrderAction, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast);
 	/*****************************/
 	/* below are all the initialization routines */
 	// read configuration, set strategy argument, etc.
@@ -284,6 +288,7 @@ private:
 		if(ALL_GOOD == initStatus)
 		{
 			cout<<"all arguments ready"<<endl;
+			mPeriodicCheckPositionThread = new boost::thread(boost::bind(&PrimeryAndSecondary::PeriodicCheckPosition, this));
 		}
 		else
 		{
@@ -346,6 +351,16 @@ public:
 		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.scndOpenTime));
 		SetEvent(SCND_OPEN_TIMEOUT);
 	}
+	void PeriodicCheckPosition()
+	{
+		for(;;)
+		{
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
+			CheckPrimPosition();
+			boost::this_thread::sleep(boost::posix_time::seconds(2));
+			CheckScndPosition();
+		}
+	}
 	/*****************************/
 public:
 	/* strategy entry */
@@ -383,6 +398,26 @@ public:
 				cout<<"input instrument: "<<endl;
 				cin>>lInstrument;
 				ReqQryInvestorPosition(lInstrument.c_str());
+			}
+			if(input == "cond1")
+			{
+				mOpenCond = OPEN_COND1;
+				SetEvent(OPEN_PRICE_GOOD);
+			}
+			if(input == "cond2")
+			{
+				mOpenCond = OPEN_COND2;
+				SetEvent(OPEN_PRICE_GOOD);
+			}
+			if(input == "cond3")
+			{
+				mOpenCond = OPEN_COND3;
+				SetEvent(OPEN_PRICE_GOOD);
+			}
+			if(input == "cond4")
+			{
+				mOpenCond = OPEN_COND4;
+				SetEvent(OPEN_PRICE_GOOD);
 			}
 			if(input == "buy")
 			{

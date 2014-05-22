@@ -183,6 +183,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarket
 		primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
 	{
 		/* condition 1 */
+		mOpenCond = OPEN_COND1;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1");
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -190,6 +191,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarket
 		primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
 	{
 		/* condition 2 */
+		mOpenCond = OPEN_COND2;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2");
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -197,6 +199,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarket
 		scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
 	{
 		/* condition 3 */
+		mOpenCond = OPEN_COND3;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND3");
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -204,6 +207,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarket
 		scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
 	{
 		/* condition 4 */
+		mOpenCond = OPEN_COND4;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND4");
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -272,7 +276,6 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		if(lNextState != lLastState)
 		{
 			OpenPrim();
-				
 		}
 		break;
 	case PENDING_STATE:
@@ -283,14 +286,12 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		break;
 	case CANCELLING_SCND_STATE:
 		CancelScnd();
-		CheckOrder();
 		break;
 	case CLOSING_SCND_STATE:
 		CloseScnd();
 		break;
 	case CANCELLING_PRIM_STATE:
 		CancelPrim();
-		CheckOrder();
 		break;
 	case WAITING_SCND_CLOSE_STATE:
 		break;

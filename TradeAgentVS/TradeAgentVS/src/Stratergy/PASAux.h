@@ -8,22 +8,22 @@ using namespace std;
 namespace Pas
 {
 	// open condition
-	typedef enum OPEN_CONDITION
+	typedef enum 
 	{
 		OPEN_COND1,
 		OPEN_COND2,
 		OPEN_COND3,
 		OPEN_COND4,
 		ILLEGAL_COND
-	};
+	}OPEN_CONDITION;
 	// trading direction
-	typedef enum TRADE_DIR
+	typedef enum 
 	{
 		BUY_PRIM_SELL_SCND,
 		BUY_SCND_SELL_PRIM
-	};
+	}TRADE_DIR;
 	// all the state type used in state machine
-	typedef enum TRADE_STATE
+	typedef enum 
 	{
 		IDLE_STATE,
 		OPENING_SCND_STATE,
@@ -36,10 +36,10 @@ namespace Pas
 		WAITING_SCND_CLOSE_STATE,
 		WAITING_PRIM_CLOSE_STATE,
 		MAX_STATE
-	};
+	}TRADE_STATE;
 
 	// all the event used in state machine
-	typedef enum TRADE_EVENT
+	typedef enum 
 	{
 		OPEN_PRICE_GOOD,
 		OPEN_PRICE_BAD,
@@ -54,17 +54,17 @@ namespace Pas
 		CLOSE_PRICE_GOOD,
 		MUST_STOP,
 		MAX_EVENT
-	};
+	}TRADE_EVENT;
 
 	// used to identify main and secondary instrument, in multi-instrument strategy
-	typedef enum MAIN_N_SEC
+	typedef enum 
 	{
 		MAIN_INSTRUMENT	= 0,
 		SEC_INSTRUMENT	= 1
-	};
+	}MAIN_N_SEC;
 
 	// used to store last trade info, kind of useful
-	typedef struct TRADE_RECORD
+	typedef struct 
 	{
 		TThostFtdcInstrumentIDType		instrumentId;
 		TThostFtdcPriceType				tradePrice;//成交价
@@ -73,10 +73,10 @@ namespace Pas
 		TThostFtdcDirectionType			direction;
 		///开平标志
 		TThostFtdcOffsetFlagType		offsetFlag;
-	};
+	}TRADE_RECORD;
 
 	// essential data of market data
-	typedef struct BasicMarketData
+	typedef struct 
 	{
 		TThostFtdcInstrumentIDType	instrumentId;
 		TThostFtdcPriceType			lastPrice;//最新价
@@ -91,10 +91,10 @@ namespace Pas
 		TThostFtdcTimeType			updateTime;//更新时间
 		TThostFtdcMillisecType		updateMillisec;//更新毫秒数
 		boost::posix_time::ptime	localTime;//本地时间戳
-	};
+	}BasicMarketData;
 
 	// strategy parameters
-	typedef struct StrategyParameter
+	typedef struct 
 	{
 		string		primaryInst;		// 主力合约
 		string		secondaryInst;		// 次主力合约
@@ -118,7 +118,7 @@ namespace Pas
 		int			primCancelTime;		// 主力合约最大撤单等待时间
 		int			scndCancelTime;		// 次主力合约最大撤单等待时间
 		int			minMove;			// 最小价格变动
-	};
+	}StrategyParameter;
 
 	
 class PASAux

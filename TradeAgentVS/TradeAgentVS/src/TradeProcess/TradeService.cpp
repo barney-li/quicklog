@@ -190,7 +190,7 @@ bool TradeProcess::CancelOrder(const ORDER_INDEX_TYPE* aOrderIndex)
 	///投资者代码
 	strncpy(req.InvestorID, basicTradeProcessData.investorId, sizeof(TThostFtdcInvestorIDType));
 	///用户代码
-	strncpy(req.UserID, basicTradeProcessData.investorId, sizeof(TThostFtdcUserIDType));
+	//strncpy(req.UserID, basicTradeProcessData.investorId, sizeof(TThostFtdcUserIDType));
 	if(aOrderIndex == NULL)
 	{
 		logger.LogThisFast("[ERROR]: empty order index in cancellation");
