@@ -44,9 +44,6 @@
     <ClCompile Include="src\TradeProcess\TradeProcess.cpp">
       <Filter>src\TradeProcess</Filter>
     </ClCompile>
-    <ClCompile Include="src\Stratergy\Stratergy.cpp">
-      <Filter>src\Stratergy</Filter>
-    </ClCompile>
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp">
       <Filter>src\MarketProcess</Filter>
     </ClCompile>
@@ -59,6 +56,12 @@
     <ClCompile Include="src\Stratergy\TradeOperation.cpp">
       <Filter>src\Stratergy</Filter>
     </ClCompile>
+    <ClCompile Include="src\Stratergy\Callback.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stratergy\Miscellaneous.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h">
@@ -69,15 +72,6 @@
     </ClInclude>
     <ClInclude Include="src\TradeProcess\TradeProcess.h">
       <Filter>src\TradeProcess</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Stratergy\CloseAndFar.h">
-      <Filter>src\Stratergy</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Stratergy\StrategyAux.h">
-      <Filter>src\Stratergy</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Stratergy\Stratergy.h">
-      <Filter>src\Stratergy</Filter>
     </ClInclude>
     <ClInclude Include="src\MarketProcess\MarketProcess.h">
       <Filter>src\MarketProcess</Filter>

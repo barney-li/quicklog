@@ -19,6 +19,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 		}
 			
 	}
+	CheckPosition();
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	cout<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
 }
@@ -180,40 +181,61 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 		{
 			if(strncmp(pInvestorPosition->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.size()) == 0)
 			{
-				mPrimPosDir = pInvestorPosition->PosiDirection;
 				// Position为本合约当前所有持仓，TodayPosition为本合约的今持仓，YdPosition是今天开盘前的昨持仓
 				if(pInvestorPosition->Position == 0 && pInvestorPosition->TodayPosition == 0)
 				{
-					logger.LogThisFast("[EVENT]: PRIM_CLOSED (from investor position query)");
-					mPrimTodayPosition=0;
-					mPrimYdPosition=0;
-					SetEvent(PRIM_CLOSED);
+					if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
+					{
+						mPrimTodayLongPosition = 0;
+						mPrimYdLongPosition = 0;
+					}
+					else if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Short)
+					{
+						mPrimTodayShortPosition = 0;
+						mPrimYdShortPosition = 0;
+					}
 				}
 				else
 				{
-					logger.LogThisFast("[EVENT]: PRIM_OPENED (from investor position query)");
-					mPrimTodayPosition = pInvestorPosition->TodayPosition;
-					mPrimYdPosition = pInvestorPosition->Position - pInvestorPosition->TodayPosition;
-						
-					SetEvent(PRIM_OPENED);
+					if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
+					{
+						mPrimTodayLongPosition = pInvestorPosition->TodayPosition;
+						mPrimYdLongPosition = pInvestorPosition->Position - pInvestorPosition->TodayPosition;
+					}
+					else if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Short)
+					{
+						mPrimTodayShortPosition = pInvestorPosition->TodayPosition;
+						mPrimYdShortPosition = pInvestorPosition->Position - pInvestorPosition->TodayPosition;
+					}
 				}
 			}
 			if(strncmp(pInvestorPosition->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
 			{
-				mPrimPosDir = pInvestorPosition->PosiDirection;
 				if(pInvestorPosition->Position == 0 && pInvestorPosition->TodayPosition == 0)
 				{
-					logger.LogThisFast("[EVENT]: SCND_CLOSED (from investor position query)");
-					mScndTodayPosition=0;
-					mScndYdPosition=0;
-					SetEvent(SCND_CLOSED);
+					if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
+					{
+						mScndTodayLongPosition = 0;
+						mScndYdLongPosition = 0;
+					}
+					else if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Short)
+					{
+						mScndTodayShortPosition = 0;
+						mScndYdShortPosition = 0;
+					}
 				}
 				else
 				{
-					logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
-					mScndTodayPosition = pInvestorPosition->TodayPosition;
-					mScndYdPosition = pInvestorPosition->Position - pInvestorPosition->TodayPosition;
-					SetEvent(SCND_OPENED);
+					if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Long)
+					{
+						mScndTodayLongPosition = pInvestorPosition->TodayPosition;
+						mScndYdLongPosition = pInvestorPosition->Position - pInvestorPosition->TodayPosition;
+					}
+					else if(pInvestorPosition->PosiDirection == THOST_FTDC_PD_Short)
+					{
+						mScndTodayShortPosition = pInvestorPosition->TodayPosition;
+						mScndYdShortPosition = pInvestorPosition->Position - pInvestorPosition->TodayPosition;
+					}
 				}
 			}
 			cout<<"------> Instrument: "<<pInvestorPosition->InstrumentID<<endl;
@@ -221,6 +243,35 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 			cout<<"------> Yesterday Position: "<<pInvestorPosition->YdPosition<<endl;
 			cout<<"------> Position Direction ( 2 for buy, 3 for sell ): "<<pInvestorPosition->PosiDirection<<endl;//2多  3空
 			cout<<"------> Position Profit: "<<pInvestorPosition->PositionProfit<<endl;
+		}
+		if(bIsLast)
+		{
+			if(mPrimTodayLongPosition == 0 
+				&& mPrimYdLongPosition == 0
+				&& mPrimTodayShortPosition == 0
+				&& mPrimYdShortPosition == 0)
+			{
+				logger.LogThisFast("[EVENT]: PRIM_CLOSED (from investor position query)");
+				SetEvent(PRIM_CLOSED);
+			}
+			else
+			{
+				logger.LogThisFast("[EVENT]: PRIM_OPENED (from investor position query)");
+				SetEvent(PRIM_OPENED);
+			}
+			if(mScndTodayLongPosition == 0 
+				&& mScndYdLongPosition == 0
+				&& mScndTodayShortPosition == 0
+				&& mScndYdShortPosition == 0)
+			{
+				logger.LogThisFast("[EVENT]: SCND_CLOSED (from investor position query)");
+				SetEvent(SCND_CLOSED);
+			}
+			else
+			{
+				logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
+				SetEvent(SCND_OPENED);
+			}
 		}
 			
 	}
@@ -260,6 +311,8 @@ void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdc
 	}
 	else
 	{
+		logger.LogThisFast("[EVENT]: PRIM_CANCELLED (no order record)");
+		logger.LogThisFast("[EVENT]: SCND_CANCELLED (no order record)");
 		SetEvent(PRIM_CANCELLED);
 		SetEvent(SCND_CANCELLED);
 	}

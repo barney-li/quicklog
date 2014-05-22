@@ -89,12 +89,14 @@ private:
 	boost::mutex mStateMachineMutex;
 	// 用来保护数据存储的互斥锁
 	boost::mutex mBufferDataMutex;
-	int mPrimTodayPosition;
-	int mPrimYdPosition;
-	int mScndTodayPosition;
-	int mScndYdPosition;
-	char mPrimPosDir;
-	char mScndPosDir;
+	int mPrimTodayLongPosition;
+	int mPrimYdLongPosition;
+	int mScndTodayLongPosition;
+	int mScndYdLongPosition;
+	int mPrimTodayShortPosition;
+	int mPrimYdShortPosition;
+	int mScndTodayShortPosition;
+	int mScndYdShortPosition;
 	bool mStart;
 public:
 	// constructor
@@ -110,324 +112,52 @@ private:
 	void CloseBoth();
 	void CancelScnd();
 	void CancelPrim();
+	void CheckPosition();
+	void CheckOrder();
 	/*****************************/
 	/* auxalary routines */
 	// check if this trade must be ended now
-	bool StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
-	{
-		bool lIsClose = false;
-		if(mStateMachine.GetState() == PENDING_STATE)
-		{
-			if(OPEN_COND1 == mOpenCond)
-			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine);
-				{
-					SetEvent(MUST_STOP);
-					lIsClose = true;
-				}
-			}
-			else if(OPEN_COND2 == mOpenCond)
-			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
-				{
-					SetEvent(MUST_STOP);
-					lIsClose = true;
-				}
-			}
-			else if(OPEN_COND3 == mOpenCond)
-			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
-				{
-					SetEvent(MUST_STOP);
-					lIsClose = true;
-				}
-			}
-			else if(OPEN_COND4 == mOpenCond)
-			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
-				{
-					SetEvent(MUST_STOP);
-					lIsClose = true;
-				}
-			}
-		}
-		
-		return lIsClose;
-	}
+	bool StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMarketData);
+
+	void LogBollData();
+
 	// store market data into local buffer
-	bool BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData)
-	{
-		boost::lock_guard<boost::mutex> lLockGuard(mBufferDataMutex);
-		if (VerifyMarketData(*pDepthMarketData))
-		{
-			//recognize instrument id and put data into where they should go
-			if(strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.size()) == 0)
-			{
-				// don't forget to increase the index
-				primBufIndex++;
-				// increase vector size when it's almost full
-				if(primDataBuf.size() - primBufIndex < 100)
-				{
-					primDataBuf.resize(primDataBuf.size()+STRATEGY_BUFFER_SIZE);
-				}
-				strncpy(primDataBuf[primBufIndex].instrumentId, pDepthMarketData->InstrumentID, sizeof(primDataBuf[primBufIndex].instrumentId));
-				primDataBuf[primBufIndex].askPrice = pDepthMarketData->AskPrice1;
-				primDataBuf[primBufIndex].askVolume = pDepthMarketData->AskVolume1;
-				primDataBuf[primBufIndex].bidPrice = pDepthMarketData->BidPrice1;
-				primDataBuf[primBufIndex].bidVolume = pDepthMarketData->BidVolume1;
-				primDataBuf[primBufIndex].lastPrice = pDepthMarketData->LastPrice;
-				primDataBuf[primBufIndex].volume = pDepthMarketData->Volume;
-				primDataBuf[primBufIndex].trueVolume = pDepthMarketData->Volume - primLastVolume;
-				primLastVolume = pDepthMarketData->Volume;
-				primDataBuf[primBufIndex].upperLimit = pDepthMarketData->UpperLimitPrice;
-				primDataBuf[primBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
-				strncpy(primDataBuf[primBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(primDataBuf[primBufIndex].updateTime));
-				primDataBuf[primBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
-				primDataBuf[primBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
-				
-			}
-			else if(strncmp(pDepthMarketData->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
-			{
-				// don't forget to increase the index
-				scndBufIndex++;
-				// increase vector size when it's almost full
-				if(scndDataBuf.size() - scndBufIndex < 100)
-				{
-					scndDataBuf.resize(scndDataBuf.size()+STRATEGY_BUFFER_SIZE);
-				}
-				strncpy(scndDataBuf[scndBufIndex].instrumentId, pDepthMarketData->InstrumentID, sizeof(scndDataBuf[scndBufIndex].instrumentId));
-				scndDataBuf[scndBufIndex].askPrice = pDepthMarketData->AskPrice1;
-				scndDataBuf[scndBufIndex].askVolume = pDepthMarketData->AskVolume1;
-				scndDataBuf[scndBufIndex].bidPrice = pDepthMarketData->BidPrice1;
-				scndDataBuf[scndBufIndex].bidVolume = pDepthMarketData->BidVolume1;
-				scndDataBuf[scndBufIndex].lastPrice = pDepthMarketData->LastPrice;
-				scndDataBuf[scndBufIndex].volume = pDepthMarketData->Volume;
-				scndDataBuf[scndBufIndex].trueVolume = pDepthMarketData->Volume - scndLastVolume;
-				scndLastVolume = pDepthMarketData->Volume;
-				scndDataBuf[scndBufIndex].upperLimit = pDepthMarketData->UpperLimitPrice;
-				scndDataBuf[scndBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
-				strncpy(scndDataBuf[scndBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(scndDataBuf[scndBufIndex].updateTime));
-				scndDataBuf[scndBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
-				scndDataBuf[scndBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
-				
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return false;
-		}
-		return true;
-	}
+	bool BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData);
+
 	// verify market data, any illegal data will lead to an false return
-	bool VerifyMarketData(CThostFtdcDepthMarketDataField const & pData)
-	{
-		if(null == pData.InstrumentID) return false;
-		if(pData.LastPrice>stgArg.ceilingPrice || pData.LastPrice<stgArg.floorPrice) return false;
-		if(pData.AskPrice1>stgArg.ceilingPrice || pData.AskPrice1<stgArg.floorPrice) return false;
-		if(pData.BidPrice1>stgArg.ceilingPrice || pData.BidPrice1<stgArg.floorPrice) return false;
-		if(pData.UpperLimitPrice>stgArg.ceilingPrice || pData.UpperLimitPrice<stgArg.floorPrice) return false;
-		if(pData.LowerLimitPrice>stgArg.ceilingPrice || pData.LowerLimitPrice<stgArg.floorPrice) return false;
-		return true;
-	}
+	bool VerifyMarketData(CThostFtdcDepthMarketDataField const & pData);
+
 	/************************************************************************/
 	// 判断开仓条件是否已经不再满足。当价差突破外层布林带时，认为开仓条件满足，
 	// 但是为了避免价差处在布林带边缘时反复触发price bad的条件，因此一旦开仓
 	// 条件被满足后，直到价差落回内层布林带以内才触发price bad。
 	/************************************************************************/
-	void StopOpenJudge()
-	{
-		if(mStateMachine.GetState() != OPENING_SCND_STATE)
-		{
-			return;
-		}
-		else
-		{
-			if(OPEN_COND1 == mOpenCond)
-			{
-				if(primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice < mBoll.GetBoll(0).mInnerUpperLine);
-				{
-					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-					SetEvent(OPEN_PRICE_BAD);
-				}
-			}
-			else if(OPEN_COND2 == mOpenCond)
-			{
-				if(primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > mBoll.GetBoll(0).mInnerLowerLine)
-				{
-					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-					SetEvent(OPEN_PRICE_BAD);
-				}
-			}
-			else if(OPEN_COND3 == mOpenCond)
-			{
-				if(scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice < mBoll.GetBoll(0).mInnerUpperLine)
-				{
-					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-					SetEvent(OPEN_PRICE_BAD);
-				}
-			}
-			else if(OPEN_COND4 == mOpenCond)
-			{
-				if(scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > mBoll.GetBoll(0).mInnerLowerLine)
-				{
-					logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-					SetEvent(OPEN_PRICE_BAD);
-				}
-			}
-			else
-			{
-				logger.LogThisFast("[FATAL ERROR]: ILLEGAL OPEN COND");
-			}
-		}
-	}
+	void StopOpenJudge();
+
 	/************************************************************************/
 	// 开仓仲裁函数，若布林带宽度达到设定值，且主力与次主力合约的价差满足
 	// 4种开仓条件之一，则抛出事件OPEN_PRICE_GOOD。在开仓次主力合约时，开仓
 	// 条件会被再次验证。
 	/************************************************************************/
-	void OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
-	{
-		// if the bollinger band is not wide enough, then return
-		if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < stgArg.bollAmpLimit)
-		{
-			return;
-		}
-		// using bid_price - ask_price to do the open timing judge, this is rougher to meet
-		if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
-			primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
-		{
-			/* condition 1 */
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1");
-			SetEvent(OPEN_PRICE_GOOD);
-		}
-		else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
-			primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
-		{
-			/* condition 2 */
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2");
-			SetEvent(OPEN_PRICE_GOOD);
-		}
-		else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
-			scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
-		{
-			/* condition 3 */
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND3");
-			SetEvent(OPEN_PRICE_GOOD);
-		}
-		else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
-			scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
-		{
-			/* condition 4 */
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND4");
-			SetEvent(OPEN_PRICE_GOOD);
-		}
-	}
+	void OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData);
+
 	/************************************************************************/
 	// 止盈判断函数，当价差超过对侧的布林带时，止盈条件成立。
 	/************************************************************************/
-	bool StopWinJudge()
-	{
-		bool lGoodToClose = false;
-		if(mStateMachine.GetState() == PENDING_STATE)
-		{
-			if(OPEN_COND1 == mOpenCond)
-			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine);
-				{
-					SetEvent(MUST_STOP);
-					lGoodToClose = true;
-				}
-			}
-			else if(OPEN_COND2 == mOpenCond)
-			{
-				if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
-				{
-					SetEvent(MUST_STOP);
-					lGoodToClose = true;
-				}
-			}
-			else if(OPEN_COND3 == mOpenCond)
-			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine)
-				{
-					SetEvent(MUST_STOP);
-					lGoodToClose = true;
-				}
-			}
-			else if(OPEN_COND4 == mOpenCond)
-			{
-				if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
-				{
-					SetEvent(MUST_STOP);
-					lGoodToClose = true;
-				}
-			}
-		}
-		return lGoodToClose;
-	}
+	bool StopWinJudge();
+
 	/************************************************************************/
 	// 交易事件接口。
 	/************************************************************************/
-	void SetEvent(TRADE_EVENT aLatestEvent)
-	{
-		// using lock guard to invoke lock and unlock automatically
-		boost::lock_guard<boost::mutex> lLockGuard(mStateMachineMutex);
-		TRADE_STATE lLastState = mStateMachine.GetState();
-		TRADE_STATE lNextState = mStateMachine.SetEvent(aLatestEvent);
-		
-		switch(lNextState)
-		{
-		case IDLE_STATE:
-			/* do nothing */
-			break;
-		case OPENING_SCND_STATE:
-			// avoiding multiple open
-			if(lNextState != lLastState)
-			{
-				OpenScnd();
-			}
-			ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
-			break;
-		case OPENING_PRIM_STATE:
-			// avoiding multiple open
-			if(lNextState != lLastState)
-			{
-				OpenPrim();
-				
-			}
-			ReqQryInvestorPosition(stgArg.primaryInst.c_str());
-			break;
-		case PENDING_STATE:
-			/* do nothing */
-			break;
-		case CLOSING_BOTH_STATE:
-			CloseBoth();
-			break;
-		case CANCELLING_SCND_STATE:
-			CancelScnd();
-			break;
-		case CLOSING_SCND_STATE:
-			CloseScnd();
-			break;
-		case CANCELLING_PRIM_STATE:
-			CancelPrim();
-			break;
-		case WAITING_SCND_CLOSE_STATE:
-			/* do nothing */
-			break;
-		case WAITING_PRIM_CLOSE_STATE:
-			/* do nothing */
-			break;
-		default:
-			break;
-		}
-		
-	}
+	void SetEvent(TRADE_EVENT aLatestEvent);
 
+	/*****************************/
+	/* below are all the callback routines*/
+	virtual void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData);
+	virtual void OnRtnTrade(CThostFtdcTradeField* pTrade);
+	virtual void OnRtnOrder(CThostFtdcOrderField* pOrder);
+	virtual void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorPosition, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast);
+	virtual void OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast) ;
 	/*****************************/
 	/* below are all the initialization routines */
 	// read configuration, set strategy argument, etc.
@@ -439,6 +169,14 @@ private:
 		primBufIndex = 0;
 		scndBufIndex = 0;
 		memset(&stgArg, 0, sizeof(stgArg));
+		mPrimTodayLongPosition = 0;
+		mPrimYdLongPosition = 0;
+		mScndTodayLongPosition = 0;
+		mScndYdLongPosition = 0;
+		mPrimTodayShortPosition = 0;
+		mPrimYdShortPosition = 0;
+		mScndTodayShortPosition = 0;
+		mScndYdShortPosition = 0;
 		// read strategy arguments from configuration file
 		if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
 		{
@@ -595,27 +333,8 @@ private:
 		delete tempConfig;
 	}
 	/*****************************/
-
-	/*****************************/
-	/* below are all the callback routines*/
-	// strategy should be initiated by market data
-	//void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData);
+public:
 	
-	void LogBollData()
-	{
-		BollingerBandData tempData = mBoll.GetBoll(0);
-		tempStream.clear();
-		tempStream.str("");
-		tempStream<<primDataBuf[primBufIndex].lastPrice<<"	"<<scndDataBuf[scndBufIndex].lastPrice<<"	"<<tempData.mMidLine<<"	"<<tempData.mStdDev<<"	"<<tempData.mOutterUpperLine<<"	"<<tempData.mOutterLowerLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mInnerLowerLine;
-		mBollLog.LogThisFast(tempStream.str());
-	}
-	///成交通知
-	//void OnRtnTrade(CThostFtdcTradeField* pTrade);
-	///报单通知
-    //virtual void OnRtnOrder(CThostFtdcOrderField* pOrder);
-	// 查询仓位的应答函数
-	//void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorPosition, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast);
-
 	/* below are all the thread routines */
 	void WaitPrimOpen()
 	{
@@ -720,6 +439,14 @@ public:
 			if(input == "cancel")
 			{
 				CancelOrder(&lastPrimOrder);
+			}
+			if(input == "cancelscnd")
+			{
+				CancelScnd();
+			}
+			if(input == "cancelprim")
+			{
+				CancelPrim();
 			}
 			input.clear();
 		}
