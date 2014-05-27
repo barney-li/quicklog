@@ -333,8 +333,8 @@ void PrimeryAndSecondary::OnRspOrderAction(CThostFtdcInputOrderActionField* pInp
 				&& pInputOrderAction->SessionID == lastScndOrder.sessionId
 				&& strncmp(pInputOrderAction->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
 			{
-				logger.LogThisFast("[EVENT]: PRIM_CANCELLED (from cancel response)");
-				SetEvent(PRIM_CANCELLED);
+				logger.LogThisFast("[EVENT]: SCND_CANCELLED (from cancel response)");
+				SetEvent(SCND_CANCELLED);
 			}
 		}
 	}

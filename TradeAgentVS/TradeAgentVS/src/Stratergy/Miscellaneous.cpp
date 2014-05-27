@@ -8,6 +8,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		{
 			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine);
 			{
+				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
 				lIsClose = true;
 			}
@@ -16,6 +17,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		{
 			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
 			{
+				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
 				lIsClose = true;
 			}
@@ -24,6 +26,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		{
 			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
 			{
+				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
 				lIsClose = true;
 			}
@@ -32,6 +35,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		{
 			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
 			{
+				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
 				lIsClose = true;
 			}
@@ -221,7 +225,8 @@ bool PrimeryAndSecondary::StopWinJudge()
 		{
 			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine);
 			{
-				SetEvent(MUST_STOP);
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
+				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
 			}
 		}
@@ -229,7 +234,8 @@ bool PrimeryAndSecondary::StopWinJudge()
 		{
 			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
 			{
-				SetEvent(MUST_STOP);
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
+				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
 			}
 		}
@@ -237,7 +243,8 @@ bool PrimeryAndSecondary::StopWinJudge()
 		{
 			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine)
 			{
-				SetEvent(MUST_STOP);
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
+				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
 			}
 		}
@@ -245,7 +252,8 @@ bool PrimeryAndSecondary::StopWinJudge()
 		{
 			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
 			{
-				SetEvent(MUST_STOP);
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
+				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
 			}
 		}
@@ -258,7 +266,7 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	boost::lock_guard<boost::mutex> lLockGuard(mStateMachineMutex);
 	TRADE_STATE lLastState = mStateMachine.GetState();
 	TRADE_STATE lNextState = mStateMachine.SetEvent(aLatestEvent);
-		
+	
 	switch(lNextState)
 	{
 	case IDLE_STATE:
@@ -279,7 +287,6 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		}
 		break;
 	case PENDING_STATE:
-		/* do nothing */
 		break;
 	case CLOSING_BOTH_STATE:
 		CloseBoth();
@@ -288,14 +295,17 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		CancelScnd();
 		break;
 	case CLOSING_SCND_STATE:
-		CloseScnd();
+		//CloseScnd();
+		CloseBoth();
 		break;
 	case CANCELLING_PRIM_STATE:
 		CancelPrim();
 		break;
 	case WAITING_SCND_CLOSE_STATE:
+		CloseBoth();
 		break;
 	case WAITING_PRIM_CLOSE_STATE:
+		CloseBoth();
 		break;
 	default:
 		break;

@@ -99,6 +99,18 @@ private:
 	int mScndYdShortPosition;
 	bool mStart;
 	boost::thread* mPeriodicCheckPositionThread;
+	bool mCancelPrimCD;
+	bool mCancelScndCD;
+	bool mClosePrimCD;
+	bool mCloseScndCD;
+	bool mCheckPositionCD;
+	boost::thread* mCoolDownCancelPrimThread;
+	boost::thread* mCoolDownCancelScndThread;
+	boost::thread* mCoolDownClosePrimThread;
+	boost::thread* mCoolDownCloseScndThread;
+	boost::thread* mCoolDownCheckPositionThread;
+	int mOpenPrimId;
+	int mOpenScndId;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -181,6 +193,13 @@ private:
 		mPrimYdShortPosition = 0;
 		mScndTodayShortPosition = 0;
 		mScndYdShortPosition = 0;
+		mCancelPrimCD = true;
+		mCancelScndCD = true;
+		mClosePrimCD = true;
+		mCloseScndCD = true;
+		mCheckPositionCD = true;
+		mOpenPrimId = 0;
+		mOpenScndId = 0;
 		// read strategy arguments from configuration file
 		if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
 		{
@@ -341,15 +360,48 @@ private:
 public:
 	
 	/* below are all the thread routines */
-	void WaitPrimOpen()
+	void WaitPrimOpen(int aId)
 	{
 		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.primOpenTime));
-		SetEvent(PRIM_OPEN_TIMEOUT);
+		//如果没有新的ID产生，那说明还停留在当次的操作
+		if(aId == mOpenPrimId)
+		{
+			SetEvent(PRIM_OPEN_TIMEOUT);
+		}
 	}
-	void WaitScndOpen()
+	void WaitScndOpen(int aId)
 	{
 		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.scndOpenTime));
-		SetEvent(SCND_OPEN_TIMEOUT);
+		//如果没有新的ID产生，那说明还停留在当次的操作
+		if(aId == mOpenScndId)
+		{
+			SetEvent(SCND_OPEN_TIMEOUT);
+		}
+	}
+	void CoolDownCancelPrim()
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		mCancelPrimCD = true;
+	}
+	void CoolDownCancelScnd()
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		mCancelScndCD = true;
+	}
+	void CoolDownClosePrim()
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		mClosePrimCD = true;
+	}
+	void CoolDownCloseScnd()
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		mCloseScndCD = true;
+	}
+	void CoolDownCheckPosition()
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		mCheckPositionCD = true;
 	}
 	void PeriodicCheckPosition()
 	{
@@ -418,6 +470,10 @@ public:
 			{
 				mOpenCond = OPEN_COND4;
 				SetEvent(OPEN_PRICE_GOOD);
+			}
+			if(input == "muststop")
+			{
+				SetEvent(MUST_STOP);
 			}
 			if(input == "buy")
 			{
