@@ -6,7 +6,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 	{
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine);
+			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev);
 			{
 				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
@@ -15,7 +15,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
+			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
@@ -24,7 +24,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		}
 		else if(OPEN_COND3 == mOpenCond)
 		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
+			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
@@ -33,7 +33,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		}
 		else if(OPEN_COND4 == mOpenCond)
 		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < (-1)*stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev + mBoll.GetBoll(0).mMidLine)
+			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: MUST_STOP");
 				SetEvent(MUST_STOP);
@@ -223,7 +223,7 @@ bool PrimeryAndSecondary::StopWinJudge()
 	{
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine);
+			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev);
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
 				SetEvent(CLOSE_PRICE_GOOD);
@@ -232,7 +232,7 @@ bool PrimeryAndSecondary::StopWinJudge()
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
+			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
 				SetEvent(CLOSE_PRICE_GOOD);
@@ -241,7 +241,7 @@ bool PrimeryAndSecondary::StopWinJudge()
 		}
 		else if(OPEN_COND3 == mOpenCond)
 		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice <= mBoll.GetBoll(0).mOutterLowerLine)
+			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
 				SetEvent(CLOSE_PRICE_GOOD);
@@ -250,7 +250,7 @@ bool PrimeryAndSecondary::StopWinJudge()
 		}
 		else if(OPEN_COND4 == mOpenCond)
 		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice >= mBoll.GetBoll(0).mOutterUpperLine)
+			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
 				SetEvent(CLOSE_PRICE_GOOD);

@@ -237,6 +237,12 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"StopBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
+		if(config.ReadInteger(stgArg.winBollAmp, "WinBollAmp") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"WinBollAmp\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"WinBollAmp\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
 		if(config.ReadInteger(stgArg.bollAmpLimit, "BollAmpLimit") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"BollAmpLimit\" in config file"<<endl;

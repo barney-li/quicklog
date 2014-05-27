@@ -102,6 +102,7 @@ namespace Pas
 		int			outterBollAmp;		// 布林带外部振幅
 		int			innerBollAmp;		// 布林带内部振幅
 		int			stopBollAmp;		// 止损振幅
+		int			winBollAmp;			// 止盈振幅
 		int			bollAmpLimit;		// 开仓时的布林带要达到的振幅
 		int			openShares;			// 开仓手数
 		double		ceilingPrice;		// 合理价格上限
