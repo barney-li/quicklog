@@ -111,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\common\ConfigReader.h" />
+    <ClInclude Include="src\common\DataReader.h" />
     <ClInclude Include="src\common\DataTypes.h" />
     <ClInclude Include="src\common\Hook.h" />
     <ClInclude Include="src\common\Log.h" />

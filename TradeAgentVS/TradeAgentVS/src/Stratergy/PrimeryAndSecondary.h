@@ -32,6 +32,8 @@ using namespace Finicial;
 using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
+#define SIMULATION
+#define BACK_TEST
 namespace Pas
 {
 	// strategy init error type
@@ -111,6 +113,8 @@ private:
 	boost::thread* mCoolDownCheckPositionThread;
 	int mOpenPrimId;
 	int mOpenScndId;
+	double mPrimEnterPrice;
+	double mScndEnterPrice;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -166,9 +170,17 @@ private:
 	/************************************************************************/
 	void SetEvent(TRADE_EVENT aLatestEvent);
 
+	/************************************************************************/
+	// 通过开仓时的收盘价与当前的最新价计算浮盈。
+	/************************************************************************/
+	double EstimateProfit();
+
 	/*****************************/
 	/* below are all the callback routines*/
+
+public: 
 	virtual void HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData);
+private:
 	virtual void OnRtnTrade(CThostFtdcTradeField* pTrade);
 	virtual void OnRtnOrder(CThostFtdcOrderField* pOrder);
 	virtual void OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorPosition, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast);
@@ -247,6 +259,12 @@ private:
 		{
 			cout<<"[ERROR]: Can't find symble \"BollAmpLimit\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"BollAmpLimit\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadDouble(stgArg.stopLossPrice, "StopLossPrice") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"StopLossPrice\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"StopLossPrice\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
 		if(config.ReadInteger(stgArg.openShares, "OpenShares") != 0)
@@ -420,6 +438,19 @@ public:
 		}
 	}
 	/*****************************/
+
+#ifdef SIMULATION
+	/************************************************************************/
+	// 异步事件发送函数，以异步的方式延迟发出事件。
+	/************************************************************************/
+	void AsyncEventPoster(TRADE_EVENT aEvent)
+	{
+#ifndef BACK_TEST
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+#endif
+		SetEvent(aEvent);
+	}
+#endif
 public:
 	/* strategy entry */
 	void StartStrategy(void)
@@ -429,9 +460,12 @@ public:
 		string input;
 		if(InitOtherCrap() == ALL_GOOD)
 		{
+#ifndef BACK_TEST
 			InitMarketProcess();
 			InitTradeProcess();
+#endif
 		}
+#ifndef BACK_TEST
 		while(trading)
 		{
 			cin>>input;
@@ -480,6 +514,10 @@ public:
 			if(input == "muststop")
 			{
 				SetEvent(MUST_STOP);
+			}
+			if(input == "closegood")
+			{
+				SetEvent(CLOSE_PRICE_GOOD);
 			}
 			if(input == "buy")
 			{
@@ -547,6 +585,7 @@ public:
 			}
 			input.clear();
 		}
+#endif
 	}
 };
 }

@@ -118,6 +118,9 @@
     <ClInclude Include="src\Stratergy\BollingerBand.h">
       <Filter>src\Stratergy</Filter>
     </ClInclude>
+    <ClInclude Include="src\common\DataReader.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="src\CTPAPI\thostmduserapi.lib">

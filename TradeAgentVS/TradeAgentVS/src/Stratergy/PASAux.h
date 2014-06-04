@@ -104,6 +104,7 @@ namespace Pas
 		int			stopBollAmp;		// 止损振幅
 		int			winBollAmp;			// 止盈振幅
 		int			bollAmpLimit;		// 开仓时的布林带要达到的振幅
+		double		stopLossPrice;		// 止损价
 		int			openShares;			// 开仓手数
 		double		ceilingPrice;		// 合理价格上限
 		double		floorPrice;			// 合理价格下限

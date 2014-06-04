@@ -1,9 +1,35 @@
 #include "PrimeryAndSecondary.h"
+double PrimeryAndSecondary::EstimateProfit()
+{
+	double lProfit = 0;
+	if(BUY_SCND_SELL_PRIM == mTradeDir)
+	{
+		lProfit = scndDataBuf[scndBufIndex].bidPrice - mScndEnterPrice + mPrimEnterPrice - primDataBuf[primBufIndex].askPrice;
+	}
+	else if(BUY_PRIM_SELL_SCND == mTradeDir)
+	{
+		lProfit = mScndEnterPrice - scndDataBuf[scndBufIndex].askPrice + primDataBuf[primBufIndex].bidPrice - mPrimEnterPrice;
+	}
+	else
+	{
+		lProfit = 0;
+		logger.LogThisFast("[ERROR]: illegal trade direction");
+	}
+	return lProfit;
+}
 bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
 {
 	bool lIsClose = false;
 	if(mStateMachine.GetState() == PENDING_STATE)
-	{
+	{	
+		if(EstimateProfit()<stgArg.stopLossPrice)
+		{
+			//使用绝对浮亏来止损
+			logger.LogThis("[EVENT]: MUST_STOP (from estimate profit)");
+			SetEvent(MUST_STOP);
+			lIsClose = true;
+		}
+
 		if(OPEN_COND1 == mOpenCond)
 		{
 			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev);
