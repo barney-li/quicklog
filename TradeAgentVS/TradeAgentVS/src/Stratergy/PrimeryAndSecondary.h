@@ -32,8 +32,12 @@ using namespace Finicial;
 using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
-#define SIMULATION
+
 #define BACK_TEST
+
+#ifdef BACK_TEST
+#define SIMULATION
+#endif
 namespace Pas
 {
 	// strategy init error type

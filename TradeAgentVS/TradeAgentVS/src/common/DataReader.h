@@ -37,6 +37,13 @@ private:
 		MAX_MARKET_DATA
 	}MARKET_DATA_MEMBER;
 public:
+	typedef enum
+	{
+		READ_NO_ERROR,
+		CANNOT_OPEN_LOCAL_DATA,
+		END_OF_FILE
+	}READ_STATUS;
+public:
 	DataReader(string aDataFilePath)
 	{
 		mDataFile.open(aDataFilePath, ios::in);
@@ -45,12 +52,21 @@ public:
 	{
 		mDataFile.close();
 	}
-	CThostFtdcDepthMarketDataField* GetMarketDataLine()
+	READ_STATUS GetMarketDataLine(CThostFtdcDepthMarketDataField** aMarketData)
 	{
+		*aMarketData = NULL;
 		// get these:               TradingDay  InstrumentID        LastPrice       PSPrice         PCPrice         POInterest      OpenPrice       HighestPrice    LowestPrice     Volume  OPI             UpperLimit      LowerLimit      UpdateTime                  Ms      BidPrice1       BidVol1 AskPrice1       AskVol1
-		string lPatternStr = ".*	(\\d+)	([a-zA-Z]{1,2}\\w+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d{2}\\:\\d{2}\\:\\d{2})	(\\d+)	(\\d+\\.\\d+)	(\\d+)	(\\d+\\.\\d+)	(\\d+)	.*";
+		string lPatternStr = ".*	(\\d{8})	([a-zA-Z]{1,2}\\w+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d{2}\\:\\d{2}\\:\\d{2})	(\\d+)	(\\d+\\.\\d+)	(\\d+)	(\\d+\\.\\d+)	(\\d+)	.*";
 		boost::regex lPattern(lPatternStr);
 		boost::smatch lResult;
+		if(!mDataFile.is_open())
+		{
+			return CANNOT_OPEN_LOCAL_DATA;
+		}
+		if(mDataFile.eof())
+		{
+			return END_OF_FILE;
+		}
 		if(mDataFile.is_open() && !mDataFile.eof())
 		{
 			string lDataLine;
@@ -59,11 +75,11 @@ public:
 			{
 				if(lResult.size() == MAX_MARKET_DATA)
 				{
-					return TransferData(lResult);
+					*aMarketData = TransferData(lResult);
 				}
 			}
 		}
-		return NULL;
+		return READ_NO_ERROR;
 	}
 private:
 	CThostFtdcDepthMarketDataField* TransferData(boost::smatch aRawData)

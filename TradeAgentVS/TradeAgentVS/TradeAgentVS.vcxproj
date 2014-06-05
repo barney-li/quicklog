@@ -117,6 +117,7 @@
     <ClInclude Include="src\common\Log.h" />
     <ClInclude Include="src\common\ParseTradeInfo.h" />
     <ClInclude Include="src\common\Timer.h" />
+    <ClInclude Include="src\common\BackTestAgent.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcMdApi.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcTraderApi.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiDataType.h" />

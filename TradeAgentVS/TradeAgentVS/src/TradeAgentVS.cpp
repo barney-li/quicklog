@@ -13,7 +13,7 @@
 #include <Log.h>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "common/DataReader.h"
+#include "common/BackTestAgent.h"
 //#include <CloseAndFar.h>
 using namespace boost::gregorian;
 using namespace boost::posix_time;
@@ -34,27 +34,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	Pas::PrimeryAndSecondary strategy;
 	strategy.StartStrategy();
-#ifdef BACK_TEST
-	DataReader* primData = new DataReader("data/MarketData/ag1412.dat");
-	DataReader* scndData = new DataReader("data/MarketData/ag1406.dat");
-	while(1)
-	{
-		CThostFtdcDepthMarketDataField* tempData = primData->GetMarketDataLine();
-		if(tempData != NULL)
-		{
-			strategy.HookOnRtnDepthMarketData(tempData);
-		}
-		tempData = scndData->GetMarketDataLine();
-		if(tempData != NULL)
-		{
-			strategy.HookOnRtnDepthMarketData(tempData);
-		}
-		//boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-	}
-#endif
 	//CloseAndFar caf;
 	//caf.StartStratergy();
-
+#ifdef BACK_TEST
+	BackTestAgent test;
+	test.StartBackTest();
+#endif
 
 	return 0;
 }
