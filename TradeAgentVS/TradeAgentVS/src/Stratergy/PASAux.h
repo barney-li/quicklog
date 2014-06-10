@@ -12,8 +12,6 @@ namespace Pas
 	{
 		OPEN_COND1,
 		OPEN_COND2,
-		OPEN_COND3,
-		OPEN_COND4,
 		ILLEGAL_COND
 	}OPEN_CONDITION;
 	// trading direction

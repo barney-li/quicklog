@@ -1,5 +1,7 @@
 #include <PASAux.h>
 #include <Log.h>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/lock_guard.hpp>
 using namespace Pas;
 namespace Pas
 {
@@ -8,6 +10,7 @@ class PasStateMachine
 private:
 	TRADE_STATE mTradeState;
 	Log mLogger;
+	boost::mutex mTradeStateMutex;
 public:
 	PasStateMachine()
 	{

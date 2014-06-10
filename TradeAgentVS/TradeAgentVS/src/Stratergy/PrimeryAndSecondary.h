@@ -41,13 +41,24 @@ using namespace Pas;
 namespace Pas
 {
 	// strategy init error type
-	typedef enum InitErrorType
+	typedef enum
 	{
 		ALL_GOOD = 0,
 		CONFIG_ERROR,
 		ALLOC_ERROR,
 		OTHER_ERROR
 
+	}InitErrorType;
+	// time zone type
+	struct TimeZone
+	{
+		double mStartTime;
+		double mEndTime;
+		TimeZone(double aStartTime, double aEndTime)
+		{
+			mStartTime = aStartTime;
+			mEndTime = aEndTime;
+		}
 	};
 class PrimeryAndSecondary : public TradeProcess, public Hook, public Timer
 {
@@ -140,7 +151,7 @@ private:
 	/*****************************/
 	/* auxalary routines */
 	// check if this trade must be ended now
-	bool StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMarketData);
+	bool StopLoseJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData);
 
 	void LogBollData();
 
@@ -155,19 +166,19 @@ private:
 	// 但是为了避免价差处在布林带边缘时反复触发price bad的条件，因此一旦开仓
 	// 条件被满足后，直到价差落回内层布林带以内才触发price bad。
 	/************************************************************************/
-	void StopOpenJudge();
+	void StopOpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData);
 
 	/************************************************************************/
 	// 开仓仲裁函数，若布林带宽度达到设定值，且主力与次主力合约的价差满足
 	// 4种开仓条件之一，则抛出事件OPEN_PRICE_GOOD。在开仓次主力合约时，开仓
 	// 条件会被再次验证。
 	/************************************************************************/
-	void OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData);
+	void OpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData);
 
 	/************************************************************************/
 	// 止盈判断函数，当价差超过对侧的布林带时，止盈条件成立。
 	/************************************************************************/
-	bool StopWinJudge();
+	bool StopWinJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData);
 
 	/************************************************************************/
 	// 交易事件接口。
@@ -179,6 +190,10 @@ private:
 	/************************************************************************/
 	double EstimateProfit();
 
+	/************************************************************************/
+	// 判断是否处于交易时间
+	/************************************************************************/
+	bool IsTradeTime(BasicMarketData const& aLastData, double aTimeCusion);
 	/*****************************/
 	/* below are all the callback routines*/
 

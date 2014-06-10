@@ -11,10 +11,37 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 		/* put open judge here*/
 		if(mBoll.IsBollReady() && mStart)
 		{
-			OpenJudge(pDepthMarketData);
-			StopOpenJudge();
-			StopLoseJudge(pDepthMarketData);
-			StopWinJudge();
+			TRADE_STATE lCurState = mStateMachine.GetState();
+			switch(lCurState)
+			{
+			case IDLE_STATE:
+				OpenJudge(*pDepthMarketData);
+				break;
+			case OPENING_SCND_STATE:
+				StopOpenJudge(*pDepthMarketData);
+				break;
+			case OPENING_PRIM_STATE:
+				StopOpenJudge(*pDepthMarketData);
+				break;
+			case PENDING_STATE:
+				StopLoseJudge(*pDepthMarketData);
+				StopWinJudge(*pDepthMarketData);
+				break;
+			case CLOSING_BOTH_STATE:
+				break;
+			case CANCELLING_SCND_STATE:
+				break;
+			case CLOSING_SCND_STATE:
+				break;
+			case CANCELLING_PRIM_STATE:
+				break;
+			case WAITING_SCND_CLOSE_STATE:
+				break;
+			case WAITING_PRIM_CLOSE_STATE:
+				break;
+			default:
+				break;
+			}
 		}
 			
 	}

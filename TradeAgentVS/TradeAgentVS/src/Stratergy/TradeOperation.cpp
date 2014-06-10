@@ -32,32 +32,6 @@ void PrimeryAndSecondary::OpenScnd()
 		}
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
 	}
-	else if( OPEN_COND3 == mOpenCond )
-	{
-		/* condition 3 */
-		
-		logger.LogThisFast("[ACTION]: SHORT_SCND");
-		mTradeDir = BUY_PRIM_SELL_SCND;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
-		{
-			logger.LogThisFast("[ERROR]: sell scnd error");
-		}
-		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
-	}
-	else if( OPEN_COND4 == mOpenCond )
-	{
-		/* condition 4 */
-		
-		logger.LogThisFast("[ACTION]: BUY_SCND");
-		mTradeDir = BUY_SCND_SELL_PRIM;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
-		{
-			logger.LogThisFast("[ERROR]: buy scnd error");
-		}
-		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
-	}
 	else
 	{
 		logger.LogThisFast("[ERROR]: wrong open scnd condition");
@@ -269,30 +243,6 @@ void PrimeryAndSecondary::OpenScnd()
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_OPENED);
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
 		mScndTodayShortPosition = 1;
-	}
-	else if( OPEN_COND3 == mOpenCond )
-	{
-		/* condition 3 */
-		
-		logger.LogThisFast("[ACTION]: SHORT_SCND");
-		logger.LogThisFast(lPrice.str());
-		mTradeDir = BUY_PRIM_SELL_SCND;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_OPENED);
-		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
-		mScndTodayShortPosition = 1;
-	}
-	else if( OPEN_COND4 == mOpenCond )
-	{
-		/* condition 4 */
-		
-		logger.LogThisFast("[ACTION]: BUY_SCND");
-		logger.LogThisFast(lPrice.str());
-		mTradeDir = BUY_SCND_SELL_PRIM;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_OPENED);
-		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
-		mScndTodayLongPosition = 1;
 	}
 	else
 	{

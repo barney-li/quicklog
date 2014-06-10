@@ -4,11 +4,13 @@ double PrimeryAndSecondary::EstimateProfit()
 	double lProfit = 0;
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
-		lProfit = scndDataBuf[scndBufIndex].bidPrice - mScndEnterPrice + mPrimEnterPrice - primDataBuf[primBufIndex].askPrice;
+		lProfit = (mPrimEnterPrice-mScndEnterPrice)-(primDataBuf[primBufIndex].askPrice-scndDataBuf[scndBufIndex].bidPrice);
+		//lProfit = scndDataBuf[scndBufIndex].lastPrice - mScndEnterPrice + mPrimEnterPrice - primDataBuf[primBufIndex].lastPrice;
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
-		lProfit = mScndEnterPrice - scndDataBuf[scndBufIndex].askPrice + primDataBuf[primBufIndex].bidPrice - mPrimEnterPrice;
+		lProfit = (primDataBuf[primBufIndex].bidPrice-scndDataBuf[scndBufIndex].askPrice)-(mPrimEnterPrice-mScndEnterPrice);
+		//lProfit = mScndEnterPrice - scndDataBuf[scndBufIndex].lastPrice + primDataBuf[primBufIndex].lastPrice - mPrimEnterPrice;
 	}
 	else
 	{
@@ -17,7 +19,33 @@ double PrimeryAndSecondary::EstimateProfit()
 	}
 	return lProfit;
 }
-bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
+void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
+{
+	// if the bollinger band is not wide enough, then return
+	if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < stgArg.bollAmpLimit)
+	{
+		return;
+	}
+	// using bid_price - ask_price to do the open timing judge, this is rougher to meet
+	if(	primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
+	//if(	primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mOutterUpperLine )
+	{
+		/* condition 1 */
+		mOpenCond = OPEN_COND1;
+		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND1");
+		SetEvent(OPEN_PRICE_GOOD);
+	}
+	else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
+	//else if( primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mOutterLowerLine )
+	{
+		/* condition 2 */
+		mOpenCond = OPEN_COND2;
+		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND2");
+		SetEvent(OPEN_PRICE_GOOD);
+	}
+
+}
+bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
 {
 	bool lIsClose = false;
 	if(mStateMachine.GetState() == PENDING_STATE)
@@ -25,57 +53,65 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField* pDepthMa
 		if(EstimateProfit()<stgArg.stopLossPrice)
 		{
 			//使用绝对浮亏来止损
-			logger.LogThis("[EVENT]: MUST_STOP (from estimate profit)");
+			logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + (string)"	[EVENT]: MUST_STOP (from estimate profit)");
 			SetEvent(MUST_STOP);
 			lIsClose = true;
 		}
 
+		//if(OPEN_COND1 == mOpenCond)
+		//{
+		//	if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev);
+		//	{
+		//		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: MUST_STOP");
+		//		SetEvent(MUST_STOP);
+		//		lIsClose = true;
+		//	}
+		//}
+		//else if(OPEN_COND2 == mOpenCond)
+		//{
+		//	if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
+		//	{
+		//		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: MUST_STOP");
+		//		SetEvent(MUST_STOP);
+		//		lIsClose = true;
+		//	}
+		//}
+	}
+		
+	return lIsClose;
+}
+bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
+{
+	bool lGoodToClose = false;
+	if(mStateMachine.GetState() == PENDING_STATE)
+	{
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev);
+			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
-				logger.LogThisFast("[EVENT]: MUST_STOP");
-				SetEvent(MUST_STOP);
-				lIsClose = true;
+				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: CLOSE_PRICE_GOOD_COND1");
+				SetEvent(CLOSE_PRICE_GOOD);
+				lGoodToClose = true;
 			}
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
+			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
 			{
-				logger.LogThisFast("[EVENT]: MUST_STOP");
-				SetEvent(MUST_STOP);
-				lIsClose = true;
-			}
-		}
-		else if(OPEN_COND3 == mOpenCond)
-		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
-			{
-				logger.LogThisFast("[EVENT]: MUST_STOP");
-				SetEvent(MUST_STOP);
-				lIsClose = true;
-			}
-		}
-		else if(OPEN_COND4 == mOpenCond)
-		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.stopBollAmp*mBoll.GetBoll(0).mStdDev)
-			{
-				logger.LogThisFast("[EVENT]: MUST_STOP");
-				SetEvent(MUST_STOP);
-				lIsClose = true;
+				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: CLOSE_PRICE_GOOD_COND2");
+				SetEvent(CLOSE_PRICE_GOOD);
+				lGoodToClose = true;
 			}
 		}
 	}
-		
-	return lIsClose;
+	return lGoodToClose;
 }
 void PrimeryAndSecondary::LogBollData()
 {
 	BollingerBandData tempData = mBoll.GetBoll(0);
 	tempStream.clear();
 	tempStream.str("");
-	tempStream<<primDataBuf[primBufIndex].lastPrice<<"	"<<scndDataBuf[scndBufIndex].lastPrice<<"	"<<tempData.mMidLine<<"	"<<tempData.mStdDev<<"	"<<tempData.mOutterUpperLine<<"	"<<tempData.mOutterLowerLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mInnerLowerLine;
+	tempStream<<primDataBuf[primBufIndex].lastPrice<<"	"<<primDataBuf[primBufIndex].updateTime<<"	"<<scndDataBuf[scndBufIndex].lastPrice<<"	"<<scndDataBuf[scndBufIndex].updateTime<<"	"<<tempData.mMidLine<<"	"<<tempData.mStdDev<<"	"<<tempData.mOutterUpperLine<<"	"<<tempData.mOutterLowerLine;
 	mBollLog.LogThisFast(tempStream.str());
 }
 bool PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData)
@@ -155,7 +191,7 @@ bool PrimeryAndSecondary::VerifyMarketData(CThostFtdcDepthMarketDataField const 
 	if(pData.LowerLimitPrice>stgArg.ceilingPrice || pData.LowerLimitPrice<stgArg.floorPrice) return false;
 	return true;
 }
-void PrimeryAndSecondary::StopOpenJudge()
+void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
 {
 	if(mStateMachine.GetState() != OPENING_SCND_STATE)
 	{
@@ -167,7 +203,7 @@ void PrimeryAndSecondary::StopOpenJudge()
 		{
 			if(primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice < mBoll.GetBoll(0).mInnerUpperLine);
 			{
-				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
+				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_NOT_GOOD");
 				SetEvent(OPEN_PRICE_BAD);
 			}
 		}
@@ -175,116 +211,15 @@ void PrimeryAndSecondary::StopOpenJudge()
 		{
 			if(primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > mBoll.GetBoll(0).mInnerLowerLine)
 			{
-				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-				SetEvent(OPEN_PRICE_BAD);
-			}
-		}
-		else if(OPEN_COND3 == mOpenCond)
-		{
-			if(scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice < mBoll.GetBoll(0).mInnerUpperLine)
-			{
-				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
-				SetEvent(OPEN_PRICE_BAD);
-			}
-		}
-		else if(OPEN_COND4 == mOpenCond)
-		{
-			if(scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > mBoll.GetBoll(0).mInnerLowerLine)
-			{
-				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD");
+				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_NOT_GOOD");
 				SetEvent(OPEN_PRICE_BAD);
 			}
 		}
 		else
 		{
-			logger.LogThisFast("[FATAL ERROR]: ILLEGAL OPEN COND");
+			logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[FATAL ERROR]: ILLEGAL OPEN COND");
 		}
 	}
-}
-void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField* pDepthMarketData)
-{
-	// if the bollinger band is not wide enough, then return
-	if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < stgArg.bollAmpLimit)
-	{
-		return;
-	}
-	// using bid_price - ask_price to do the open timing judge, this is rougher to meet
-	if( primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > 0 &&
-		primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
-	{
-		/* condition 1 */
-		mOpenCond = OPEN_COND1;
-		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1");
-		SetEvent(OPEN_PRICE_GOOD);
-	}
-	else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > 0 &&
-		primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
-	{
-		/* condition 2 */
-		mOpenCond = OPEN_COND2;
-		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2");
-		SetEvent(OPEN_PRICE_GOOD);
-	}
-	else if( scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > 0 &&
-		scndDataBuf[scndBufIndex].bidPrice - primDataBuf[primBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
-	{
-		/* condition 3 */
-		mOpenCond = OPEN_COND3;
-		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND3");
-		SetEvent(OPEN_PRICE_GOOD);
-	}
-	else if( scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > 0 &&
-		scndDataBuf[scndBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
-	{
-		/* condition 4 */
-		mOpenCond = OPEN_COND4;
-		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND4");
-		SetEvent(OPEN_PRICE_GOOD);
-	}
-}
-bool PrimeryAndSecondary::StopWinJudge()
-{
-	bool lGoodToClose = false;
-	if(mStateMachine.GetState() == PENDING_STATE)
-	{
-		if(OPEN_COND1 == mOpenCond)
-		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev);
-			{
-				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
-				SetEvent(CLOSE_PRICE_GOOD);
-				lGoodToClose = true;
-			}
-		}
-		else if(OPEN_COND2 == mOpenCond)
-		{
-			if(primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
-			{
-				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
-				SetEvent(CLOSE_PRICE_GOOD);
-				lGoodToClose = true;
-			}
-		}
-		else if(OPEN_COND3 == mOpenCond)
-		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice < mBoll.GetBoll(0).mMidLine - stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
-			{
-				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
-				SetEvent(CLOSE_PRICE_GOOD);
-				lGoodToClose = true;
-			}
-		}
-		else if(OPEN_COND4 == mOpenCond)
-		{
-			if(scndDataBuf[scndBufIndex].lastPrice - primDataBuf[primBufIndex].lastPrice > mBoll.GetBoll(0).mMidLine + stgArg.winBollAmp*mBoll.GetBoll(0).mStdDev)
-			{
-				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD");
-				SetEvent(CLOSE_PRICE_GOOD);
-				lGoodToClose = true;
-			}
-		}
-	}
-	return lGoodToClose;
 }
 void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 {
@@ -321,7 +256,6 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		CancelScnd();
 		break;
 	case CLOSING_SCND_STATE:
-		//CloseScnd();
 		CloseBoth();
 		break;
 	case CANCELLING_PRIM_STATE:
@@ -336,5 +270,12 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	default:
 		break;
 	}
-		
+	
+}
+
+bool PrimeryAndSecondary::IsTradeTime(BasicMarketData const& aLastData, double aTimeCusion)
+{
+	boost::posix_time::ptime time1;
+	time1 = time_from_string("13:30:00");
+	return false;
 }

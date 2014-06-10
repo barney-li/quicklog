@@ -26,12 +26,18 @@ public:
 	// constructor
 	BollingerBand()
 	{
+		InitAllData();
+	}
+	// initialize private data
+	void InitAllData()
+	{
 		mSizeIncrease = 4096;
 		mPrice.resize(mSizeIncrease, 0);
 		mBollData.resize(mSizeIncrease);
 		mIndex = 0;
 		mBollPeriod = 0;
 		mReservedAccuracy = 10000;
+		mDataValid = false;
 	}
 	bool IsBollReady()
 	{
