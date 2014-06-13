@@ -1,3 +1,4 @@
+#define BOOST_DATE_TIME_SOURCE
 #include <PASAux.h>
 #include <Log.h>
 #include <boost/thread/mutex.hpp>
@@ -88,7 +89,7 @@ private:
 		{
 			return OPENING_PRIM_STATE;
 		}
-		else if(OPEN_PRICE_BAD == aLatestEvent || SCND_OPEN_TIMEOUT == aLatestEvent)
+		else if(OPEN_PRICE_BAD == aLatestEvent || SCND_OPEN_TIMEOUT == aLatestEvent || NOT_TRADING_TIME == aLatestEvent)
 		{
 			return CANCELLING_SCND_STATE;
 		}
@@ -103,7 +104,7 @@ private:
 		{
 			return PENDING_STATE;
 		}
-		else if(OPEN_PRICE_BAD == aLatestEvent || PRIM_OPEN_TIMEOUT == aLatestEvent)
+		else if(OPEN_PRICE_BAD == aLatestEvent || PRIM_OPEN_TIMEOUT == aLatestEvent || NOT_TRADING_TIME == aLatestEvent)
 		{
 			return CANCELLING_PRIM_STATE;
 		}
@@ -114,7 +115,7 @@ private:
 	}
 	TRADE_STATE HandlePendingState(TRADE_EVENT aLatestEvent)
 	{
-		if(CLOSE_PRICE_GOOD == aLatestEvent || MUST_STOP == aLatestEvent )
+		if(CLOSE_PRICE_GOOD == aLatestEvent || MUST_STOP == aLatestEvent || NOT_TRADING_TIME == aLatestEvent)
 		{
 			return CLOSING_BOTH_STATE;
 		}

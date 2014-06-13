@@ -1,7 +1,9 @@
 #pragma once
 #include "DataReader.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include "../Stratergy/PrimeryAndSecondary.h"
 using namespace std;
+using namespace boost::posix_time;
 class BackTestAgent
 {
 private:
@@ -89,6 +91,7 @@ private:
 	void ResetData(CThostFtdcDepthMarketDataField* aMarketData)
 	{
 		memset(aMarketData, 0, sizeof(CThostFtdcDepthMarketDataField));
+		memset(aMarketData, 0, sizeof(CThostFtdcDepthMarketDataField));
 	}
 	bool IsDataReseted(CThostFtdcDepthMarketDataField* aMarketData)
 	{
@@ -108,37 +111,33 @@ private:
 	/************************************************************************/
 	int WhoIsNext(CThostFtdcDepthMarketDataField* aPrimData, CThostFtdcDepthMarketDataField* aScndData)
 	{
-		string lPrimDate = aPrimData->TradingDay;
-		string lScndDate = aScndData->TradingDay;
-		string lPrimTime;
-		string lScndTime;
-		double lPrimDateTime = 0;
-		double lScndDateTime = 0;
-		char lTime[7];
-		lTime[0] = aPrimData->UpdateTime[0];
-		lTime[1] = aPrimData->UpdateTime[1];
-		lTime[2] = aPrimData->UpdateTime[3];
-		lTime[3] = aPrimData->UpdateTime[4];
-		lTime[4] = aPrimData->UpdateTime[6];
-		lTime[5] = aPrimData->UpdateTime[7];
-		lTime[6] = aPrimData->UpdateTime[8];
-		lPrimTime = (char*)lTime;
-		lTime[0] = aScndData->UpdateTime[0];
-		lTime[1] = aScndData->UpdateTime[1];
-		lTime[2] = aScndData->UpdateTime[3];
-		lTime[3] = aScndData->UpdateTime[4];
-		lTime[4] = aScndData->UpdateTime[6];
-		lTime[5] = aScndData->UpdateTime[7];
-		lTime[6] = aScndData->UpdateTime[8];
-		lScndTime = (char*)lTime;
-		string test = lPrimDate+lPrimTime;
-		lPrimDateTime = atof((lPrimDate+lPrimTime).c_str())*1000+aPrimData->UpdateMillisec;
-		lScndDateTime = atof((lScndDate+lScndTime).c_str())*1000+aScndData->UpdateMillisec;
-		if(lPrimDateTime < lScndDateTime)
+		string lPrimTime = aPrimData->UpdateTime;
+		string lScndTime = aScndData->UpdateTime;
+		if(lPrimTime.size() != 8)
 		{
 			return NEXT_PRIM;
 		}
-		else if(lPrimDateTime > lScndDateTime)
+		if(lScndTime.size() != 8)
+		{
+			return NEXT_SCND;
+		}
+		ptime lPrimPosixTime = time_from_string((string)"2000-01-01 "+lPrimTime);
+		//对于凌晨时间，使用第二日的日期
+		if(lPrimPosixTime<time_from_string("2000-01-01 04:00:00"))
+		{
+			lPrimPosixTime = time_from_string((string)"2000-01-02 "+lPrimTime);
+		}
+		ptime lScndPosixTime = time_from_string((string)"2000-01-01 "+lScndTime);
+		if(lScndPosixTime<time_from_string("2000-01-01 04:00:00"))
+		{
+			lScndPosixTime = time_from_string((string)"2000-01-02 "+lScndTime);
+		}
+
+		if(lPrimPosixTime < lScndPosixTime)
+		{
+			return NEXT_PRIM;
+		}
+		else if(lPrimPosixTime > lScndPosixTime)
 		{
 			return NEXT_SCND;
 		}

@@ -193,7 +193,7 @@ private:
 	/************************************************************************/
 	// 判断是否处于交易时间
 	/************************************************************************/
-	bool IsTradeTime(BasicMarketData const& aLastData, double aTimeCusion);
+	bool IsTradeTime(string aDataTime);
 	/*****************************/
 	/* below are all the callback routines*/
 

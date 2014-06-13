@@ -108,6 +108,15 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 }
 void PrimeryAndSecondary::LogBollData()
 {
+	//先判断是否合法字符串
+	if(primDataBuf[primBufIndex].updateTime[8] != '\0')
+	{
+		return;
+	}
+	if(scndDataBuf[scndBufIndex].updateTime[8] != '\0')
+	{
+		return;
+	}
 	BollingerBandData tempData = mBoll.GetBoll(0);
 	tempStream.clear();
 	tempStream.str("");
@@ -273,9 +282,40 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	
 }
 
-bool PrimeryAndSecondary::IsTradeTime(BasicMarketData const& aLastData, double aTimeCusion)
+bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 {
-	boost::posix_time::ptime time1;
-	time1 = time_from_string("13:30:00");
-	return false;
+	// any valid time should be in size of 8
+	if(aDataTime.size() != 8)
+	{
+		return false;
+	}
+	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
+	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
+	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 09:01:00"), time_from_string("2000-01-01 11:29:00"));
+	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 13:31:00"), time_from_string("2000-01-01 14:59:00"));
+	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 21:01:00"), time_from_string("2000-01-01 24:00:00"));
+	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 00:00:00"), time_from_string("2000-01-01 02:29:00"));
+	if(lTradePeriod1.contains(lCurTime))
+	{
+		return true;
+	}
+	else if(lTradePeriod2.contains(lCurTime))
+	{
+		return true;
+	}
+	else if(lTradePeriod3.contains(lCurTime))
+	{
+		return true;
+	}
+	else if(lTradePeriod4.contains(lCurTime))
+	{
+		return true;
+	}
+	else
+	{
+		logger.LogThisFast("ServerTime:	"+aDataTime+"	[EVENT]: NOT_TRADING_TIME");
+		mBoll.InitAllData();
+		SetEvent(NOT_TRADING_TIME);
+		return false;
+	}
 }

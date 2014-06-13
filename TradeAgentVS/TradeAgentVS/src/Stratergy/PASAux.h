@@ -51,6 +51,7 @@ namespace Pas
 		SCND_CLOSED,
 		CLOSE_PRICE_GOOD,
 		MUST_STOP,
+		NOT_TRADING_TIME,
 		MAX_EVENT
 	}TRADE_EVENT;
 
@@ -267,6 +268,9 @@ public:
 			break;
 		case MUST_STOP:
 			lThisEvent = "MUST_STOP";
+			break;
+		case NOT_TRADING_TIME:
+			lThisEvent = "NOT_TRADING_TIME";
 			break;
 		default:
 			lThisEvent = "UNKNOWN_EVENT";

@@ -7,23 +7,29 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 	{
 		//calculate Boll Band
 		mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-		LogBollData();
-		/* put open judge here*/
-		if(mBoll.IsBollReady() && mStart)
+		//LogBollData();
+		
+		if(mBoll.IsBollReady())
 		{
 			TRADE_STATE lCurState = mStateMachine.GetState();
 			switch(lCurState)
 			{
 			case IDLE_STATE:
-				OpenJudge(*pDepthMarketData);
+				if(mStart && IsTradeTime(pDepthMarketData->UpdateTime))
+				{
+					OpenJudge(*pDepthMarketData);
+				}
 				break;
 			case OPENING_SCND_STATE:
+				IsTradeTime(pDepthMarketData->UpdateTime);
 				StopOpenJudge(*pDepthMarketData);
 				break;
 			case OPENING_PRIM_STATE:
+				IsTradeTime(pDepthMarketData->UpdateTime);
 				StopOpenJudge(*pDepthMarketData);
 				break;
 			case PENDING_STATE:
+				IsTradeTime(pDepthMarketData->UpdateTime);
 				StopLoseJudge(*pDepthMarketData);
 				StopWinJudge(*pDepthMarketData);
 				break;
@@ -47,7 +53,8 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 	}
 	//CheckPosition();
 	BollingerBandData lBoll = mBoll.GetBoll(0);
-	cout<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
+	//cout<<pDepthMarketData->UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
+	cout<<pDepthMarketData->UpdateTime<<endl;
 }
 ///成交通知
 void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
