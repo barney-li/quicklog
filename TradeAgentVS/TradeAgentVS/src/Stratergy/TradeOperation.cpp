@@ -287,26 +287,14 @@ void PrimeryAndSecondary::CloseScnd()
 		return;
 	}
 	//平多头
-	if(mScndYdLongPosition>0)
-	{
-		logger.LogThisFast("[ACTION]: SELL_SCND");
-		logger.LogThisFast(lPrice.str());
-		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_CLOSED);
-	}
-	if(mScndTodayLongPosition>0)
+	if(OPEN_COND1 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: SELL_SCND");
 		logger.LogThisFast(lPrice.str());
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_CLOSED);
 	}
 	//平空头
-	if(mScndYdShortPosition>0)
-	{
-		logger.LogThisFast("[ACTION]: COVER_SCND");
-		logger.LogThisFast(lPrice.str());
-		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_CLOSED);
-	}
-	if(mScndTodayShortPosition>0)
+	if(OPEN_COND2 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: COVER_SCND");
 		logger.LogThisFast(lPrice.str());
@@ -325,32 +313,37 @@ void PrimeryAndSecondary::ClosePrim()
 		return;
 	}
 	//平空头
-	if(mPrimYdShortPosition>0)
+	if(OPEN_COND1 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: COVER_PRIM");
 		logger.LogThisFast(lPrice.str());
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_CLOSED);
 	}
-	if(mPrimTodayShortPosition>0)
-	{
-		logger.LogThisFast("[ACTION]: COVER_PRIM");
-		logger.LogThisFast(lPrice.str());
-		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_CLOSED);
-	} 
 
 	//平多头
-	if(mPrimYdLongPosition>0)
+	if(OPEN_COND2 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: SELL_PRIM");
 		logger.LogThisFast(lPrice.str());
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_CLOSED);
 	}
-	if(mPrimTodayLongPosition>0)
+	tempStream.clear();
+	tempStream.str("");
+	tempStream<<"estimate profit:	"<<EstimateProfit();
+	logger.LogThisFast(tempStream.str());
+#ifdef BACK_TEST
+	mProfitLog.LogThisFast(tempStream.str());
+	double lTempProfit = EstimateProfit();
+	if(lTempProfit > 0)
 	{
-		logger.LogThisFast("[ACTION]: SELL_PRIM");
-		logger.LogThisFast(lPrice.str());
-		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_CLOSED);
+		mWin++;
 	}
+	else
+	{
+		mLose++;
+	}
+	mTotalProfit += lTempProfit;
+#endif
 	mClosePrimCD = false;
 	mCoolDownClosePrimThread = new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownClosePrim, this));
 }
@@ -366,10 +359,6 @@ void PrimeryAndSecondary::CloseBoth()
 {
 	CloseScnd();
 	ClosePrim();
-	tempStream.clear();
-	tempStream.str("");
-	tempStream<<"estimate profit: "<<EstimateProfit();
-	logger.LogThisFast(tempStream.str());
 }
 void PrimeryAndSecondary::CheckPrimPosition()
 {

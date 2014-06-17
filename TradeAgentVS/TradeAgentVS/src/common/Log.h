@@ -40,9 +40,9 @@ public:
 		}
 	}
 	// write message into file immediately
-	void LogThis(char* message, bool enter = true);
+	void LogThis(const char* message, bool enter = true);
 	// write message into file immediately without a time stamp
-	void LogThisNoTimeStamp(char* message, bool enter = true);
+	void LogThisNoTimeStamp(const char* message, bool enter = true);
 	// write message into buffer and return, it will be synced to disk by a background task
 	void LogThisFast(string message, bool enter = true);
 	// write message into buffer and return without a time stamp, it will be synced to disk by a background task

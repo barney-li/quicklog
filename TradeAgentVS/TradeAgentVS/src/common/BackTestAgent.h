@@ -1,9 +1,9 @@
 #pragma once
 #include "DataReader.h"
-#include <boost/date_time/posix_time/posix_time.hpp>
+//#include <boost/date_time/posix_time/posix_time.hpp>
 #include "../Stratergy/PrimeryAndSecondary.h"
-using namespace std;
-using namespace boost::posix_time;
+//using namespace std;
+//using namespace boost::posix_time;
 class BackTestAgent
 {
 private:
@@ -88,11 +88,13 @@ private:
 	CThostFtdcDepthMarketDataField mScndData;
 	CThostFtdcDepthMarketDataField mEmptyData;
 private:
+	//清空缓冲区内的数据，这样子才会有新的数据被写入
 	void ResetData(CThostFtdcDepthMarketDataField* aMarketData)
 	{
 		memset(aMarketData, 0, sizeof(CThostFtdcDepthMarketDataField));
 		memset(aMarketData, 0, sizeof(CThostFtdcDepthMarketDataField));
 	}
+	//判断是否缓冲区被清空
 	bool IsDataReseted(CThostFtdcDepthMarketDataField* aMarketData)
 	{
 		if(memcmp(aMarketData, &mEmptyData, sizeof(CThostFtdcDepthMarketDataField))==0)
@@ -111,28 +113,8 @@ private:
 	/************************************************************************/
 	int WhoIsNext(CThostFtdcDepthMarketDataField* aPrimData, CThostFtdcDepthMarketDataField* aScndData)
 	{
-		string lPrimTime = aPrimData->UpdateTime;
-		string lScndTime = aScndData->UpdateTime;
-		if(lPrimTime.size() != 8)
-		{
-			return NEXT_PRIM;
-		}
-		if(lScndTime.size() != 8)
-		{
-			return NEXT_SCND;
-		}
-		ptime lPrimPosixTime = time_from_string((string)"2000-01-01 "+lPrimTime);
-		//对于凌晨时间，使用第二日的日期
-		if(lPrimPosixTime<time_from_string("2000-01-01 04:00:00"))
-		{
-			lPrimPosixTime = time_from_string((string)"2000-01-02 "+lPrimTime);
-		}
-		ptime lScndPosixTime = time_from_string((string)"2000-01-01 "+lScndTime);
-		if(lScndPosixTime<time_from_string("2000-01-01 04:00:00"))
-		{
-			lScndPosixTime = time_from_string((string)"2000-01-02 "+lScndTime);
-		}
-
+		ptime lPrimPosixTime = ProcessTime(aPrimData);
+		ptime lScndPosixTime = ProcessTime(aScndData);
 		if(lPrimPosixTime < lScndPosixTime)
 		{
 			return NEXT_PRIM;
@@ -146,5 +128,36 @@ private:
 			return NEXT_BOTH;
 		}
 	}
-
+	/************************************************************************/
+	// 修改交易日期。TradingDay并不是数据的真实日期，晚上九点开始为明天的交易
+	// 日，因此这里稍作处理，对于晚上九点以后，零点以前的日期，做减一处理。
+	/************************************************************************/
+	ptime ProcessTime(CThostFtdcDepthMarketDataField* aMarketData)
+	{
+		string lDateString = aMarketData->TradingDay;
+		string lTimeString = aMarketData->UpdateTime;
+		string lMsString;
+		if(lDateString.size() != 8)
+		{
+			return time_from_string("2000-01-01 00:00:00.0");
+		}
+		if(lTimeString.size() != 8)
+		{
+			return time_from_string("2000-01-01 00:00:00.0");
+		}
+		lDateString.insert(4, "-");
+		lDateString.insert(7, "-");
+		char lMsBuf[4];
+		sprintf(lMsBuf, "%d", aMarketData->UpdateMillisec);
+		lMsString = lMsBuf;
+		ptime lDataTime = time_from_string(lDateString+" "+lTimeString+"."+lMsString);
+		ptime lCriticalTime = time_from_string(lDateString+" 21:00:00.0");//过了这个时间点，trading day就会+1
+		if(lDataTime >= lCriticalTime)
+		{
+			date_duration lOneDay(1);
+			lDataTime = lDataTime - lOneDay;
+			
+		}
+		return lDataTime;
+	}
 };

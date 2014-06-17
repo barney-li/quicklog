@@ -32,7 +32,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	{
 		/* condition 1 */
 		mOpenCond = OPEN_COND1;
-		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND1");
+		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND1");
 		SetEvent(OPEN_PRICE_GOOD);
 	}
 	else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
@@ -40,7 +40,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	{
 		/* condition 2 */
 		mOpenCond = OPEN_COND2;
-		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND2");
+		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND2");
 		SetEvent(OPEN_PRICE_GOOD);
 	}
 
@@ -265,16 +265,16 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		CancelScnd();
 		break;
 	case CLOSING_SCND_STATE:
-		CloseBoth();
+		CloseScnd();
 		break;
 	case CANCELLING_PRIM_STATE:
 		CancelPrim();
 		break;
 	case WAITING_SCND_CLOSE_STATE:
-		CloseBoth();
+		CloseScnd();
 		break;
 	case WAITING_PRIM_CLOSE_STATE:
-		CloseBoth();
+		ClosePrim();
 		break;
 	default:
 		break;

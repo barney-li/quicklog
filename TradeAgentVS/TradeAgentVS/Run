@@ -1,0 +1,22 @@
+for (( i=100; i<=500; i=i+100 ))
+do
+	sed -i "s/^.*BollPeriod.*;$/BollPeriod=${i};/g" ./data/Config/Config.txt
+	#sed -n '24p' ./data/Config/Config.txt
+	for (( j=3; j<=5; j++ ))
+	do	
+		sed -i "s/^.*OutterBollAmp.*;$/OutterBollAmp=${j};/g" ./data/Config/Config.txt
+		#sed -n '25p' ./data/Config/Config.txt
+		for (( k=3; k<=6; k++ ))
+		do
+			
+			sed -i "s/^.*BollAmpLimit.*;$/BollAmpLimit=${k};/g" ./data/Config/Config.txt
+			#sed -n '29p' ./data/Config/Config.txt
+			echo $i $j $k
+			../Release/TradeAgentVS.exe
+			mv ./data/Log/log.log "./data/Log/${i}_${j}_${k}_log.log"
+			mv ./data/Log/StateMachine.log "./data/Log/${i}_${j}_${k}_SM.log"
+			mv ./data/Log/Profit.log "./data/Log/${i}_${j}_${k}_Profit.log"
+		done
+	done
+done
+#sed -i 's/^.*BollPeriod.*;$/BollPeriod=500;/g' ./data/Config/Config.txt

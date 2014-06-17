@@ -2,7 +2,7 @@
 #include "Log.h"
 #include <direct.h>
 #include <boost\date_time\posix_time\posix_time.hpp>
-void Log::LogThis(char* message, bool enter)
+void Log::LogThis(const char* message, bool enter)
 {
 	boost::posix_time::ptime localTime = boost::posix_time::microsec_clock::local_time();
 	logFileHandler.open(logDir+logName, ios::in|ios::out|ios::app);
@@ -25,7 +25,7 @@ void Log::LogThis(char* message, bool enter)
 	}
 	if(enter)
 	{
-		logFileHandler<<boost::gregorian::to_iso_extended_string(localTime.date())<<" "<<localTime.time_of_day()<<"	"<<message<<endl;
+		logFileHandler<<boost::gregorian::to_iso_extended_string(localTime.date())<<" "<<localTime.time_of_day()<<"	"<<message<<"\n";
 	}
 	else
 	{
@@ -33,7 +33,7 @@ void Log::LogThis(char* message, bool enter)
 	}
 	logFileHandler.close();
 }
-void Log::LogThisNoTimeStamp(char* message, bool enter)
+void Log::LogThisNoTimeStamp(const char* message, bool enter)
 {
 	logFileHandler.open(logDir+logName, ios::in|ios::out|ios::app);
 	if(logFileHandler.is_open() == false)
@@ -55,7 +55,10 @@ void Log::LogThisNoTimeStamp(char* message, bool enter)
 	}
 	if(enter)
 	{
-		logFileHandler<<message<<endl;
+		// this is a tricky one, you must not append "\r\n" as it supposed to, because 
+		// it seems that library will automatically added a "\r" prior "\n", so if '\r'
+		// is added manually, then the end of every line will looks like "\r\r\n".
+		logFileHandler<<message<<"\n";
 	}
 	else
 	{
@@ -98,7 +101,10 @@ void Log::LogThisFast(string message, bool enter)
 		bufferNo1.append(message);
 		if(enter)
 		{
-			bufferNo1.append("\r\n");
+			// this is a tricky one, you must not append "\r\n" as it supposed to, because 
+			// it seems that library will automatically added a "\r" prior "\n", so if '\r'
+			// is added manually, then the end of every line will looks like "\r\r\n".
+			bufferNo1.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
 		if(bufferNo1.size() >= SIZE_TO_SYNC)
@@ -118,7 +124,10 @@ void Log::LogThisFast(string message, bool enter)
 		bufferNo2.append(message);
 		if(enter)
 		{
-			bufferNo2.append("\r\n");
+			// this is a tricky one, you must not append "\r\n" as it supposed to, because 
+			// it seems that library will automatically added a "\r" prior "\n", so if '\r'
+			// is added manually, then the end of every line will looks like "\r\r\n".
+			bufferNo2.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
 		if(bufferNo2.size() >= SIZE_TO_SYNC)
@@ -162,7 +171,10 @@ void Log::LogThisFastNoTimeStamp(string message, bool enter)
 		bufferNo1.append(message);
 		if(enter)
 		{
-			bufferNo1.append("\r\n");
+			// this is a tricky one, you must not append "\r\n" as it supposed to, because 
+			// it seems that library will automatically added a "\r" prior "\n", so if '\r'
+			// is added manually, then the end of every line will looks like "\r\r\n".
+			bufferNo1.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
 		if(bufferNo1.size() >= SIZE_TO_SYNC)
@@ -178,7 +190,10 @@ void Log::LogThisFastNoTimeStamp(string message, bool enter)
 		bufferNo2.append(message);
 		if(enter)
 		{
-			bufferNo2.append("\r\n");
+			// this is a tricky one, you must not append "\r\n" as it supposed to, because 
+			// it seems that library will automatically added a "\r" prior "\n", so if '\r'
+			// is added manually, then the end of every line will looks like "\r\r\n".
+			bufferNo2.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
 		if(bufferNo2.size() >= SIZE_TO_SYNC)

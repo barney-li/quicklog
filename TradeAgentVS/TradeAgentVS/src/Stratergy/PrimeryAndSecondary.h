@@ -80,6 +80,13 @@ private:
 	// log
 	//Log logger;
 	Log mBollLog;
+#ifdef BACK_TEST
+	Log mProfitLog;
+	Log mTestStatistics;
+	int mWin;
+	int mLose;
+	double mTotalProfit;
+#endif
 	//由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
 	TThostFtdcVolumeType primLastVolume;
 	TThostFtdcVolumeType scndLastVolume;
@@ -135,6 +142,27 @@ public:
 	PrimeryAndSecondary(void)
 	{
 		mBollLog.SetLogFile("./Data/Log/", "Boll.log");
+#ifdef BACK_TEST
+		mProfitLog.SetLogFile("./Data/Log/", "Profit.log");
+		mTestStatistics.SetLogFile("./Data/Log/", "Statistics.log");
+		mWin=0;
+		mLose=0;
+		mTotalProfit=0;
+#endif
+	}
+	~PrimeryAndSecondary(void)
+	{
+#ifdef BACK_TEST
+		int lWinRate = 0;
+		tempStream.clear();
+		tempStream.str("");
+		if(mWin+mLose > 0)
+		{
+			lWinRate = 100*mWin/(mWin+mLose);
+		}
+		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<stgArg.bollAmpLimit<<"	"<<stgArg.winBollAmp<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
+		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
+#endif
 	}
 private:
 	void OpenScnd();

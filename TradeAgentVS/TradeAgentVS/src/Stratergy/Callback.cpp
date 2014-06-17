@@ -54,7 +54,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 	//CheckPosition();
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	//cout<<pDepthMarketData->UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
-	cout<<pDepthMarketData->UpdateTime<<endl;
+	//cout<<pDepthMarketData->UpdateTime<<endl;
 }
 ///成交通知
 void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
