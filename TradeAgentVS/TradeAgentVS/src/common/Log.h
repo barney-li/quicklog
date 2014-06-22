@@ -3,6 +3,7 @@
 #include <fstream>
 #include <boost/thread.hpp>
 using namespace std;
+//#define FAST_SYSTEM
 class Log
 {
 private:
@@ -56,10 +57,12 @@ private:
 	static void AutoSync(Log* logger);
 	void Init(void)
 	{
+#ifndef FAST_SYSTEM
 		bufferNo1.reserve(SIZE_TO_SYNC*2);
 		bufferNo2.reserve(SIZE_TO_SYNC*2);
 		bufferIndex = 1;
 		endAutoSyncThread = false;
 		autoSyncThread = new boost::thread(AutoSync, this);
+#endif
 	}
 };

@@ -46,7 +46,7 @@ void PrimeryAndSecondary::OpenPrim()
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
 		logger.LogThisFast("[ACTION]: SHORT_PRIM");
-		mPriceEnterPrice = primDataBuf[primBufIndex].bidPrice;
+		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
 		if(SellShort(stgArg.primaryInst, primDataBuf[primBufIndex].lowerLimit, stgArg.openShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell prim error");
@@ -56,7 +56,7 @@ void PrimeryAndSecondary::OpenPrim()
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
 		logger.LogThisFast("[ACTION]: BUY_PRIM");
-		mPriceEnterPrice = primDataBuf[primBufIndex].askPrice;
+		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
 		if(Buy(stgArg.primaryInst, primDataBuf[primBufIndex].upperLimit, stgArg.openShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: buy prim error");
@@ -228,8 +228,12 @@ void PrimeryAndSecondary::OpenScnd()
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
 		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
+#ifdef BACK_TEST
+		mEventQueue.push(SCND_OPENED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_OPENED);
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
+#endif
 		mScndTodayLongPosition = 1;
 	}
 	else if( OPEN_COND2 == mOpenCond )
@@ -240,8 +244,12 @@ void PrimeryAndSecondary::OpenScnd()
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
 		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
+#ifdef BACK_TEST
+		mEventQueue.push(SCND_OPENED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_OPENED);
 		mWaitScndOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitScndOpen, this, ++mOpenScndId));
+#endif
 		mScndTodayShortPosition = 1;
 	}
 	else
@@ -259,8 +267,12 @@ void PrimeryAndSecondary::OpenPrim()
 		logger.LogThisFast("[ACTION]: SHORT_PRIM");
 		logger.LogThisFast(lPrice.str());
 		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
+#ifdef BACK_TEST
+		mEventQueue.push(PRIM_OPENED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_OPENED);
 		mWaitPrimOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimOpen, this, ++mOpenPrimId));
+#endif
 		mPrimTodayShortPosition = 1;
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
@@ -268,8 +280,12 @@ void PrimeryAndSecondary::OpenPrim()
 		logger.LogThisFast("[ACTION]: BUY_PRIM");
 		logger.LogThisFast(lPrice.str());
 		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
+#ifdef BACK_TEST
+		mEventQueue.push(PRIM_OPENED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_OPENED);
 		mWaitPrimOpenThread = new boost::thread(boost::bind(&PrimeryAndSecondary::WaitPrimOpen, this, ++mOpenPrimId));
+#endif
 		mPrimTodayLongPosition = 1;
 	}
 	else
@@ -282,42 +298,60 @@ void PrimeryAndSecondary::CloseScnd()
 {
 	stringstream lPrice;
 	lPrice<<scndDataBuf[scndBufIndex].lastPrice;
+#ifndef BACK_TEST
 	if(!mCloseScndCD)
 	{
 		return;
 	}
+#endif
 	//平多头
 	if(OPEN_COND1 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: SELL_SCND");
 		logger.LogThisFast(lPrice.str());
+#ifdef BACK_TEST
+		mEventQueue.push(SCND_CLOSED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_CLOSED);
+#endif
 	}
 	//平空头
 	if(OPEN_COND2 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: COVER_SCND");
 		logger.LogThisFast(lPrice.str());
+#ifdef BACK_TEST
+		mEventQueue.push(SCND_CLOSED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, SCND_CLOSED);
+#endif
 	}
+#ifndef BACK_TEST
 	mCloseScndCD = false;
 	mCoolDownCloseScndThread = new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownCloseScnd, this));
+#endif//回测时绝对不能用这个CoolDown，因为速度太快，CoolDown还没完成回测可能就结束了
 }
 void PrimeryAndSecondary::ClosePrim()
 {
 	stringstream lPrice;
 	lPrice<<primDataBuf[primBufIndex].lastPrice;
+#ifndef BACK_TEST
 	//如果CD还没到就直接返回
 	if(!mClosePrimCD)
 	{
 		return;
 	}
+#endif
 	//平空头
 	if(OPEN_COND1 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: COVER_PRIM");
 		logger.LogThisFast(lPrice.str());
+#ifdef BACK_TEST
+		mEventQueue.push(PRIM_CLOSED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_CLOSED);
+#endif
 	}
 
 	//平多头
@@ -325,7 +359,11 @@ void PrimeryAndSecondary::ClosePrim()
 	{
 		logger.LogThisFast("[ACTION]: SELL_PRIM");
 		logger.LogThisFast(lPrice.str());
+#ifdef BACK_TEST
+		mEventQueue.push(PRIM_CLOSED);
+#else
 		new boost::thread(&PrimeryAndSecondary::AsyncEventPoster, this, PRIM_CLOSED);
+#endif
 	}
 	tempStream.clear();
 	tempStream.str("");
@@ -344,8 +382,10 @@ void PrimeryAndSecondary::ClosePrim()
 	}
 	mTotalProfit += lTempProfit;
 #endif
+#ifndef BACK_TEST
 	mClosePrimCD = false;
 	mCoolDownClosePrimThread = new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownClosePrim, this));
+#endif
 }
 void PrimeryAndSecondary::CancelScnd()
 {

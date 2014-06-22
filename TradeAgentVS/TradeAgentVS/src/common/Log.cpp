@@ -4,6 +4,7 @@
 #include <boost\date_time\posix_time\posix_time.hpp>
 void Log::LogThis(const char* message, bool enter)
 {
+#ifndef FAST_SYSTEM
 	boost::posix_time::ptime localTime = boost::posix_time::microsec_clock::local_time();
 	logFileHandler.open(logDir+logName, ios::in|ios::out|ios::app);
 	if(logFileHandler.is_open() == false)
@@ -32,9 +33,11 @@ void Log::LogThis(const char* message, bool enter)
 		logFileHandler<<boost::gregorian::to_iso_extended_string(localTime.date())<<" "<<localTime.time_of_day()<<"	"<<message;
 	}
 	logFileHandler.close();
+#endif
 }
 void Log::LogThisNoTimeStamp(const char* message, bool enter)
 {
+#ifndef FAST_SYSTEM
 	logFileHandler.open(logDir+logName, ios::in|ios::out|ios::app);
 	if(logFileHandler.is_open() == false)
 	{
@@ -65,9 +68,11 @@ void Log::LogThisNoTimeStamp(const char* message, bool enter)
 		logFileHandler<<message;
 	}
 	logFileHandler.close();
+#endif
 }
 void Log::LogThisFast(string message, bool enter)
 {
+#ifndef FAST_SYSTEM
 	boost::posix_time::ptime localTime = boost::posix_time::microsec_clock::local_time();
 	// when the file has already opened, don't do it again
 	if(logFileHandler.is_open() == false)
@@ -138,11 +143,12 @@ void Log::LogThisFast(string message, bool enter)
 			bufferNo2.clear();
 		}
 	}
-	
+#endif
 
 }
 void Log::LogThisFastNoTimeStamp(string message, bool enter)
 {
+#ifndef FAST_SYSTEM
 	// when the file has already opened, don't do it again
 	if(logFileHandler.is_open() == false)
 	{
@@ -204,11 +210,12 @@ void Log::LogThisFastNoTimeStamp(string message, bool enter)
 			bufferNo2.clear();
 		}
 	}
-	
+#endif
 }
 
 void Log::Sync(void)
 {
+#ifndef FAST_SYSTEM
 	if(1 == bufferIndex)
 	{
 		// do not sync the file unless there are new datas in the buffer
@@ -231,9 +238,11 @@ void Log::Sync(void)
 			bufferNo2.clear();
 		}
 	}
+#endif
 }
 void Log::AutoSync(Log* logger)
 {
+#ifndef FAST_SYSTEM
 	while(!logger->endAutoSyncThread)
 	{
 		//cout<<logger->logName<<endl;
@@ -241,10 +250,12 @@ void Log::AutoSync(Log* logger)
 		logger->Sync();
 		// do not sync the file unless it excees the threashold
 	}
-	
+#endif
 }
 void Log::SetLogFile(string aDir, string aLogName)
 {
+#ifndef FAST_SYSTEM
 	this->logDir = aDir;
 	this->logName = aLogName;
+#endif
 }

@@ -22,7 +22,7 @@ double PrimeryAndSecondary::EstimateProfit()
 void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
 {
 	// if the bollinger band is not wide enough, then return
-	if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < stgArg.bollAmpLimit)
+	if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < (stgArg.minMove * stgArg.bollAmpLimit))
 	{
 		return;
 	}

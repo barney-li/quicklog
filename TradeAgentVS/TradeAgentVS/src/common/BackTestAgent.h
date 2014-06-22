@@ -13,6 +13,8 @@ private:
 		NEXT_SCND,
 		NEXT_BOTH
 	}NEXT_DATA_TYPE;
+	// config reader obj
+	ConfigReader config;
 public:
 	BackTestAgent()
 	{
@@ -23,8 +25,20 @@ public:
 	}
 	void StartBackTest()
 	{
-		DataReader* primDataReader = new DataReader("data/MarketData/ag1412.dat");
-		DataReader* scndDataReader = new DataReader("data/MarketData/ag1406.dat");
+		string primInst;
+		string scndInst;
+		if(config.ReadString(primInst, "PrimaryInstrument")!=0)
+		{
+			cout<<"reading PrimaryInstrument error"<<endl;
+			return;
+		}
+		if(config.ReadString(scndInst, "SecondaryInstrument")!=0)
+		{
+			cout<<"reading SecondaryInstrument error"<<endl;
+			return;
+		}
+		DataReader* primDataReader = new DataReader("data/MarketData/"+primInst+".dat");
+		DataReader* scndDataReader = new DataReader("data/MarketData/"+scndInst+".dat");
 		while(1)
 		{
 			CThostFtdcDepthMarketDataField* tempData = NULL;
@@ -61,19 +75,27 @@ public:
 				int lNextData = WhoIsNext(&mPrimData, &mScndData);
 				if(lNextData == NEXT_PRIM)
 				{
+					
 					strategy.HookOnRtnDepthMarketData(&mPrimData);
+					strategy.AsyncEventPoster();
 					ResetData(&mPrimData);
 				}
 				else if(lNextData == NEXT_SCND)
 				{
+					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
+					strategy.AsyncEventPoster();
 					ResetData(&mScndData);
 				}
 				else if(lNextData == NEXT_BOTH)
 				{
+					
 					strategy.HookOnRtnDepthMarketData(&mPrimData);
+					strategy.AsyncEventPoster();
 					ResetData(&mPrimData);
+					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
+					strategy.AsyncEventPoster();
 					ResetData(&mScndData);
 				}
 			}

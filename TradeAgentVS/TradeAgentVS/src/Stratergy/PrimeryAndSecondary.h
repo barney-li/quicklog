@@ -37,6 +37,7 @@ using namespace Pas;
 
 #ifdef BACK_TEST
 #define SIMULATION
+#include <queue>
 #endif
 namespace Pas
 {
@@ -86,6 +87,7 @@ private:
 	int mWin;
 	int mLose;
 	double mTotalProfit;
+	queue<TRADE_EVENT> mEventQueue;
 #endif
 	//由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
 	TThostFtdcVolumeType primLastVolume;
@@ -160,8 +162,9 @@ public:
 		{
 			lWinRate = 100*mWin/(mWin+mLose);
 		}
-		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<stgArg.bollAmpLimit<<"	"<<stgArg.winBollAmp<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
+		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<stgArg.bollAmpLimit<<"	"<<stgArg.winBollAmp<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit/2<<"	"<<mWin/2<<"	"<<mLose/2;
 		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
+		cout<<tempStream.str()<<endl;
 #endif
 	}
 private:
@@ -374,7 +377,12 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"FloorPrice\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-
+		if(config.ReadDouble(stgArg.minMove, "MinMove") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"MinMove\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"MinMove\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
 		if(ALL_GOOD == initStatus)
 		{
 			cout<<"all arguments ready"<<endl;
@@ -488,14 +496,23 @@ public:
 
 #ifdef SIMULATION
 	/************************************************************************/
-	// 异步事件发送函数，以异步的方式延迟发出事件。
+	// 异步事件发送函数，以异步的方式延迟发出事件，用于模拟交易。
 	/************************************************************************/
 	void AsyncEventPoster(TRADE_EVENT aEvent)
 	{
-#ifndef BACK_TEST
 		boost::this_thread::sleep(boost::posix_time::seconds(1));
-#endif
 		SetEvent(aEvent);
+	}
+	/************************************************************************/
+	// 这个用于回测
+	/************************************************************************/
+	void AsyncEventPoster(void)
+	{
+		if(!mEventQueue.empty())
+		{
+			SetEvent(mEventQueue.front());
+			mEventQueue.pop();
+		}
 	}
 #endif
 public:
@@ -546,16 +563,6 @@ public:
 			if(input == "cond2")
 			{
 				mOpenCond = OPEN_COND2;
-				SetEvent(OPEN_PRICE_GOOD);
-			}
-			if(input == "cond3")
-			{
-				mOpenCond = OPEN_COND3;
-				SetEvent(OPEN_PRICE_GOOD);
-			}
-			if(input == "cond4")
-			{
-				mOpenCond = OPEN_COND4;
 				SetEvent(OPEN_PRICE_GOOD);
 			}
 			if(input == "muststop")
