@@ -383,6 +383,13 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"MinMove\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
+		if(config.ReadDouble(stgArg.askBidGapLimit, "AskBidGapLimit") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"AskBidGapLimit\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"AskBidGapLimit\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		stgArg.askBidGapLimit = stgArg.askBidGapLimit*stgArg.minMove+stgArg.floatToleration;//这里一定要在min move配置读取之后
 		if(ALL_GOOD == initStatus)
 		{
 			cout<<"all arguments ready"<<endl;

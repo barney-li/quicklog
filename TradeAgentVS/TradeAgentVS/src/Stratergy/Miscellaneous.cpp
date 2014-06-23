@@ -21,12 +21,20 @@ double PrimeryAndSecondary::EstimateProfit()
 }
 void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
 {
-	// if the bollinger band is not wide enough, then return
 	if(mBoll.GetBoll(0).mOutterUpperLine - mBoll.GetBoll(0).mOutterLowerLine < (stgArg.minMove * stgArg.bollAmpLimit))
 	{
 		return;
-	}
-	// using bid_price - ask_price to do the open timing judge, this is rougher to meet
+	}// if the bollinger band is not wide enough, then return
+	
+	if(primDataBuf[primBufIndex].askPrice - primDataBuf[primBufIndex].bidPrice > stgArg.askBidGapLimit)
+	{
+		return;
+	}// too wide gap between ask and bid price
+	if(scndDataBuf[scndBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice > stgArg.askBidGapLimit)
+	{
+		return;
+	}// too wide gap between ask and bid price
+	
 	if(	primDataBuf[primBufIndex].bidPrice - scndDataBuf[scndBufIndex].askPrice > mBoll.GetBoll(0).mOutterUpperLine )
 	//if(	primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice > mBoll.GetBoll(0).mOutterUpperLine )
 	{
@@ -34,7 +42,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		mOpenCond = OPEN_COND1;
 		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND1");
 		SetEvent(OPEN_PRICE_GOOD);
-	}
+	}// using bid_price - ask_price to do the open timing judge, this is rougher to meet
 	else if( primDataBuf[primBufIndex].askPrice - scndDataBuf[scndBufIndex].bidPrice < mBoll.GetBoll(0).mOutterLowerLine )
 	//else if( primDataBuf[primBufIndex].lastPrice - scndDataBuf[scndBufIndex].lastPrice < mBoll.GetBoll(0).mOutterLowerLine )
 	{
