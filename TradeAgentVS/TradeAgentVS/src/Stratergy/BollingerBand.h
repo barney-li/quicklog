@@ -48,7 +48,7 @@ public:
 		BollingerBandData lTempBollData;
 		mBollPeriod = aPeriod;
 		// check input arguments
-		if(abs(aLastPrice)>1000)
+		if(abs(aLastPrice)>100000)
 		{
 			mDataValid = false;
 			return false;

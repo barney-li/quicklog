@@ -1,4 +1,4 @@
-for (( i=100; i<=500; i=i+100 ))
+for (( i=200; i<=500; i=i+100 ))
 do
 	sed --in-place "s/^.*BollPeriod=.*;/BollPeriod=${i};/" ./data/Config/Config.txt
 	#sed -n '21p' ./data/Config/Config.txt
@@ -6,7 +6,7 @@ do
 	do	
 		sed --in-place "s/^.*OutterBollAmp=.*;/OutterBollAmp=${j};/" ./data/Config/Config.txt
 		#sed -n '22p' ./data/Config/Config.txt
-		for (( k=3; k<=6; k++ ))
+		for (( k=3; k<=5; k++ ))
 		do
 			
 			sed --in-place "s/^.*BollAmpLimit=.*;/BollAmpLimit=${k};/" ./data/Config/Config.txt

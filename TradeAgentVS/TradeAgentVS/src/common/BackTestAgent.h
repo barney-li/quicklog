@@ -6,6 +6,7 @@
 //using namespace boost::posix_time;
 class BackTestAgent
 {
+#ifdef BACK_TEST
 private:
 	typedef enum
 	{
@@ -182,4 +183,5 @@ private:
 		}
 		return lDataTime;
 	}
+#endif
 };

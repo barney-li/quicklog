@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-#define BACK_TEST
+//#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -191,7 +191,7 @@ private:
 
 	// verify market data, any illegal data will lead to an false return
 	bool VerifyMarketData(CThostFtdcDepthMarketDataField const & pData);
-
+	bool VerifyMarketData(BasicMarketData const & pData);
 	/************************************************************************/
 	// 判断开仓条件是否已经不再满足。当价差突破外层布林带时，认为开仓条件满足，
 	// 但是为了避免价差处在布林带边缘时反复触发price bad的条件，因此一旦开仓
