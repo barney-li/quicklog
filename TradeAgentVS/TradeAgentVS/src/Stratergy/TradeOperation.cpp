@@ -195,7 +195,7 @@ void PrimeryAndSecondary::CloseBoth()
 	ClosePrim();
 	tempStream.clear();
 	tempStream.str("");
-	tempStream<<"estimate profit: "<<EstimateProfit();
+	tempStream<<"[INFO]: estimate profit: "<<EstimateProfit();
 	logger.LogThisFast(tempStream.str());
 }
 void PrimeryAndSecondary::CheckPrimPosition()
@@ -367,11 +367,11 @@ void PrimeryAndSecondary::ClosePrim()
 	}
 	tempStream.clear();
 	tempStream.str("");
-	tempStream<<"estimate profit:	"<<EstimateProfit();
+	tempStream<<"[INFO]: estimate profit:	"<<EstimateProfit();
 	logger.LogThisFast(tempStream.str());
 #ifdef BACK_TEST
 	mProfitLog.LogThisFast(tempStream.str());
-	double lTempProfit = EstimateProfit();
+	double lTempProfit = EstimateProfit()-2.0*stgArg.cost*stgArg.minMove;// 连手续费一起算上
 	if(lTempProfit > 0)
 	{
 		mWin++;

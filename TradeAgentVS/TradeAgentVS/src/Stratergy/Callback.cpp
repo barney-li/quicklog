@@ -65,29 +65,68 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 ///成交通知
 void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 {
+	double lProfit = 0;
 	if((pTrade->OffsetFlag == THOST_FTDC_OF_CloseToday)||
 		(pTrade->OffsetFlag == THOST_FTDC_OF_Close)||
 		(pTrade->OffsetFlag == THOST_FTDC_OF_ForceClose))
 	{
 		if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: SCND_CLOSED");
+			logger.LogThisFast("[EVENT]: SCND_CLOSED (from trade return)");
+			// calculate and record profit
+			if(BUY_SCND_SELL_PRIM == mTradeDir)
+			{
+				lProfit = pTrade->Price - mScndEnterPrice;
+			}
+			else if(BUY_PRIM_SELL_SCND == mTradeDir)
+			{
+				lProfit = mScndEnterPrice - pTrade->Price;
+			}
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: scnd close price: "<<mPrimEnterPrice<<" scnd profit: "<<lProfit;
+			logger.LogThisFast(tempStream.str());
 		}
 		if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: PRIM_CLOSED");
+			logger.LogThisFast("[EVENT]: PRIM_CLOSED (from trade return)");
+			// calculate and record profit
+			if(BUY_SCND_SELL_PRIM == mTradeDir)
+			{
+				lProfit = mPrimEnterPrice - pTrade->Price;
+			}
+			else if(BUY_PRIM_SELL_SCND == mTradeDir)
+			{
+				lProfit = pTrade->Price - mPrimEnterPrice;
+			}
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: prim close price: "<<mPrimEnterPrice<<" prim profit: "<<lProfit;
+			logger.LogThisFast(tempStream.str());
 		}
 	}
 	if(pTrade->OffsetFlag == THOST_FTDC_OF_Open)
 	{
 		if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: SCND_OPENED");
+			logger.LogThisFast("[EVENT]: SCND_OPENED (from trade return)");
+			// record the "real" enter price
+			mScndEnterPrice = pTrade->Price;
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_OPENED);
 		}
 		if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: PRIM_OPENED");
+			logger.LogThisFast("[EVENT]: PRIM_OPENED (from trade return)");
+			// record the "real" enter price
+			mPrimEnterPrice = pTrade->Price;
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: prim open price: "<<mPrimEnterPrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_OPENED);
 		}
 	}
@@ -171,12 +210,12 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	{
 		if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: SCND_CLOSED");
+			logger.LogThisFast("[EVENT]: SCND_CLOSED (from order return)");
 			SetEvent(SCND_CLOSED);
 		}
 		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: PRIM_CLOSED");
+			logger.LogThisFast("[EVENT]: PRIM_CLOSED (from order return)");
 			SetEvent(PRIM_CLOSED);
 		}
 	}
@@ -187,12 +226,12 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	{
 		if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: SCND_OPENED");
+			logger.LogThisFast("[EVENT]: SCND_OPENED (from order return)");
 			SetEvent(SCND_OPENED);
 		}
 		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: PRIM_OPENED");
+			logger.LogThisFast("[EVENT]: PRIM_OPENED (from order return)");
 			SetEvent(PRIM_OPENED);
 		}
 	}
@@ -288,12 +327,12 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 				&& mPrimTodayShortPosition == 0
 				&& mPrimYdShortPosition == 0)
 			{
-				logger.LogThisFast("[EVENT]: PRIM_CLOSED (from investor position query)");
+				//logger.LogThisFast("[EVENT]: PRIM_CLOSED (from investor position query)");
 				SetEvent(PRIM_CLOSED);
 			}
 			else
 			{
-				logger.LogThisFast("[EVENT]: PRIM_OPENED (from investor position query)");
+				//logger.LogThisFast("[EVENT]: PRIM_OPENED (from investor position query)");
 				SetEvent(PRIM_OPENED);
 			}
 			if(mScndTodayLongPosition == 0 
@@ -301,12 +340,12 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 				&& mScndTodayShortPosition == 0
 				&& mScndYdShortPosition == 0)
 			{
-				logger.LogThisFast("[EVENT]: SCND_CLOSED (from investor position query)");
+				//logger.LogThisFast("[EVENT]: SCND_CLOSED (from investor position query)");
 				SetEvent(SCND_CLOSED);
 			}
 			else
 			{
-				logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
+				//logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
 				SetEvent(SCND_OPENED);
 			}
 		}

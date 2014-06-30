@@ -37,25 +37,25 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		return;
 	}// too wide gap between ask and bid price
 	
-	if(	lPrim.bidPrice - lScnd.askPrice > lBoll.mOutterUpperLine )
+	if(	lPrim.bidPrice - lScnd.lastPrice > lBoll.mOutterUpperLine )
 	{
 		/* condition 1 */
 		mOpenCond = OPEN_COND1;
-		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND1");
+		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<lBoll.mOutterUpperLine;
+		tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mOutterUpperLine;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
-	}// using bid_price - ask_price to do the open timing judge, this is rougher to meet
-	else if( lPrim.askPrice - lScnd.bidPrice < lBoll.mOutterLowerLine )
+	}// using bid_price - last_price to do the open timing judge, this is to meet the real situation
+	else if( lPrim.askPrice - lScnd.lastPrice < lBoll.mOutterLowerLine )
 	{
 		/* condition 2 */
 		mOpenCond = OPEN_COND2;
-		logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_GOOD_COND2");
+		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<lBoll.mOutterLowerLine;
+		tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mOutterLowerLine;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -66,10 +66,32 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 	bool lIsClose = false;
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{	
-		if(EstimateProfit()<stgArg.stopLossPrice)
+		double lProfit = 0;
+		if(BUY_SCND_SELL_PRIM == mTradeDir)
+		{
+			lProfit = (mPrimEnterPrice-mScndEnterPrice)-(primDataBuf[primBufIndex].askPrice-scndDataBuf[scndBufIndex].bidPrice);
+		}
+		else if(BUY_PRIM_SELL_SCND == mTradeDir)
+		{
+			lProfit = (primDataBuf[primBufIndex].bidPrice-scndDataBuf[scndBufIndex].askPrice)-(mPrimEnterPrice-mScndEnterPrice);
+		}
+
+		if(lProfit<stgArg.stopLossPrice)
 		{
 			//使用绝对浮亏来止损
-			logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + (string)"	[EVENT]: MUST_STOP (from estimate profit)");
+			logger.LogThisFast("[EVENT]: MUST_STOP (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+			tempStream.clear();
+			tempStream.str("");
+			if(BUY_SCND_SELL_PRIM == mTradeDir)
+			{
+				tempStream<<"[INFO]: Evidence: ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") - ("<<primDataBuf[primBufIndex].askPrice<<" - "<<scndDataBuf[scndBufIndex].bidPrice<<") < "<< stgArg.stopLossPrice;
+			}
+			else
+			{
+				tempStream<<"[INFO]: Evidence: ("<<primDataBuf[primBufIndex].bidPrice<<" - "<<scndDataBuf[scndBufIndex].askPrice<<") - ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") < "<< stgArg.stopLossPrice;
+			}
+
+			logger.LogThisFast(tempStream.str());
 			SetEvent(MUST_STOP);
 			lIsClose = true;
 		}
@@ -108,10 +130,10 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		{
 			if(lPrim.askPrice - lScnd.bidPrice < lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev)
 			{
-				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: CLOSE_PRICE_GOOD_COND1");
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<(lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev);
+				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<(lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev);
 				logger.LogThisFast(tempStream.str());
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
@@ -121,10 +143,10 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		{
 			if(lPrim.bidPrice - lScnd.askPrice > lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev)
 			{
-				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: CLOSE_PRICE_GOOD_COND2");
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<(lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev);
+				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<(lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev);
 				logger.LogThisFast(tempStream.str());
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
@@ -253,31 +275,31 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 	{
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(lPrim.bidPrice - lScnd.askPrice < lBoll.mInnerUpperLine);
+			if(lPrim.bidPrice - lScnd.lastPrice < lBoll.mInnerUpperLine);
 			{
-				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_NOT_GOOD");
+				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" < "<<lBoll.mInnerUpperLine;
+				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mInnerUpperLine;
 				logger.LogThisFast(tempStream.str());
 				SetEvent(OPEN_PRICE_BAD);
 			}
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(lPrim.askPrice - lScnd.bidPrice > lBoll.mInnerLowerLine)
+			if(lPrim.askPrice - lScnd.lastPrice > lBoll.mInnerLowerLine)
 			{
-				logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[EVENT]: OPEN_PRICE_NOT_GOOD");
+				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" > "<<lBoll.mInnerLowerLine;
+				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mInnerLowerLine;
 				logger.LogThisFast(tempStream.str());
 				SetEvent(OPEN_PRICE_BAD);
 			}
 		}
 		else
 		{
-			logger.LogThisFast("ServerTime: " + (string)pDepthMarketData.UpdateTime + "	[FATAL ERROR]: ILLEGAL OPEN COND");
+			logger.LogThisFast("[FATAL ERROR]: ILLEGAL OPEN COND	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 		}
 	}
 }
@@ -332,7 +354,6 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	}
 	
 }
-
 bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 {
 	// any valid time should be in size of 8
@@ -364,7 +385,7 @@ bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 	}
 	else
 	{
-		logger.LogThisFast("ServerTime:	"+aDataTime+"	[EVENT]: NOT_TRADING_TIME");
+		logger.LogThisFast("[EVENT]: NOT_TRADING_TIME	ServerTime:	"+aDataTime);
 		mBoll.InitAllData();
 		SetEvent(NOT_TRADING_TIME);
 		return false;

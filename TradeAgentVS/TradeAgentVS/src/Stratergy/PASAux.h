@@ -120,6 +120,7 @@ namespace Pas
 		double		secPriceDiff;		// Diff为当前盘口的买卖价差
 		double		closePriceConst;	// 平仓时的价格上浮常数
 		double		floatToleration;	// 浮点数误差
+		double		cost;				// 手续费，以跳为单位
 	}StrategyParameter;
 
 	
