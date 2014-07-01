@@ -395,7 +395,15 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"Cost\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
+		if(config.ReadDouble(stgArg.stopWinPoint, "StopWinPoint") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"StopWinPoint\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"StopWinPoint\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
 		stgArg.askBidGapLimit = stgArg.askBidGapLimit*stgArg.minMove+stgArg.floatToleration;//这里一定要在min move配置读取之后
+		stgArg.stopWinPoint = stgArg.stopWinPoint*stgArg.minMove+stgArg.floatToleration;
+		stgArg.cost = stgArg.cost*stgArg.minMove;
 		if(ALL_GOOD == initStatus)
 		{
 			cout<<"all arguments ready"<<endl;

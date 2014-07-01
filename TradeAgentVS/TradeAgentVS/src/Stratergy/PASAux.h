@@ -121,6 +121,7 @@ namespace Pas
 		double		closePriceConst;	// 平仓时的价格上浮常数
 		double		floatToleration;	// 浮点数误差
 		double		cost;				// 手续费，以跳为单位
+		double		stopWinPoint;		// 止盈点，以跳为单位
 	}StrategyParameter;
 
 	

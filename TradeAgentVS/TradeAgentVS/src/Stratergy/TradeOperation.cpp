@@ -371,7 +371,7 @@ void PrimeryAndSecondary::ClosePrim()
 	logger.LogThisFast(tempStream.str());
 #ifdef BACK_TEST
 	mProfitLog.LogThisFast(tempStream.str());
-	double lTempProfit = EstimateProfit()-2.0*stgArg.cost*stgArg.minMove;// 连手续费一起算上
+	double lTempProfit = EstimateProfit()-stgArg.cost;// 连手续费一起算上
 	if(lTempProfit > 0)
 	{
 		mWin++;

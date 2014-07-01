@@ -126,6 +126,7 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 	bool lGoodToClose = false;
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{
+		//使用布林带位置判断止盈
 		if(OPEN_COND1 == mOpenCond)
 		{
 			if(lPrim.askPrice - lScnd.bidPrice < lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev)
@@ -151,6 +152,36 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
 			}
+		}
+		//使用绝对收益判断止盈
+		double lProfit = 0;
+		if(BUY_SCND_SELL_PRIM == mTradeDir)
+		{
+			lProfit = (mPrimEnterPrice-mScndEnterPrice)-(primDataBuf[primBufIndex].askPrice-scndDataBuf[scndBufIndex].bidPrice);
+		}
+		else if(BUY_PRIM_SELL_SCND == mTradeDir)
+		{
+			lProfit = (primDataBuf[primBufIndex].bidPrice-scndDataBuf[scndBufIndex].askPrice)-(mPrimEnterPrice-mScndEnterPrice);
+		}
+
+		if(lProfit>stgArg.stopWinPoint)
+		{
+			//使用绝对浮亏来止损
+			logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+			tempStream.clear();
+			tempStream.str("");
+			if(BUY_SCND_SELL_PRIM == mTradeDir)
+			{
+				tempStream<<"[INFO]: Evidence: ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") - ("<<primDataBuf[primBufIndex].askPrice<<" - "<<scndDataBuf[scndBufIndex].bidPrice<<") > "<< stgArg.stopWinPoint;
+			}
+			else
+			{
+				tempStream<<"[INFO]: Evidence: ("<<primDataBuf[primBufIndex].bidPrice<<" - "<<scndDataBuf[scndBufIndex].askPrice<<") - ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") > "<< stgArg.stopWinPoint;
+			}
+
+			logger.LogThisFast(tempStream.str());
+			SetEvent(CLOSE_PRICE_GOOD);
+			lGoodToClose = true;
 		}
 	}
 	return lGoodToClose;

@@ -36,3 +36,4 @@ PrimCancelTime=2000;
 ScndCancelTime=2000;
 AskBidGapLimit=2;//counted as minimum move
 Cost=2;//counted as minimum move
+StopWinPoint=10;//counted as minimum move
