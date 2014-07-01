@@ -23,39 +23,50 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
 	BollingerBandData lBoll = mBoll.GetBoll(0);
-	if(lBoll.mOutterUpperLine - lBoll.mOutterLowerLine < (stgArg.minMove * stgArg.bollAmpLimit))
+	// use integer instead of float during calculation
+	long long lPrimBid = (long long)lPrim.bidPrice*10000;
+	long long lPrimAsk = (long long)lPrim.askPrice*10000;
+	long long lScndLast = (long long)lScnd.lastPrice*10000;
+	long long lScndBid = (long long)lScnd.bidPrice*10000;
+	long long lScndAsk = (long long)lScnd.askPrice*10000;
+	long long lBollOutterUpper = (long long)lBoll.mOutterUpperLine*10000;
+	long long lBollOutterLower = (long long)lBoll.mOutterLowerLine*10000;
+	long long lBollAmpLimit = (long long)stgArg.minMove * stgArg.bollAmpLimit*10000;
+	long long lAskBidGapLimit = (long long)stgArg.askBidGapLimit*10000;
+
+	if(lBollOutterUpper - lBollOutterLower < lBollAmpLimit)
 	{
 		return;
 	}// if the bollinger band is not wide enough, then return
 	
-	if(lPrim.askPrice - lPrim.bidPrice > stgArg.askBidGapLimit)
+	if(lPrimAsk - lPrimBid > lAskBidGapLimit)
 	{
 		return;
 	}// too wide gap between ask and bid price
-	if(lScnd.askPrice - lScnd.bidPrice > stgArg.askBidGapLimit)
+	if(lScndAsk - lScndBid > lAskBidGapLimit)
 	{
 		return;
 	}// too wide gap between ask and bid price
 	
-	if(	lPrim.bidPrice - lScnd.lastPrice > lBoll.mOutterUpperLine )
+	if(	lPrimBid - lScndLast > lBollOutterUpper )
 	{
 		/* condition 1 */
 		mOpenCond = OPEN_COND1;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mOutterUpperLine;
+		tempStream<<"[INFO]: Evidence: "<<lPrimBid<<" - "<<lScndLast<<" > "<<lBollOutterUpper;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
 	}// using bid_price - last_price to do the open timing judge, this is to meet the real situation
-	else if( lPrim.askPrice - lScnd.lastPrice < lBoll.mOutterLowerLine )
+	else if( lPrimAsk - lScndLast < lBollOutterLower )
 	{
 		/* condition 2 */
 		mOpenCond = OPEN_COND2;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mOutterLowerLine;
+		tempStream<<"[INFO]: Evidence: "<<lPrimAsk<<" - "<<lScndLast<<" < "<<lBollOutterLower;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -66,17 +77,26 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 	bool lIsClose = false;
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{	
-		double lProfit = 0;
+		long long lProfit = 0;
+		long long lPrimBid = (long long)primDataBuf[primBufIndex].bidPrice*10000;
+		long long lPrimAsk = (long long)primDataBuf[primBufIndex].askPrice*10000;
+		long long lScndLast = (long long)scndDataBuf[scndBufIndex].lastPrice*10000;
+		long long lScndBid = (long long)scndDataBuf[scndBufIndex].bidPrice*10000;
+		long long lScndAsk = (long long)scndDataBuf[scndBufIndex].askPrice*10000;
+		long long lPrimEnter = (long long)mPrimEnterPrice*10000;
+		long long lScndEnter = (long long)mScndEnterPrice*10000;
+		long long lStopLossPrice = (long long)stgArg.stopLossPrice*10000;
+
 		if(BUY_SCND_SELL_PRIM == mTradeDir)
 		{
-			lProfit = (mPrimEnterPrice-mScndEnterPrice)-(primDataBuf[primBufIndex].askPrice-scndDataBuf[scndBufIndex].bidPrice);
+			lProfit = (lPrimEnter-lScndEnter)-(lPrimAsk-lScndBid);
 		}
 		else if(BUY_PRIM_SELL_SCND == mTradeDir)
 		{
-			lProfit = (primDataBuf[primBufIndex].bidPrice-scndDataBuf[scndBufIndex].askPrice)-(mPrimEnterPrice-mScndEnterPrice);
+			lProfit = (lPrimBid-lScndAsk)-(lPrimEnter-lScndEnter);
 		}
 
-		if(lProfit<stgArg.stopLossPrice)
+		if(lProfit<lStopLossPrice)
 		{
 			//使用绝对浮亏来止损
 			logger.LogThisFast("[EVENT]: MUST_STOP (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
@@ -84,11 +104,11 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 			tempStream.str("");
 			if(BUY_SCND_SELL_PRIM == mTradeDir)
 			{
-				tempStream<<"[INFO]: Evidence: ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") - ("<<primDataBuf[primBufIndex].askPrice<<" - "<<scndDataBuf[scndBufIndex].bidPrice<<") < "<< stgArg.stopLossPrice;
+				tempStream<<"[INFO]: Evidence: ("<<lPrimEnter<<" - "<<lScndEnter<<") - ("<<lPrimAsk<<" - "<<lScndBid<<") < "<< lStopLossPrice;
 			}
 			else
 			{
-				tempStream<<"[INFO]: Evidence: ("<<primDataBuf[primBufIndex].bidPrice<<" - "<<scndDataBuf[scndBufIndex].askPrice<<") - ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") < "<< stgArg.stopLossPrice;
+				tempStream<<"[INFO]: Evidence: ("<<lPrimBid<<" - "<<lScndAsk<<") - ("<<lPrimEnter<<" - "<<lScndEnter<<") < "<< lStopLossPrice;
 			}
 
 			logger.LogThisFast(tempStream.str());
@@ -126,15 +146,37 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 	bool lGoodToClose = false;
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{
+		long long lProfit = 0;
+		long long lPrimBid = (long long)primDataBuf[primBufIndex].bidPrice*10000;
+		long long lPrimAsk = (long long)primDataBuf[primBufIndex].askPrice*10000;
+		long long lScndLast = (long long)scndDataBuf[scndBufIndex].lastPrice*10000;
+		long long lScndBid = (long long)scndDataBuf[scndBufIndex].bidPrice*10000;
+		long long lScndAsk = (long long)scndDataBuf[scndBufIndex].askPrice*10000;
+		long long lPrimEnter = (long long)mPrimEnterPrice*10000;
+		long long lScndEnter = (long long)mScndEnterPrice*10000;
+		long long lStopLossPrice = (long long)stgArg.stopLossPrice*10000;
+		long long lStopWinPoint = (long long)stgArg.stopWinPoint*10000;
+		long long lBollMid = (long long)lBoll.mMidLine*10000;
+		long long lBollBand = (long long)stgArg.winBollAmp*lBoll.mStdDev*10000;
+
+		if(BUY_SCND_SELL_PRIM == mTradeDir)
+		{
+			lProfit = (lPrimEnter-lScndEnter)-(lPrimAsk-lScndBid);
+		}
+		else if(BUY_PRIM_SELL_SCND == mTradeDir)
+		{
+			lProfit = (lPrimBid-lScndAsk)-(lPrimEnter-lScndEnter);
+		}//计算收益
+
 		//使用布林带位置判断止盈
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(lPrim.askPrice - lScnd.bidPrice < lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev)
+			if(lPrimAsk - lScndBid < lBollMid - lBollBand)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<(lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev);
+				tempStream<<"[INFO]: Evidence: "<<lPrimAsk<<" - "<<lScndBid<<" < "<<(lBollMid - lBollBand);
 				logger.LogThisFast(tempStream.str());
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
@@ -142,29 +184,19 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(lPrim.bidPrice - lScnd.askPrice > lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev)
+			if(lPrimBid - lScndAsk > lBollMid + lBollBand)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<(lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev);
+				tempStream<<"[INFO]: Evidence: "<<lPrimBid<<" - "<<lScndAsk<<" > "<<(lBollMid + lBollBand);
 				logger.LogThisFast(tempStream.str());
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
 			}
 		}
 		//使用绝对收益判断止盈
-		double lProfit = 0;
-		if(BUY_SCND_SELL_PRIM == mTradeDir)
-		{
-			lProfit = (mPrimEnterPrice-mScndEnterPrice)-(primDataBuf[primBufIndex].askPrice-scndDataBuf[scndBufIndex].bidPrice);
-		}
-		else if(BUY_PRIM_SELL_SCND == mTradeDir)
-		{
-			lProfit = (primDataBuf[primBufIndex].bidPrice-scndDataBuf[scndBufIndex].askPrice)-(mPrimEnterPrice-mScndEnterPrice);
-		}
-
-		if(lProfit>stgArg.stopWinPoint)
+		if(lProfit>lStopWinPoint)
 		{
 			//使用绝对浮亏来止损
 			logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
@@ -172,11 +204,11 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 			tempStream.str("");
 			if(BUY_SCND_SELL_PRIM == mTradeDir)
 			{
-				tempStream<<"[INFO]: Evidence: ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") - ("<<primDataBuf[primBufIndex].askPrice<<" - "<<scndDataBuf[scndBufIndex].bidPrice<<") > "<< stgArg.stopWinPoint;
+				tempStream<<"[INFO]: Evidence: ("<<lPrimEnter<<" - "<<lScndEnter<<") - ("<<lPrimAsk<<" - "<<lScndBid<<") > "<< lStopWinPoint;
 			}
 			else
 			{
-				tempStream<<"[INFO]: Evidence: ("<<primDataBuf[primBufIndex].bidPrice<<" - "<<scndDataBuf[scndBufIndex].askPrice<<") - ("<<mPrimEnterPrice<<" - "<<mScndEnterPrice<<") > "<< stgArg.stopWinPoint;
+				tempStream<<"[INFO]: Evidence: ("<<lPrimBid<<" - "<<lScndAsk<<") - ("<<lPrimEnter<<" - "<<lScndEnter<<") > "<< lStopWinPoint;
 			}
 
 			logger.LogThisFast(tempStream.str());
@@ -298,32 +330,50 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
 	BollingerBandData lBoll = mBoll.GetBoll(0);
+
+	long long lPrimBid = lPrim.bidPrice*10000;
+	long long lPrimAsk = lPrim.askPrice*10000;
+	long long lScndLast = lScnd.lastPrice*10000;
+	long long lBollUpper = lBoll.mInnerUpperLine*10000;
+	long long lBollLower = lBoll.mInnerLowerLine*10000;
+
 	if(mStateMachine.GetState() != OPENING_SCND_STATE)
 	{
 		return;
 	}
 	else
 	{
+		
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(lPrim.bidPrice - lScnd.lastPrice < lBoll.mInnerUpperLine);
+			// FOR TEST ONLY!!! REMOVE AFTER TEST FINISHED!
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: Pre Evidence: "<<lPrimBid<<" - "<<lScndLast<<" < "<<lBollUpper;
+			logger.LogThisFast(tempStream.str());
+			if( lPrimBid - lScndLast < lBollUpper );
 			{
 				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mInnerUpperLine;
+				tempStream<<"[INFO]: Evidence: "<<lPrimBid<<" - "<<lScndLast<<" < "<<lBollUpper;
 				logger.LogThisFast(tempStream.str());
 				SetEvent(OPEN_PRICE_BAD);
 			}
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(lPrim.askPrice - lScnd.lastPrice > lBoll.mInnerLowerLine)
+			// FOR TEST ONLY!!! REMOVE AFTER TEST FINISHED!
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: Pre Evidence: "<<lPrimAsk<<" - "<<lScndLast<<" > "<<lBollLower;
+			logger.LogThisFast(tempStream.str());
+			if( lPrimAsk - lScndLast > lBollLower )
 			{
 				logger.LogThisFast("[EVENT]: OPEN_PRICE_NOT_GOOD	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mInnerLowerLine;
+				tempStream<<"[INFO]: Evidence: "<<lPrimAsk<<" - "<<lScndLast<<" > "<<lBollLower;
 				logger.LogThisFast(tempStream.str());
 				SetEvent(OPEN_PRICE_BAD);
 			}
