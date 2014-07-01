@@ -404,7 +404,7 @@ private:
 		stgArg.askBidGapLimit = stgArg.askBidGapLimit*stgArg.minMove+stgArg.floatToleration;//这里一定要在min move配置读取之后
 		stgArg.stopWinPoint = stgArg.stopWinPoint*stgArg.minMove+stgArg.floatToleration;
 		stgArg.cost = stgArg.cost*stgArg.minMove+stgArg.floatToleration;
-		stgArg.stopLossPrice = stgArg.stopLossPrice*stgArg.minMove+stgArg.floatToleration;
+		stgArg.stopLossPrice = stgArg.stopLossPrice*stgArg.minMove-stgArg.floatToleration;
 		if(ALL_GOOD == initStatus)
 		{
 			cout<<"all arguments ready"<<endl;

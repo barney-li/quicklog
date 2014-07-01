@@ -24,15 +24,15 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	// use integer instead of float during calculation
-	long long lPrimBid = (long long)lPrim.bidPrice*10000;
-	long long lPrimAsk = (long long)lPrim.askPrice*10000;
-	long long lScndLast = (long long)lScnd.lastPrice*10000;
-	long long lScndBid = (long long)lScnd.bidPrice*10000;
-	long long lScndAsk = (long long)lScnd.askPrice*10000;
-	long long lBollOutterUpper = (long long)lBoll.mOutterUpperLine*10000;
-	long long lBollOutterLower = (long long)lBoll.mOutterLowerLine*10000;
-	long long lBollAmpLimit = (long long)stgArg.minMove * stgArg.bollAmpLimit*10000;
-	long long lAskBidGapLimit = (long long)stgArg.askBidGapLimit*10000;
+	long long lPrimBid = (long long)(lPrim.bidPrice*10000);
+	long long lPrimAsk = (long long)(lPrim.askPrice*10000);
+	long long lScndLast = (long long)(lScnd.lastPrice*10000);
+	long long lScndBid = (long long)(lScnd.bidPrice*10000);
+	long long lScndAsk = (long long)(lScnd.askPrice*10000);
+	long long lBollOutterUpper = (long long)(lBoll.mOutterUpperLine*10000);
+	long long lBollOutterLower = (long long)(lBoll.mOutterLowerLine*10000);
+	long long lBollAmpLimit = (long long)(stgArg.minMove * stgArg.bollAmpLimit*10000);
+	long long lAskBidGapLimit = (long long)(stgArg.askBidGapLimit*10000);
 
 	if(lBollOutterUpper - lBollOutterLower < lBollAmpLimit)
 	{
@@ -78,14 +78,14 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{	
 		long long lProfit = 0;
-		long long lPrimBid = (long long)primDataBuf[primBufIndex].bidPrice*10000;
-		long long lPrimAsk = (long long)primDataBuf[primBufIndex].askPrice*10000;
-		long long lScndLast = (long long)scndDataBuf[scndBufIndex].lastPrice*10000;
-		long long lScndBid = (long long)scndDataBuf[scndBufIndex].bidPrice*10000;
-		long long lScndAsk = (long long)scndDataBuf[scndBufIndex].askPrice*10000;
-		long long lPrimEnter = (long long)mPrimEnterPrice*10000;
-		long long lScndEnter = (long long)mScndEnterPrice*10000;
-		long long lStopLossPrice = (long long)stgArg.stopLossPrice*10000;
+		long long lPrimBid = (long long)(primDataBuf[primBufIndex].bidPrice*10000);
+		long long lPrimAsk = (long long)(primDataBuf[primBufIndex].askPrice*10000);
+		long long lScndLast = (long long)(scndDataBuf[scndBufIndex].lastPrice*10000);
+		long long lScndBid = (long long)(scndDataBuf[scndBufIndex].bidPrice*10000);
+		long long lScndAsk = (long long)(scndDataBuf[scndBufIndex].askPrice*10000);
+		long long lPrimEnter = (long long)(mPrimEnterPrice*10000);
+		long long lScndEnter = (long long)(mScndEnterPrice*10000);
+		long long lStopLossPrice = (long long)(stgArg.stopLossPrice*10000);
 
 		if(BUY_SCND_SELL_PRIM == mTradeDir)
 		{
@@ -147,17 +147,17 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{
 		long long lProfit = 0;
-		long long lPrimBid = (long long)primDataBuf[primBufIndex].bidPrice*10000;
-		long long lPrimAsk = (long long)primDataBuf[primBufIndex].askPrice*10000;
-		long long lScndLast = (long long)scndDataBuf[scndBufIndex].lastPrice*10000;
-		long long lScndBid = (long long)scndDataBuf[scndBufIndex].bidPrice*10000;
-		long long lScndAsk = (long long)scndDataBuf[scndBufIndex].askPrice*10000;
-		long long lPrimEnter = (long long)mPrimEnterPrice*10000;
-		long long lScndEnter = (long long)mScndEnterPrice*10000;
-		long long lStopLossPrice = (long long)stgArg.stopLossPrice*10000;
-		long long lStopWinPoint = (long long)stgArg.stopWinPoint*10000;
-		long long lBollMid = (long long)lBoll.mMidLine*10000;
-		long long lBollBand = (long long)stgArg.winBollAmp*lBoll.mStdDev*10000;
+		long long lPrimBid = (long long)(primDataBuf[primBufIndex].bidPrice*10000);
+		long long lPrimAsk = (long long)(primDataBuf[primBufIndex].askPrice*10000);
+		long long lScndLast = (long long)(scndDataBuf[scndBufIndex].lastPrice*10000);
+		long long lScndBid = (long long)(scndDataBuf[scndBufIndex].bidPrice*10000);
+		long long lScndAsk = (long long)(scndDataBuf[scndBufIndex].askPrice*10000);
+		long long lPrimEnter = (long long)(mPrimEnterPrice*10000);
+		long long lScndEnter = (long long)(mScndEnterPrice*10000);
+		long long lStopLossPrice = (long long)(stgArg.stopLossPrice*10000);
+		long long lStopWinPoint = (long long)(stgArg.stopWinPoint*10000);
+		long long lBollMid = (long long)(lBoll.mMidLine*10000);
+		long long lBollBand = (long long)(stgArg.winBollAmp*lBoll.mStdDev*10000);
 
 		if(BUY_SCND_SELL_PRIM == mTradeDir)
 		{
@@ -331,11 +331,11 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 
-	long long lPrimBid = lPrim.bidPrice*10000;
-	long long lPrimAsk = lPrim.askPrice*10000;
-	long long lScndLast = lScnd.lastPrice*10000;
-	long long lBollUpper = lBoll.mInnerUpperLine*10000;
-	long long lBollLower = lBoll.mInnerLowerLine*10000;
+	long long lPrimBid = (long long)(lPrim.bidPrice*10000);
+	long long lPrimAsk = (long long)(lPrim.askPrice*10000);
+	long long lScndLast = (long long)(lScnd.lastPrice*10000);
+	long long lBollUpper = (long long)(lBoll.mInnerUpperLine*10000);
+	long long lBollLower = (long long)(lBoll.mInnerLowerLine*10000);
 
 	if(mStateMachine.GetState() != OPENING_SCND_STATE)
 	{
