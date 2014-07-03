@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-#define BACK_TEST
+//#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -403,7 +403,7 @@ private:
 		}
 		stgArg.askBidGapLimit = stgArg.askBidGapLimit*stgArg.minMove+stgArg.floatToleration;//这里一定要在min move配置读取之后
 		stgArg.stopWinPoint = stgArg.stopWinPoint*stgArg.minMove+stgArg.floatToleration;
-		stgArg.cost = stgArg.cost*stgArg.minMove+stgArg.floatToleration;
+		stgArg.cost = stgArg.cost*stgArg.minMove;
 		stgArg.stopLossPrice = stgArg.stopLossPrice*stgArg.minMove-stgArg.floatToleration;
 		if(ALL_GOOD == initStatus)
 		{

@@ -1,9 +1,11 @@
 #include <PrimeryAndSecondary.h>
 ///行情数据
-void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
+void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* aDepthMarketData)
 {
-	if(BufferData(pDepthMarketData) 
-		&& strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+	CThostFtdcDepthMarketDataField lMarketData;
+	memcpy(&lMarketData, aDepthMarketData, sizeof(lMarketData));
+	if(BufferData(&lMarketData) 
+		&& strncmp(lMarketData.InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 	{
 		
 		if(VerifyMarketData(primDataBuf[primBufIndex]) && VerifyMarketData(scndDataBuf[scndBufIndex]))
@@ -19,23 +21,23 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 				switch(lCurState)
 				{
 				case IDLE_STATE:
-					if(mStart && IsTradeTime(pDepthMarketData->UpdateTime))
+					if(mStart && IsTradeTime(lMarketData.UpdateTime))
 					{
-						OpenJudge(*pDepthMarketData);
+						OpenJudge(lMarketData);
 					}
 					break;
 				case OPENING_SCND_STATE:
-					IsTradeTime(pDepthMarketData->UpdateTime);
-					StopOpenJudge(*pDepthMarketData);
+					IsTradeTime(lMarketData.UpdateTime);
+					StopOpenJudge(lMarketData);
 					break;
 				case OPENING_PRIM_STATE:
-					IsTradeTime(pDepthMarketData->UpdateTime);
-					StopOpenJudge(*pDepthMarketData);
+					IsTradeTime(lMarketData.UpdateTime);
+					StopOpenJudge(lMarketData);
 					break;
 				case PENDING_STATE:
-					IsTradeTime(pDepthMarketData->UpdateTime);
-					StopLoseJudge(*pDepthMarketData);
-					StopWinJudge(*pDepthMarketData);
+					IsTradeTime(lMarketData.UpdateTime);
+					StopLoseJudge(lMarketData);
+					StopWinJudge(lMarketData);
 					break;
 				case CLOSING_BOTH_STATE:
 					break;
@@ -58,7 +60,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 	}
 #ifndef BACK_TEST
 	BollingerBandData lBoll = mBoll.GetBoll(0);
-	cout<<pDepthMarketData->UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
+	cout<<lMarketData.UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
 #endif
 	//cout<<pDepthMarketData->UpdateTime<<endl;
 }
@@ -84,7 +86,7 @@ void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 			}
 			tempStream.clear();
 			tempStream.str("");
-			tempStream<<"[INFO]: scnd close price: "<<mPrimEnterPrice<<" scnd profit: "<<lProfit;
+			tempStream<<"[INFO]: scnd close price: "<<pTrade->Price<<" scnd profit: "<<lProfit;
 			logger.LogThisFast(tempStream.str());
 		}
 		if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
@@ -101,7 +103,7 @@ void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 			}
 			tempStream.clear();
 			tempStream.str("");
-			tempStream<<"[INFO]: prim close price: "<<mPrimEnterPrice<<" prim profit: "<<lProfit;
+			tempStream<<"[INFO]: prim close price: "<<pTrade->Price<<" prim profit: "<<lProfit;
 			logger.LogThisFast(tempStream.str());
 		}
 	}
