@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src\CTPAPI">
+      <UniqueIdentifier>{87f9e6ab-a30a-4a57-865e-f2f37ad4b412}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\common">
+      <UniqueIdentifier>{01a44913-93e6-4251-b7c8-8dc471ba6ea1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\TradeProcess">
+      <UniqueIdentifier>{1ba63de2-0a07-4100-b55c-558be293afa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\MarketProcess">
+      <UniqueIdentifier>{ee17a89c-04f7-4fbd-91f3-6d52bcfb5e42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Stratergy">
+      <UniqueIdentifier>{ab88bb7a-244c-410b-99de-3325a5ae873a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+    <None Include="src\CTPAPI\thostmduserapi.dll">
+      <Filter>lib</Filter>
+    </None>
+    <None Include="src\CTPAPI\thosttraderapi.dll">
+      <Filter>lib</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\stdafx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TradeAgentVS.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TradeProcess\TradeProcess.cpp">
+      <Filter>src\TradeProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MarketProcess\MarketProcess.cpp">
+      <Filter>src\MarketProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common\Log.cpp">
+      <Filter>src\common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TradeProcess\TradeService.cpp">
+      <Filter>src\TradeProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stratergy\TradeOperation.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stratergy\Callback.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stratergy\Miscellaneous.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\stdafx.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\targetver.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TradeProcess\TradeProcess.h">
+      <Filter>src\TradeProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MarketProcess\MarketProcess.h">
+      <Filter>src\MarketProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CTPAPI\ThostFtdcMdApi.h">
+      <Filter>src\CTPAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CTPAPI\ThostFtdcTraderApi.h">
+      <Filter>src\CTPAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CTPAPI\ThostFtdcUserApiDataType.h">
+      <Filter>src\CTPAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h">
+      <Filter>src\CTPAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\ConfigReader.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\DataTypes.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\Hook.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\Log.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\ParseTradeInfo.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\Timer.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\PASAux.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\PrimeryAndSecondary.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\PasStateMachine.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Stratergy\BollingerBand.h">
+      <Filter>src\Stratergy</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\DataReader.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\BackTestAgent.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="src\CTPAPI\thostmduserapi.lib">
+      <Filter>lib</Filter>
+    </Library>
+    <Library Include="src\CTPAPI\thosttraderapi.lib">
+      <Filter>lib</Filter>
+    </Library>
+  </ItemGroup>
+</Project>
