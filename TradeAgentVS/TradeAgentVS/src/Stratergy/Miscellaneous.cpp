@@ -299,12 +299,6 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 
-	long long lPrimBid = (long long)(lPrim.bidPrice*10000);
-	long long lPrimAsk = (long long)(lPrim.askPrice*10000);
-	long long lScndLast = (long long)(lScnd.lastPrice*10000);
-	long long lBollUpper = (long long)(lBoll.mInnerUpperLine*10000);
-	long long lBollLower = (long long)(lBoll.mInnerLowerLine*10000);
-
 	if(mStateMachine.GetState() != OPENING_SCND_STATE)
 	{
 		return;

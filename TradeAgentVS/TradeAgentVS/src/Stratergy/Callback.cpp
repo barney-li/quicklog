@@ -1,11 +1,9 @@
 #include <PrimeryAndSecondary.h>
 ///行情数据
-void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* aDepthMarketData)
+void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 {
-	CThostFtdcDepthMarketDataField lMarketData;
-	memcpy(&lMarketData, aDepthMarketData, sizeof(lMarketData));
-	if(BufferData(&lMarketData) 
-		&& strncmp(lMarketData.InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+	if(BufferData(pDepthMarketData) 
+		&& strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 	{
 		
 		if(VerifyMarketData(primDataBuf[primBufIndex]) && VerifyMarketData(scndDataBuf[scndBufIndex]))
@@ -21,28 +19,28 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 				switch(lCurState)
 				{
 				case IDLE_STATE:
-					if(mStart && IsTradeTime(lMarketData.UpdateTime))
+					if(mStart && IsTradeTime(pDepthMarketData->UpdateTime))
 					{
 						if(IDLE_STATE != mLastState)
 						{
 							logger.LogThisFastNoTimeStamp(" ");
 					
 						}
-						OpenJudge(lMarketData);
+						OpenJudge(*pDepthMarketData);
 					}
 					break;
 				case OPENING_SCND_STATE:
-					IsTradeTime(lMarketData.UpdateTime);
-					StopOpenJudge(lMarketData);
+					IsTradeTime(pDepthMarketData->UpdateTime);
+					StopOpenJudge(*pDepthMarketData);
 					break;
 				case OPENING_PRIM_STATE:
-					IsTradeTime(lMarketData.UpdateTime);
-					StopOpenJudge(lMarketData);
+					IsTradeTime(pDepthMarketData->UpdateTime);
+					StopOpenJudge(*pDepthMarketData);
 					break;
 				case PENDING_STATE:
-					IsTradeTime(lMarketData.UpdateTime);
-					StopLoseJudge(lMarketData);
-					StopWinJudge(lMarketData);
+					IsTradeTime(pDepthMarketData->UpdateTime);
+					StopLoseJudge(*pDepthMarketData);
+					StopWinJudge(*pDepthMarketData);
 					break;
 				case CLOSING_BOTH_STATE:
 					break;
@@ -66,7 +64,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 	}
 #ifndef BACK_TEST
 	BollingerBandData lBoll = mBoll.GetBoll(0);
-	cout<<lMarketData.UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
+	cout<<pDepthMarketData->UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
 #endif
 	//cout<<pDepthMarketData->UpdateTime<<endl;
 }
