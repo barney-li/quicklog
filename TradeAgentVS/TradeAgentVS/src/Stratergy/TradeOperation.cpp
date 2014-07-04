@@ -219,16 +219,15 @@ void PrimeryAndSecondary::CheckScndOrder()
 void PrimeryAndSecondary::OpenScnd()
 {
 	stringstream lPrice;
-	//scndDataBuf[scndBufIndex].lastPrice;
+	lPrice<<scndDataBuf[scndBufIndex].lastPrice;
 	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
 		
 		logger.LogThisFast("[ACTION]: BUY_SCND");
-		lPrice<<scndDataBuf[scndBufIndex].askPrice;
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_OPENED);
 #else
@@ -242,10 +241,9 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 2 */
 		
 		logger.LogThisFast("[ACTION]: SHORT_SCND");
-		lPrice<<scndDataBuf[scndBufIndex].bidPrice;
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_OPENED);
 #else
