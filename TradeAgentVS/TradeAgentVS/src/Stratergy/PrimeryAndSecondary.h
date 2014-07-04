@@ -465,8 +465,9 @@ public:
 	{
 		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.primOpenTime));
 		//如果没有新的ID产生，那说明还停留在当次的操作
-		if(aId == mOpenPrimId)
+		if((mStateMachine.GetState() == OPENING_PRIM_STATE) && (aId == mOpenPrimId))
 		{
+			logger.LogThisFast("[EVENT]: PRIM_OPEN_TIMEOUT");
 			SetEvent(PRIM_OPEN_TIMEOUT);
 		}
 	}
@@ -474,8 +475,9 @@ public:
 	{
 		boost::this_thread::sleep(boost::posix_time::milliseconds(stgArg.scndOpenTime));
 		//如果没有新的ID产生，那说明还停留在当次的操作
-		if(aId == mOpenScndId)
+		if((mStateMachine.GetState() == OPENING_SCND_STATE) && (aId == mOpenScndId))
 		{
+			logger.LogThisFast("[EVENT]: SCND_OPEN_TIMEOUT");
 			SetEvent(SCND_OPEN_TIMEOUT);
 		}
 	}

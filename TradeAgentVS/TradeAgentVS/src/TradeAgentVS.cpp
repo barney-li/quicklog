@@ -27,7 +27,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	Log logger;
-	logger.LogThisFast("arbitrage stratergy started...");
+	logger.LogThisFast("[INFO]: arbitrage stratergy started...");
 	logger.Sync();
 #ifndef BACK_TEST
 	Pas::PrimeryAndSecondary strategy;
