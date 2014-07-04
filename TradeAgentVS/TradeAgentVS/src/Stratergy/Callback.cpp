@@ -23,6 +23,11 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 				case IDLE_STATE:
 					if(mStart && IsTradeTime(lMarketData.UpdateTime))
 					{
+						if(IDLE_STATE != mLastState)
+						{
+							logger.LogThisFastNoTimeStamp(" ");
+					
+						}
 						OpenJudge(lMarketData);
 					}
 					break;
@@ -54,6 +59,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 				default:
 					break;
 				}
+				mLastState = lCurState;
 			}
 		}
 			

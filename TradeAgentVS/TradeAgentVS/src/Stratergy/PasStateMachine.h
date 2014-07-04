@@ -62,6 +62,10 @@ public:
 		if(lNewState != mTradeState)
 		{
 			mLogger.LogThisFast("["+PASAux::ShowTradeState(mTradeState)+"] + <" + PASAux::ShowTradeEvent(aLatestEvent) + "> --> [" + PASAux::ShowTradeState(lNewState) + "]");
+			if(lNewState == IDLE_STATE)
+			{
+				mLogger.LogThisFastNoTimeStamp(" ");
+			}
 		}
 		mTradeState = lNewState;
 		return lNewState;

@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -139,6 +139,7 @@ private:
 	int mOpenScndId;
 	double mPrimEnterPrice;
 	double mScndEnterPrice;
+	TRADE_STATE mLastState;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -262,6 +263,7 @@ private:
 		mCheckPositionCD = true;
 		mOpenPrimId = 0;
 		mOpenScndId = 0;
+		mLastState = IDLE_STATE;
 		// read strategy arguments from configuration file
 		if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
 		{
