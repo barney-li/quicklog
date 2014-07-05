@@ -225,10 +225,10 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 1 */
 		
 		logger.LogThisFast("[ACTION]: BUY_SCND");
-		lPrice<<scndDataBuf[scndBufIndex].lastPrice;
+		lPrice<<scndDataBuf[scndBufIndex].askPrice;
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice;
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_OPENED);
 #else
@@ -242,10 +242,10 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 2 */
 		
 		logger.LogThisFast("[ACTION]: SHORT_SCND");
-		lPrice<<scndDataBuf[scndBufIndex].lastPrice;
+		lPrice<<scndDataBuf[scndBufIndex].bidPrice;
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice;
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_OPENED);
 #else
@@ -263,10 +263,10 @@ void PrimeryAndSecondary::OpenScnd()
 void PrimeryAndSecondary::OpenPrim()
 {
 	stringstream lPrice;
-	lPrice<<primDataBuf[primBufIndex].lastPrice;
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
 		logger.LogThisFast("[ACTION]: SHORT_PRIM");
+		lPrice<<primDataBuf[primBufIndex].bidPrice;
 		logger.LogThisFast(lPrice.str());
 		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
 #ifdef BACK_TEST
@@ -280,6 +280,7 @@ void PrimeryAndSecondary::OpenPrim()
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
 		logger.LogThisFast("[ACTION]: BUY_PRIM");
+		lPrice<<primDataBuf[primBufIndex].askPrice;
 		logger.LogThisFast(lPrice.str());
 		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
 #ifdef BACK_TEST
@@ -299,7 +300,6 @@ void PrimeryAndSecondary::OpenPrim()
 void PrimeryAndSecondary::CloseScnd()
 {
 	stringstream lPrice;
-	lPrice<<scndDataBuf[scndBufIndex].lastPrice;
 #ifndef BACK_TEST
 	if(!mCloseScndCD)
 	{
@@ -310,6 +310,7 @@ void PrimeryAndSecondary::CloseScnd()
 	if(OPEN_COND1 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: SELL_SCND");
+		lPrice<<scndDataBuf[scndBufIndex].bidPrice;
 		logger.LogThisFast(lPrice.str());
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_CLOSED);
@@ -321,6 +322,7 @@ void PrimeryAndSecondary::CloseScnd()
 	if(OPEN_COND2 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: COVER_SCND");
+		lPrice<<scndDataBuf[scndBufIndex].askPrice;
 		logger.LogThisFast(lPrice.str());
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_CLOSED);
@@ -336,7 +338,6 @@ void PrimeryAndSecondary::CloseScnd()
 void PrimeryAndSecondary::ClosePrim()
 {
 	stringstream lPrice;
-	lPrice<<primDataBuf[primBufIndex].lastPrice;
 #ifndef BACK_TEST
 	//如果CD还没到就直接返回
 	if(!mClosePrimCD)
@@ -348,6 +349,7 @@ void PrimeryAndSecondary::ClosePrim()
 	if(OPEN_COND1 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: COVER_PRIM");
+		lPrice<<primDataBuf[primBufIndex].askPrice;
 		logger.LogThisFast(lPrice.str());
 #ifdef BACK_TEST
 		mEventQueue.push(PRIM_CLOSED);
@@ -360,6 +362,7 @@ void PrimeryAndSecondary::ClosePrim()
 	if(OPEN_COND2 == mOpenCond)
 	{
 		logger.LogThisFast("[ACTION]: SELL_PRIM");
+		lPrice<<primDataBuf[primBufIndex].bidPrice;
 		logger.LogThisFast(lPrice.str());
 #ifdef BACK_TEST
 		mEventQueue.push(PRIM_CLOSED);

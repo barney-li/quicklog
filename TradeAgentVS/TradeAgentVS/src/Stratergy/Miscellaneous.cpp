@@ -37,25 +37,25 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		return;
 	}// too wide gap between ask and bid price
 	
-	if(	lPrim.bidPrice - lScnd.lastPrice > lBoll.mOutterUpperLine )
+	if(	lPrim.bidPrice - lScnd.askPrice > lBoll.mOutterUpperLine )
 	{
 		/* condition 1 */
 		mOpenCond = OPEN_COND1;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mOutterUpperLine;
+		tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<lBoll.mOutterUpperLine;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
 	}// using bid_price - last_price to do the open timing judge, this is to meet the real situation
-	else if( lPrim.askPrice - lScnd.lastPrice < lBoll.mOutterLowerLine )
+	else if( lPrim.askPrice - lScnd.bidPrice < lBoll.mOutterLowerLine )
 	{
 		/* condition 2 */
 		mOpenCond = OPEN_COND2;
 		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mOutterLowerLine;
+		tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<lBoll.mOutterLowerLine;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
 	}
