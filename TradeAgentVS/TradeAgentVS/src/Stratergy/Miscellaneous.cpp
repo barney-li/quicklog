@@ -210,11 +210,55 @@ void PrimeryAndSecondary::LogBollData()
 	
 	tempStream.clear();
 	tempStream.str("");
+#ifndef BACK_TEST
 	tempStream<<"["<<lPrim.updateTime<<" "<<lPrim.askPrice<<"-"<<lPrim.bidPrice<<"] ["\
 		<<lScnd.updateTime<<" "<<lScnd.askPrice<<"-"<<lScnd.bidPrice<<"] ["\
 		<<tempData.mOutterUpperLine<<" "<<tempData.mInnerUpperLine<<" "\
 		<<tempData.mInnerLowerLine<<" "<<tempData.mOutterLowerLine<<"] "\
 		<<tempData.mMidLine<<" "<<tempData.mStdDev;
+#else
+#ifdef OPPONENT_PRICE_OPEN
+	double lDeltaPrice1 = lPrim.bidPrice - lScnd.askPrice;
+	double lDeltaPrice2 = lPrim.askPrice - lScnd.bidPrice;
+#else
+	double lDeltaPrice1 = lPrim.bidPrice - lScnd.lastPrice;
+	double lDeltaPrice2 = lPrim.askPrice - lScnd.lastPrice;
+#endif
+	
+	tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
+		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"\
+		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	";
+	if(mStateMachine.GetState() == OPENING_SCND_STATE || mStateMachine.GetState() == OPENING_PRIM_STATE)
+	{
+		if(OPEN_COND1 == mOpenCond)
+		{
+			tempStream<<lDeltaPrice1<<"	";
+		}
+		else
+		{
+			tempStream<<lDeltaPrice2<<"	";
+		}
+	}
+	else
+	{
+		tempStream<<"0"<<"	";
+	}
+	if(mStateMachine.GetState() == CLOSING_BOTH_STATE || mStateMachine.GetState() == WAITING_SCND_CLOSE_STATE||mStateMachine.GetState() == WAITING_PRIM_CLOSE_STATE)
+	{
+		if(OPEN_COND1 == mOpenCond)
+		{
+			tempStream<<lPrim.askPrice-lScnd.bidPrice<<"	";
+		}
+		else
+		{
+			tempStream<<lPrim.bidPrice-lScnd.askPrice<<"	";
+		}
+	}
+	else
+	{
+		tempStream<<"0"<<"	";
+	}
+#endif
 	mBollLog.LogThisFast(tempStream.str());
 }
 bool PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData)

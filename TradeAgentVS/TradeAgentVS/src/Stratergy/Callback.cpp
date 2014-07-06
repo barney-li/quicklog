@@ -10,9 +10,9 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 		{
 			//calculate Boll Band
 			mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-#ifndef BACK_TEST
+//#ifndef BACK_TEST
 			LogBollData();
-#endif
+//#endif
 			if(mBoll.IsBollReady())
 			{
 				TRADE_STATE lCurState = mStateMachine.GetState();

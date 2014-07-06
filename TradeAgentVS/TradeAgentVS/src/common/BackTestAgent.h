@@ -96,7 +96,7 @@ public:
 					ResetData(&mPrimData);
 					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
-					strategy.AsyncEventPoster();
+					//strategy.AsyncEventPoster();
 					ResetData(&mScndData);
 				}
 			}
