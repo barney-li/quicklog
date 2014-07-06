@@ -12,8 +12,13 @@ void PrimeryAndSecondary::OpenScnd()
 		
 		logger.LogThisFast("[ACTION]: BUY_SCND");
 		mTradeDir = BUY_SCND_SELL_PRIM;
+#ifdef OPPONENT_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice;
+		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].askPrice, stgArg.openShares, &lastScndOrder) != true)
+#else
 		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
+#endif
 		{
 			logger.LogThisFast("[ERROR]: buy scnd error");
 		}
@@ -25,8 +30,13 @@ void PrimeryAndSecondary::OpenScnd()
 		
 		logger.LogThisFast("[ACTION]: SHORT_SCND");
 		mTradeDir = BUY_PRIM_SELL_SCND;
+#ifdef OPPONENT_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice;
+		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].bidPrice, stgArg.openShares, &lastScndOrder) != true)
+#else
 		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
+#endif
 		{
 			logger.LogThisFast("[ERROR]: sell scnd error");
 		}
@@ -225,10 +235,16 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 1 */
 		
 		logger.LogThisFast("[ACTION]: BUY_SCND");
+#ifdef OPPONENT_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice;
+		lPrice<<scndDataBuf[scndBufIndex].askPrice;
+#else
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 		lPrice<<scndDataBuf[scndBufIndex].lastPrice;
+#endif
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
+		
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_OPENED);
 #else
@@ -242,10 +258,15 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 2 */
 		
 		logger.LogThisFast("[ACTION]: SHORT_SCND");
+#ifdef OPPONENT_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice;
+		lPrice<<scndDataBuf[scndBufIndex].bidPrice;
+#else
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 		lPrice<<scndDataBuf[scndBufIndex].lastPrice;
+#endif
 		logger.LogThisFast(lPrice.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
 #ifdef BACK_TEST
 		mEventQueue.push(SCND_OPENED);
 #else
