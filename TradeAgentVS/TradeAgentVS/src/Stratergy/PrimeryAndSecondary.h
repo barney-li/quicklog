@@ -33,10 +33,11 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-#define BACK_TEST
+//#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
+//#define KEEP_BOLL
 #include <queue>
 #endif
 
@@ -80,6 +81,8 @@ private:
 	vector <BasicMarketData> scndDataBuf;
 	long long primBufIndex;
 	long long scndBufIndex;
+	vector <CThostFtdcOrderField> mOrderReturn;
+	int mOrderReturnIndex;
 	// log
 	//Log logger;
 	Log mBollLog;
@@ -142,6 +145,9 @@ private:
 	double mPrimEnterPrice;
 	double mScndEnterPrice;
 	TRADE_STATE mLastState;
+	// order index，用来同步request请求与相应的应答
+	int mPrimReqOrderId;
+	int mScndReqOrderId;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -180,8 +186,8 @@ private:
 	void CancelPrim();
 	void CheckPrimPosition();
 	void CheckScndPosition();
-	void CheckPrimOrder();
-	void CheckScndOrder();
+	int CheckPrimOrder();
+	int CheckScndOrder();
 	/*****************************/
 	/* auxalary routines */
 	// check if this trade must be ended now
@@ -266,6 +272,7 @@ private:
 		mOpenPrimId = 0;
 		mOpenScndId = 0;
 		mLastState = IDLE_STATE;
+		mOrderReturnIndex = 0;
 		// read strategy arguments from configuration file
 		if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
 		{
@@ -514,10 +521,14 @@ public:
 	{
 		for(;;)
 		{
-			boost::this_thread::sleep(boost::posix_time::seconds(3));
+			boost::this_thread::sleep(boost::posix_time::seconds(2));
 			CheckPrimPosition();
 			boost::this_thread::sleep(boost::posix_time::seconds(2));
 			CheckScndPosition();
+			boost::this_thread::sleep(boost::posix_time::seconds(2));
+			mPrimReqOrderId = CheckPrimOrder();
+			boost::this_thread::sleep(boost::posix_time::seconds(2));
+			mScndReqOrderId = CheckScndOrder();
 		}
 	}
 	/*****************************/
@@ -582,6 +593,14 @@ public:
 				cout<<"input instrument: "<<endl;
 				cin>>lInstrument;
 				ReqQryInvestorPosition(lInstrument.c_str());
+			}
+			if(input == "primorder")
+			{
+				CheckPrimOrder();
+			}
+			if(input == "scndorder")
+			{
+				CheckScndOrder();
 			}
 			if(input == "cond1")
 			{

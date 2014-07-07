@@ -82,6 +82,14 @@ private:
 		{
 			return OPENING_SCND_STATE;
 		}
+		else if(PRIM_OPENED == aLatestEvent)
+		{
+			return CLOSING_BOTH_STATE;
+		}
+		else if(SCND_OPENED == aLatestEvent)
+		{
+			return CLOSING_BOTH_STATE;
+		}
 		else
 		{
 			return IDLE_STATE;

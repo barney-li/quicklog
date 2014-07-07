@@ -85,7 +85,9 @@ public:
 				{
 					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
+#ifndef KEEP_BOLL
 					strategy.AsyncEventPoster();
+#endif
 					ResetData(&mScndData);
 				}
 				else if(lNextData == NEXT_BOTH)
@@ -96,7 +98,9 @@ public:
 					ResetData(&mPrimData);
 					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
-					//strategy.AsyncEventPoster();
+#ifndef KEEP_BOLL
+					strategy.AsyncEventPoster();
+#endif
 					ResetData(&mScndData);
 				}
 			}

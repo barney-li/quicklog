@@ -10,9 +10,12 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 		{
 			//calculate Boll Band
 			mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-//#ifndef BACK_TEST
+#ifndef BACK_TEST
 			LogBollData();
-//#endif
+#endif
+#ifdef KEEP_BOLL
+			LogBollData();
+#endif
 			if(mBoll.IsBollReady())
 			{
 				TRADE_STATE lCurState = mStateMachine.GetState();
@@ -145,6 +148,7 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	{
 		return;
 	}
+	memcpy(&mOrderReturn[mOrderReturnIndex++], pOrder, sizeof(CThostFtdcOrderField));
 	cout<<"---> OnRtnOrder: "<<std::endl;
 	cout<<"------> Instrument ID: "<<pOrder->InstrumentID<<endl;
 	cout<<"------> Order Status: "<<pOrder->OrderStatus<<endl;
@@ -362,6 +366,7 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 // 查询订单的应答函数
 void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast) 
 {
+	TRADE_STATE lCurState = mStateMachine.GetState();
 	if(pOrder)
 	{
 		if(pOrder->InstrumentID == NULL)
@@ -372,7 +377,7 @@ void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdc
 		{
 			if(pOrder->OrderRef == lastPrimOrder.orderRef && pOrder->SessionID == lastPrimOrder.sessionId)
 			{
-				if(pOrder->OrderStatus == THOST_FTDC_OST_Canceled)
+				if(pOrder->OrderStatus == THOST_FTDC_OST_Canceled && lCurState == CANCELLING_PRIM_STATE)
 				{
 					logger.LogThisFast("[EVENT]: PRIM_CANCELLED (from order query)");
 					SetEvent(PRIM_CANCELLED);
@@ -383,7 +388,7 @@ void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdc
 		{
 			if(pOrder->OrderRef == lastScndOrder.orderRef && pOrder->SessionID == lastScndOrder.sessionId)
 			{
-				if(pOrder->OrderStatus == THOST_FTDC_OST_Canceled)
+				if(pOrder->OrderStatus == THOST_FTDC_OST_Canceled && lCurState == CANCELLING_SCND_STATE)
 				{
 					logger.LogThisFast("[EVENT]: SCND_CANCELLED (from order query)");
 					SetEvent(SCND_CANCELLED);
@@ -393,10 +398,16 @@ void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdc
 	}
 	else
 	{
-		logger.LogThisFast("[EVENT]: PRIM_CANCELLED (no order record)");
-		logger.LogThisFast("[EVENT]: SCND_CANCELLED (no order record)");
-		SetEvent(PRIM_CANCELLED);
-		SetEvent(SCND_CANCELLED);
+		if(nRequestID == mPrimReqOrderId && lCurState == CANCELLING_PRIM_STATE)
+		{
+			logger.LogThisFast("[EVENT]: PRIM_CANCELLED (no order record)");
+			SetEvent(PRIM_CANCELLED);
+		}
+		if(nRequestID == mScndReqOrderId && lCurState == CANCELLING_SCND_STATE)
+		{
+			logger.LogThisFast("[EVENT]: SCND_CANCELLED (no order record)");
+			SetEvent(SCND_CANCELLED);
+		}
 	}
 }
 // 撤单的应答函数

@@ -216,13 +216,13 @@ void PrimeryAndSecondary::CheckScndPosition()
 {
 	ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
 }
-void PrimeryAndSecondary::CheckPrimOrder()
+int PrimeryAndSecondary::CheckPrimOrder()
 {
-	ReqQryOrder(stgArg.primaryInst.c_str());
+	return ReqQryOrder(stgArg.primaryInst.c_str());
 }
-void PrimeryAndSecondary::CheckScndOrder()
+int PrimeryAndSecondary::CheckScndOrder()
 {
-	ReqQryOrder(stgArg.secondaryInst.c_str());
+	return ReqQryOrder(stgArg.secondaryInst.c_str());
 }
 #endif
 #ifdef SIMULATION
