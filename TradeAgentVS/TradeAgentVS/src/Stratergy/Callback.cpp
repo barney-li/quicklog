@@ -148,7 +148,6 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	{
 		return;
 	}
-	memcpy(&mOrderReturn[mOrderReturnIndex++], pOrder, sizeof(CThostFtdcOrderField));
 	cout<<"---> OnRtnOrder: "<<std::endl;
 	cout<<"------> Instrument ID: "<<pOrder->InstrumentID<<endl;
 	cout<<"------> Order Status: "<<pOrder->OrderStatus<<endl;

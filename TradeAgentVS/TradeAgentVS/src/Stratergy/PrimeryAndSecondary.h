@@ -81,8 +81,6 @@ private:
 	vector <BasicMarketData> scndDataBuf;
 	long long primBufIndex;
 	long long scndBufIndex;
-	vector <CThostFtdcOrderField> mOrderReturn;
-	int mOrderReturnIndex;
 	// log
 	//Log logger;
 	Log mBollLog;
@@ -272,7 +270,6 @@ private:
 		mOpenPrimId = 0;
 		mOpenScndId = 0;
 		mLastState = IDLE_STATE;
-		mOrderReturnIndex = 0;
 		// read strategy arguments from configuration file
 		if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
 		{

@@ -434,12 +434,12 @@ void PrimeryAndSecondary::CheckScndPosition()
 {
 	;
 }
-void PrimeryAndSecondary::CheckPrimOrder()
+int PrimeryAndSecondary::CheckPrimOrder()
 {
-	;
+	return 0;
 }
-void PrimeryAndSecondary::CheckScndOrder()
+int PrimeryAndSecondary::CheckScndOrder()
 {
-	;
+	return 0;
 }
 #endif
