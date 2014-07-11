@@ -561,8 +561,8 @@ public:
 		if(InitOtherCrap() == ALL_GOOD)
 		{
 #ifndef BACK_TEST
+			InitTradeProcess();// Initialize trade process first, if this failed, we don't need market process anyway
 			InitMarketProcess();
-			InitTradeProcess();
 #endif
 		}
 #ifndef BACK_TEST
