@@ -213,5 +213,25 @@ bool TradeProcess::CancelOrder(const ORDER_INDEX_TYPE* aOrderIndex)
 	req.ActionFlag = THOST_FTDC_AF_Delete;
 	///ºÏÔ¼´úÂë
 	strncpy(req.InstrumentID, aOrderIndex->instrument.c_str(), sizeof(TThostFtdcInstrumentIDType));
-	return pUserApi->ReqOrderAction(&req, ++iReqID);
+	int lReturnCode = pUserApi->ReqOrderAction(&req, ++iReqID);
+	if( lReturnCode == 0)// 0 for no error
+	{
+		return true;
+	}
+	else
+	{
+		if(lReturnCode == -1)
+		{
+			logger.LogThisFast("[ERROR]: network connection failed");
+		}
+		else if(lReturnCode == -2)
+		{
+			logger.LogThisFast("[ERROR]: too many unhandled request");
+		}
+		else
+		{
+			logger.LogThisFast("[ERROR]: too many request per second");
+		}
+		return false;
+	}
 }

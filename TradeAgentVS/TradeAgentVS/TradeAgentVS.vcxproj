@@ -52,27 +52,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);D:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
+    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
     <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;D:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI;D:\boost_1_54_0\VC10\include\boost-1_54</SourcePath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);D:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
+    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
     <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;D:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI;D:\boost_1_54_0\VC10\include\boost-1_54</SourcePath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);D:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
+    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
     <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;D:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI;D:\boost_1_54_0\VC10\include\boost-1_54</SourcePath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

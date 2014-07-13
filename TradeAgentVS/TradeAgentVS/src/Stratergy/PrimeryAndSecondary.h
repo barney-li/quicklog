@@ -681,6 +681,10 @@ public:
 			{
 				CancelPrim();
 			}
+			if(input == "qryinstrument")
+			{
+				ReqQryInstrument();
+			}
 			input.clear();
 		}
 #endif
