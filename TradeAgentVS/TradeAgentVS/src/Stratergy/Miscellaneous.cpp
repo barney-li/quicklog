@@ -23,7 +23,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
 	BollingerBandData lBoll = mBoll.GetBoll(0);
-	if(lBoll.mOutterUpperLine - lBoll.mOutterLowerLine < (stgArg.minMove * stgArg.bollAmpLimit))
+	if(lBoll.mOutterUpperLine - lBoll.mOutterLowerLine < stgArg.bollAmpLimit)
 	{
 		return;
 	}// if the bollinger band is not wide enough, then return

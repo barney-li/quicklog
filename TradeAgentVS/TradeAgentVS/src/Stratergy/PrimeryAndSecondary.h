@@ -169,7 +169,7 @@ public:
 		{
 			lWinRate = 100*mWin/(mWin+mLose);
 		}
-		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<stgArg.bollAmpLimit<<"	"<<stgArg.winBollAmp<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit/2<<"	"<<mWin/2<<"	"<<mLose/2;
+		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit/2<<"	"<<mWin/2<<"	"<<mLose/2;
 		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
 		cout<<tempStream.str()<<endl;
 #endif
@@ -413,6 +413,7 @@ private:
 		stgArg.stopWinPoint = stgArg.stopWinPoint*stgArg.minMove+stgArg.floatToleration;
 		stgArg.cost = stgArg.cost*stgArg.minMove;
 		stgArg.stopLossPrice = stgArg.stopLossPrice*stgArg.minMove-stgArg.floatToleration;
+		stgArg.bollAmpLimit = stgArg.bollAmpLimit*stgArg.minMove + stgArg.floatToleration;
 		if(ALL_GOOD == initStatus)
 		{
 			cout<<"all arguments ready"<<endl;
