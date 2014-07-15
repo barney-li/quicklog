@@ -146,6 +146,8 @@ private:
 	// order index，用来同步request请求与相应的应答
 	int mPrimReqOrderId;
 	int mScndReqOrderId;
+	// traded shares
+	int mTradedShares;
 public:
 	// constructor
 	PrimeryAndSecondary(void)

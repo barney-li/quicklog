@@ -57,7 +57,7 @@ void PrimeryAndSecondary::OpenPrim()
 	{
 		logger.LogThisFast("[ACTION]: SHORT_PRIM");
 		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
-		if(SellShort(stgArg.primaryInst, primDataBuf[primBufIndex].lowerLimit, stgArg.openShares, &lastPrimOrder) != true)
+		if(SellShort(stgArg.primaryInst, primDataBuf[primBufIndex].lowerLimit, mTradedShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell prim error");
 		}
@@ -67,7 +67,7 @@ void PrimeryAndSecondary::OpenPrim()
 	{
 		logger.LogThisFast("[ACTION]: BUY_PRIM");
 		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
-		if(Buy(stgArg.primaryInst, primDataBuf[primBufIndex].upperLimit, stgArg.openShares, &lastPrimOrder) != true)
+		if(Buy(stgArg.primaryInst, primDataBuf[primBufIndex].upperLimit, mTradedShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: buy prim error");
 		}

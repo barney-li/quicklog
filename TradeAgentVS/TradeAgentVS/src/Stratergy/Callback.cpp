@@ -123,9 +123,11 @@ void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 			mScndEnterPrice = pTrade->Price;
 			tempStream.clear();
 			tempStream.str("");
-			tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice;
+			tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice<<" number of shares: "<<pTrade->Volume;
+			mTradedShares = pTrade->Volume;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_OPENED);
+			CheckScndPosition();
 		}
 		if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 		{
@@ -134,12 +136,13 @@ void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 			mPrimEnterPrice = pTrade->Price;
 			tempStream.clear();
 			tempStream.str("");
-			tempStream<<"[INFO]: prim open price: "<<mPrimEnterPrice;
+			tempStream<<"[INFO]: prim open price: "<<mPrimEnterPrice<<" number of shares: "<<pTrade->Volume;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_OPENED);
+			CheckPrimPosition();
 		}
 	}
-
+	
 }
 ///报单通知
 void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
