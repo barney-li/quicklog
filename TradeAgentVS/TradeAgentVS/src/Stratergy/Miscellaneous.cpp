@@ -166,6 +166,7 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		}
 		//使用绝对收益判断止盈
 		double lProfit = 0;
+		double lStopWinPoint=0;
 		if(BUY_SCND_SELL_PRIM == mTradeDir)
 		{
 			lProfit = (mPrimEnterPrice-mScndEnterPrice)-(primDataBuf[primBufIndex].askPrice-scndDataBuf[scndBufIndex].bidPrice);
@@ -175,7 +176,15 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 			lProfit = (primDataBuf[primBufIndex].bidPrice-scndDataBuf[scndBufIndex].askPrice)-(mPrimEnterPrice-mScndEnterPrice);
 		}
 
-		if(lProfit>stgArg.stopWinPoint)
+		if(!IsEasyGoTime(lPrim.updateTime))
+		{
+			lStopWinPoint = stgArg.stopWinPoint;
+		}
+		else
+		{
+			lStopWinPoint = stgArg.cost;
+		}//到达easy go时间后，只要打平就平仓
+		if(lProfit>lStopWinPoint)
 		{
 			//使用绝对浮亏来止损
 			logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
@@ -539,5 +548,39 @@ bool PrimeryAndSecondary::IsOpenTime(string aDataTime)
 	else
 	{
 		return false;
+	}
+}
+bool PrimeryAndSecondary::IsEasyGoTime(string aDataTime)
+{
+	// any valid time should be in size of 8
+	if(aDataTime.size() != 8)
+	{
+		return false;
+	}
+	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
+	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
+	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 09:01:00"), time_from_string("2000-01-01 11:20:00"));
+	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 13:31:00"), time_from_string("2000-01-01 14:50:00"));
+	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 21:01:00"), time_from_string("2000-01-01 24:00:00"));
+	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 00:00:00"), time_from_string("2000-01-01 02:20:00"));
+	if(lTradePeriod1.contains(lCurTime))
+	{
+		return false;
+	}
+	else if(lTradePeriod2.contains(lCurTime))
+	{
+		return false;
+	}
+	else if(lTradePeriod3.contains(lCurTime))
+	{
+		return false;
+	}
+	else if(lTradePeriod4.contains(lCurTime))
+	{
+		return false;
+	}
+	else
+	{
+		return true;
 	}
 }
