@@ -19,6 +19,10 @@ double PrimeryAndSecondary::EstimateProfit()
 }
 void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
 {
+	if(!IsOpenTime(pDepthMarketData.UpdateTime))
+	{
+		return;
+	}//don't open if it's not in open time
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
@@ -500,6 +504,40 @@ bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 		logger.LogThisFast("[EVENT]: NOT_TRADING_TIME	ServerTime:	"+aDataTime);
 		mBoll.InitAllData();
 		SetEvent(NOT_TRADING_TIME);
+		return false;
+	}
+}
+bool PrimeryAndSecondary::IsOpenTime(string aDataTime)
+{
+	// any valid time should be in size of 8
+	if(aDataTime.size() != 8)
+	{
+		return false;
+	}
+	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
+	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
+	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 09:01:00"), time_from_string("2000-01-01 11:20:00"));
+	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 13:31:00"), time_from_string("2000-01-01 14:50:00"));
+	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 21:01:00"), time_from_string("2000-01-01 24:00:00"));
+	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 00:00:00"), time_from_string("2000-01-01 02:20:00"));
+	if(lTradePeriod1.contains(lCurTime))
+	{
+		return true;
+	}
+	else if(lTradePeriod2.contains(lCurTime))
+	{
+		return true;
+	}
+	else if(lTradePeriod3.contains(lCurTime))
+	{
+		return true;
+	}
+	else if(lTradePeriod4.contains(lCurTime))
+	{
+		return true;
+	}
+	else
+	{
 		return false;
 	}
 }
