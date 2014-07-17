@@ -360,7 +360,6 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 			else
 			{
 				//logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
-				mTradedShares = mScndTodayLongPosition+mScndTodayShortPosition;
 				SetEvent(SCND_OPENED);
 			}
 		}
