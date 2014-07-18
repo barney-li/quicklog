@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -301,25 +301,25 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"BollPeriod\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-		if(config.ReadInteger(stgArg.outterBollAmp, "OutterBollAmp") != 0)
+		if(config.ReadDouble(stgArg.outterBollAmp, "OutterBollAmp") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"OutterBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"OutterBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-		if(config.ReadInteger(stgArg.innerBollAmp, "InnerBollAmp") != 0)
+		if(config.ReadDouble(stgArg.innerBollAmp, "InnerBollAmp") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"InnerBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"InnerBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-		if(config.ReadInteger(stgArg.stopBollAmp, "StopBollAmp") != 0)
+		if(config.ReadDouble(stgArg.stopBollAmp, "StopBollAmp") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"StopBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"StopBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
-		if(config.ReadInteger(stgArg.winBollAmp, "WinBollAmp") != 0)
+		if(config.ReadDouble(stgArg.winBollAmp, "WinBollAmp") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"WinBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"WinBollAmp\" in config file");

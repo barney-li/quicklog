@@ -43,7 +43,7 @@ public:
 	{
 		return (mIndex>mBollPeriod+10)&&mDataValid;
 	}
-	bool CalcBoll(double aLastPrice, int aPeriod, int aOutterAmp, int aInnerAmp)
+	bool CalcBoll(double aLastPrice, int aPeriod, double aOutterAmp, double aInnerAmp)
 	{
 		BollingerBandData lTempBollData;
 		mBollPeriod = aPeriod;

@@ -98,10 +98,10 @@ namespace Pas
 		string		primaryInst;		// 主力合约
 		string		secondaryInst;		// 次主力合约
 		int			bollPeriod;			// 布林带标准差计算长度
-		int			outterBollAmp;		// 布林带外部振幅
-		int			innerBollAmp;		// 布林带内部振幅
-		int			stopBollAmp;		// 止损振幅
-		int			winBollAmp;			// 止盈振幅
+		double		outterBollAmp;		// 布林带外部振幅
+		double		innerBollAmp;		// 布林带内部振幅
+		double		stopBollAmp;		// 止损振幅
+		double		winBollAmp;			// 止盈振幅
 		int			openShares;			// 开仓手数
 		int			secVolumeDiff;		// 当前盘口的买卖数量差
 		int			primOpenTime;		// 主力合约最大开仓等待时间
