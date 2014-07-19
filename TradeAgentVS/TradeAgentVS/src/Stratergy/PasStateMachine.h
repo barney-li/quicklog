@@ -31,6 +31,9 @@ public:
 		case OPENING_SCND_STATE:
 			lNewState = HandleOpeningScndState(aLatestEvent);
 			break;
+		case CHECKING_SCND_STATE:
+			lNewState = HandleCheckingScndState(aLatestEvent);
+			break;
 		case OPENING_PRIM_STATE:
 			lNewState = HandleOpeningPrimState(aLatestEvent);
 			break;
@@ -101,6 +104,10 @@ private:
 		{
 			return OPENING_PRIM_STATE;
 		}
+		else if(SCND_PARTLY_OPENED == aLatestEvent)
+		{
+			return CHECKING_SCND_STATE;
+		}
 		else if(OPEN_PRICE_BAD == aLatestEvent || SCND_OPEN_TIMEOUT == aLatestEvent || NOT_TRADING_TIME == aLatestEvent)
 		{
 			return CANCELLING_SCND_STATE;
@@ -108,6 +115,17 @@ private:
 		else
 		{
 			return OPENING_SCND_STATE;
+		}
+	}
+	TRADE_STATE HandleCheckingScndState(TRADE_EVENT aLatestEvent)
+	{
+		if(SCND_CANCELLED == aLatestEvent || SCND_OPENED == aLatestEvent)
+		{
+			return OPENING_PRIM_STATE;
+		}
+		else
+		{
+			return CHECKING_SCND_STATE;
 		}
 	}
 	TRADE_STATE HandleOpeningPrimState(TRADE_EVENT aLatestEvent)

@@ -25,6 +25,7 @@ namespace Pas
 	{
 		IDLE_STATE,
 		OPENING_SCND_STATE,
+		CHECKING_SCND_STATE,
 		OPENING_PRIM_STATE,
 		PENDING_STATE,
 		CLOSING_BOTH_STATE,
@@ -46,6 +47,7 @@ namespace Pas
 		PRIM_CANCELLED,
 		PRIM_CLOSED,
 		SCND_OPENED,
+		SCND_PARTLY_OPENED,
 		SCND_OPEN_TIMEOUT,
 		SCND_CANCELLED,
 		SCND_CLOSED,
@@ -156,6 +158,9 @@ protected:
 		case OPENING_SCND_STATE:
 			lTradeState = "OPENING_SCND_STATE";
 			break;
+		case CHECKING_SCND_STATE:
+			lTradeState = "CHECKING_SCND_STATE";
+			break;
 		case OPENING_PRIM_STATE:
 			lTradeState = "OPENING_PRIM_STATE";
 			break;
@@ -198,6 +203,9 @@ public:
 			break;
 		case OPENING_SCND_STATE:
 			lTradeState = "OPENING_SCND_STATE";
+			break;
+		case CHECKING_SCND_STATE:
+			lTradeState = "CHECKING_SCND_STATE";
 			break;
 		case OPENING_PRIM_STATE:
 			lTradeState = "OPENING_PRIM_STATE";
@@ -256,6 +264,9 @@ public:
 			break;
 		case SCND_OPENED:
 			lThisEvent = "SCND_OPENED";
+			break;
+		case SCND_PARTLY_OPENED:
+			lThisEvent = "SCND_PARTLY_OPENED";
 			break;
 		case SCND_OPEN_TIMEOUT:
 			lThisEvent = "SCND_OPEN_TIMEOUT";

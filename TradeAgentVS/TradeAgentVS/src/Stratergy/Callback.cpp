@@ -38,6 +38,9 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 					IsTradeTime(pDepthMarketData->UpdateTime);
 					StopOpenJudge(*pDepthMarketData);
 					break;
+				case CHECKING_SCND_STATE:
+					CancelScnd();
+					break;
 				case OPENING_PRIM_STATE:
 					IsTradeTime(pDepthMarketData->UpdateTime);
 					StopOpenJudge(*pDepthMarketData);
@@ -120,15 +123,38 @@ void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 	{
 		if(strncmp(pTrade->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: SCND_OPENED (from trade return)");
-			// record the "real" enter price
-			mScndEnterPrice = pTrade->Price;
-			tempStream.clear();
-			tempStream.str("");
-			tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice<<" number of shares: "<<pTrade->Volume;
-			mTradedShares = pTrade->Volume;
-			logger.LogThisFast(tempStream.str());
-			SetEvent(SCND_OPENED);
+			mTradedShares += pTrade->Volume;//mTradedShares will be cleared before insert any orders
+			if(mTradedShares == stgArg.openShares)
+			{
+				logger.LogThisFast("[EVENT]: SCND_OPENED (from trade return)");
+				// record the "real" enter price
+				mScndEnterPrice = pTrade->Price;
+				tempStream.clear();
+				tempStream.str("");
+				tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice<<" number of shares: "<<pTrade->Volume<<"/"<<mTradedShares<<"/"<<stgArg.openShares;
+				logger.LogThisFast(tempStream.str());
+				SetEvent(SCND_OPENED);
+			}
+			else if(mTradedShares < stgArg.openShares)
+			{
+				logger.LogThisFast("[EVENT]: SCND_PARTLY_OPENED (from trade return)");
+				// record the "real" enter price
+				mScndEnterPrice = pTrade->Price;
+				tempStream.clear();
+				tempStream.str("");
+				tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice<<" number of shares: "<<pTrade->Volume<<"/"<<mTradedShares<<"/"<<stgArg.openShares;
+				logger.LogThisFast(tempStream.str());
+				SetEvent(SCND_PARTLY_OPENED);
+			}
+			else
+			{
+				logger.LogThisFast("[FATAL ERROR]: opened more shares than configured, stop trading");
+				tempStream.clear();
+				tempStream.str("");
+				tempStream<<"[INFO]: scnd open price: "<<mScndEnterPrice<<" number of shares: "<<pTrade->Volume<<"/"<<mTradedShares<<"/"<<stgArg.openShares;
+				logger.LogThisFast(tempStream.str());
+				SetEvent(NOT_TRADING_TIME);
+			}
 			CheckScndPosition();
 		}
 		if(strncmp(pTrade->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
@@ -140,6 +166,8 @@ void PrimeryAndSecondary::OnRtnTrade(CThostFtdcTradeField* pTrade)
 			tempStream.str("");
 			tempStream<<"[INFO]: prim open price: "<<mPrimEnterPrice<<" number of shares: "<<pTrade->Volume;
 			logger.LogThisFast(tempStream.str());
+			// as long as the response of primary instrument has been received, we move on. because we assumed that primary 
+			// instrument can always be traded
 			SetEvent(PRIM_OPENED);
 			CheckPrimPosition();
 		}
@@ -159,50 +187,6 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	cout<<"------> Cancel Time: "<<pOrder->CancelTime<<endl;
 	cout<<"------> Status Message: "<<pOrder->StatusMsg<<endl;
 	cout<<"------> Order Submit Status: "<<pOrder->OrderSubmitStatus<<endl;
-	//// 记录次主力订单信息
-	//if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	//{
-	//	lastScndOrder.instrument = stgArg.secondaryInst;
-	//	if(pOrder->ExchangeID != NULL)
-	//	{
-	//		lastScndOrder.exchangeId = "";
-	//		lastScndOrder.exchangeId.append(pOrder->ExchangeID, sizeof(TThostFtdcExchangeIDType));
-	//	}
-	//	if(pOrder->OrderRef != NULL)
-	//	{
-	//		lastScndOrder.orderRef = "";
-	//		lastScndOrder.orderRef.append(pOrder->OrderRef, sizeof(TThostFtdcOrderRefType));
-	//	}
-	//	if(pOrder->OrderSysID != NULL)
-	//	{
-	//		lastScndOrder.orderSysId = "";
-	//		lastScndOrder.orderSysId.append(pOrder->OrderSysID, sizeof(TThostFtdcOrderSysIDType));
-	//	}
-	//	lastScndOrder.sessionId = pOrder->SessionID;
-	//	lastScndOrder.frontId = pOrder->FrontID;
-	//}
-	//// 记录主力订单信息
-	//if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
-	//{
-	//	lastPrimOrder.instrument = stgArg.primaryInst;
-	//	if(pOrder->ExchangeID != NULL)
-	//	{
-	//		lastPrimOrder.exchangeId = "";
-	//		lastPrimOrder.exchangeId.append(pOrder->ExchangeID, sizeof(TThostFtdcExchangeIDType));
-	//	}
-	//	if(pOrder->OrderRef != NULL)
-	//	{
-	//		lastPrimOrder.orderRef = "";
-	//		lastPrimOrder.orderRef.append(pOrder->OrderRef, sizeof(TThostFtdcOrderRefType));
-	//	}
-	//	if(pOrder->OrderSysID != NULL)
-	//	{
-	//		lastPrimOrder.orderSysId = "";
-	//		lastPrimOrder.orderSysId.append(pOrder->OrderSysID, sizeof(TThostFtdcOrderSysIDType));
-	//	}
-	//	lastPrimOrder.sessionId = pOrder->SessionID;
-	//	lastPrimOrder.frontId = pOrder->FrontID;
-	//}
 	//撤单回报
 	if((pOrder->OrderStatus == THOST_FTDC_OST_Canceled) && (pOrder->OrderSubmitStatus == THOST_FTDC_OSS_Accepted))
 	{
@@ -211,7 +195,7 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 			logger.LogThisFast("[EVENT]: SCND_CANCELLED");
 			SetEvent(SCND_CANCELLED);
 		}
-		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 		{
 			logger.LogThisFast("[EVENT]: PRIM_CANCELLED");
 			SetEvent(PRIM_CANCELLED);
@@ -219,7 +203,6 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	}
 	////平仓回报
 	if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
-		&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
 		&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_CloseToday || pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_Close))
 	{
 		if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
@@ -227,7 +210,7 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 			logger.LogThisFast("[EVENT]: SCND_CLOSED (from order return)");
 			SetEvent(SCND_CLOSED);
 		}
-		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 		{
 			logger.LogThisFast("[EVENT]: PRIM_CLOSED (from order return)");
 			SetEvent(PRIM_CLOSED);
@@ -235,19 +218,45 @@ void PrimeryAndSecondary::OnRtnOrder(CThostFtdcOrderField* pOrder)
 	}
 	//开仓回报
 	if((pOrder->OrderStatus == THOST_FTDC_OST_AllTraded)
-		&&(pOrder->OrderSubmitStatus == THOST_FTDC_OSS_InsertSubmitted)
 		&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_Open))
 	{
 		if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: SCND_OPENED (from order return)");
-			SetEvent(SCND_OPENED);
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[EVENT]: SCND_OPENED (from order return, order all traded: "<<pOrder->VolumeTraded<<"/"<<pOrder->VolumeTotal<<")";
+			logger.LogThisFast(tempStream.str());
+			//SetEvent(SCND_OPENED);
 		}
-		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
 		{
-			logger.LogThisFast("[EVENT]: PRIM_OPENED (from order return)");
-			SetEvent(PRIM_OPENED);
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[EVENT]: PRIM_OPENED (from order return, order all traded: "<<pOrder->VolumeTraded<<"/"<<pOrder->VolumeTotal<<")";
+			logger.LogThisFast(tempStream.str());
+			//SetEvent(PRIM_OPENED);
 		}
+	}
+	/* This piece of code is only for test, remove when the test is finished. */
+	if((pOrder->OrderStatus == THOST_FTDC_OST_PartTradedQueueing)
+		&&(pOrder->CombOffsetFlag[0] == THOST_FTDC_OF_Open))
+	{
+
+		if(strncmp(pOrder->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.length()) == 0)
+		{
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[EVENT]: SCND_OPENED (from order return, order partly traded: "<<pOrder->VolumeTraded<<"/"<<pOrder->VolumeTotal<<")";
+			logger.LogThisFast(tempStream.str());
+		}
+		if(strncmp(pOrder->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+		{
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[EVENT]: PRIM_OPENED (from order return, order partly traded: "<<pOrder->VolumeTraded<<"/"<<pOrder->VolumeTotal<<")";
+			logger.LogThisFast(tempStream.str());
+		}
+
 	}
 }
 // 查询仓位的应答函数
@@ -407,7 +416,7 @@ void PrimeryAndSecondary::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdc
 			logger.LogThisFast("[EVENT]: PRIM_CANCELLED (no order record)");
 			SetEvent(PRIM_CANCELLED);
 		}
-		if(nRequestID == mScndReqOrderId && lCurState == CANCELLING_SCND_STATE)
+		if(nRequestID == mScndReqOrderId && (lCurState == CANCELLING_SCND_STATE || CHECKING_SCND_STATE))
 		{
 			logger.LogThisFast("[EVENT]: SCND_CANCELLED (no order record)");
 			SetEvent(SCND_CANCELLED);

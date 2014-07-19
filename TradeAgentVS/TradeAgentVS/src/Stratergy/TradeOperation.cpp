@@ -6,6 +6,7 @@
 /************************************************************************/
 void PrimeryAndSecondary::OpenScnd()
 {
+	mTradedShares = 0;//very important, clear this no matter what
 	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
@@ -182,6 +183,7 @@ void PrimeryAndSecondary::CancelScnd()
 	}
 	mCancelScndCD = false;
 	mCoolDownCancelScndThread = new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownCancelScnd, this));
+	mScndReqOrderId = CheckScndOrder();
 }
 void PrimeryAndSecondary::CancelPrim()
 {
@@ -198,6 +200,7 @@ void PrimeryAndSecondary::CancelPrim()
 	}
 	mCancelPrimCD = false;
 	mCoolDownCancelPrimThread = new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownCancelPrim, this));
+	mPrimReqOrderId = CheckPrimOrder();
 }
 void PrimeryAndSecondary::CloseBoth()
 {
@@ -210,19 +213,53 @@ void PrimeryAndSecondary::CloseBoth()
 }
 void PrimeryAndSecondary::CheckPrimPosition()
 {
+	if(!mQueryCD)
+	{
+		return;
+	}
+	mQueryCD = false;
+
 	ReqQryInvestorPosition(stgArg.primaryInst.c_str());
+	new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownQuery, this));
 }
 void PrimeryAndSecondary::CheckScndPosition()
 {
+	if(!mQueryCD)
+	{
+		return;
+	}
+	mQueryCD = false;
+
 	ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
+	new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownQuery, this));
 }
 int PrimeryAndSecondary::CheckPrimOrder()
 {
-	return ReqQryOrder(stgArg.primaryInst.c_str());
+	if(!mQueryCD)
+	{
+		return -1;
+	}
+	mQueryCD = false;
+
+	int lReturnVal;
+	lReturnVal = ReqQryOrder(stgArg.primaryInst.c_str());
+
+	new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownQuery, this));
+	return lReturnVal;
 }
 int PrimeryAndSecondary::CheckScndOrder()
 {
-	return ReqQryOrder(stgArg.secondaryInst.c_str());
+	if(!mQueryCD)
+	{
+		return -1;
+	}
+	mQueryCD = false;
+
+	int lReturnVal;
+	lReturnVal = ReqQryOrder(stgArg.secondaryInst.c_str());
+
+	new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownQuery, this));
+	return lReturnVal;
 }
 #endif
 #ifdef SIMULATION
@@ -415,11 +452,11 @@ void PrimeryAndSecondary::ClosePrim()
 }
 void PrimeryAndSecondary::CancelScnd()
 {
-	;
+	CheckScndOrder();
 }
 void PrimeryAndSecondary::CancelPrim()
 {
-	;
+	CheckPrimOrder();
 }
 void PrimeryAndSecondary::CloseBoth()
 {
@@ -436,10 +473,12 @@ void PrimeryAndSecondary::CheckScndPosition()
 }
 int PrimeryAndSecondary::CheckPrimOrder()
 {
+	mEventQueue.push(PRIM_CANCELLED);
 	return 0;
 }
 int PrimeryAndSecondary::CheckScndOrder()
 {
+	mEventQueue.push(PRIM_CANCELLED);
 	return 0;
 }
 #endif

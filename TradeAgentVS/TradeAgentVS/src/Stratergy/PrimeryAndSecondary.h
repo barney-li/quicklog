@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-#define BACK_TEST
+//#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -132,12 +132,11 @@ private:
 	bool mCancelScndCD;
 	bool mClosePrimCD;
 	bool mCloseScndCD;
-	bool mCheckPositionCD;
+	bool mQueryCD;
 	boost::thread* mCoolDownCancelPrimThread;
 	boost::thread* mCoolDownCancelScndThread;
 	boost::thread* mCoolDownClosePrimThread;
 	boost::thread* mCoolDownCloseScndThread;
-	boost::thread* mCoolDownCheckPositionThread;
 	int mOpenPrimId;
 	int mOpenScndId;
 	double mPrimEnterPrice;
@@ -278,7 +277,7 @@ private:
 		mCancelScndCD = true;
 		mClosePrimCD = true;
 		mCloseScndCD = true;
-		mCheckPositionCD = true;
+		mQueryCD = true;
 		mOpenPrimId = 0;
 		mOpenScndId = 0;
 		mLastState = IDLE_STATE;
@@ -504,41 +503,37 @@ public:
 	}
 	void CoolDownCancelPrim()
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 		mCancelPrimCD = true;
 	}
 	void CoolDownCancelScnd()
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 		mCancelScndCD = true;
 	}
 	void CoolDownClosePrim()
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 		mClosePrimCD = true;
 	}
 	void CoolDownCloseScnd()
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(2));
+		boost::this_thread::sleep(boost::posix_time::milliseconds(500));
 		mCloseScndCD = true;
 	}
-	void CoolDownCheckPosition()
+	void CoolDownQuery()
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(2));
-		mCheckPositionCD = true;
+		boost::this_thread::sleep(boost::posix_time::milliseconds(1500));// no less than 1000, that's the rule of CTP
+		mQueryCD = true;
 	}
 	void PeriodicCheckPosition()
 	{
 		for(;;)
 		{
-			boost::this_thread::sleep(boost::posix_time::seconds(2));
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 			CheckPrimPosition();
-			boost::this_thread::sleep(boost::posix_time::seconds(2));
+			boost::this_thread::sleep(boost::posix_time::seconds(3));
 			CheckScndPosition();
-			boost::this_thread::sleep(boost::posix_time::seconds(2));
-			mPrimReqOrderId = CheckPrimOrder();
-			boost::this_thread::sleep(boost::posix_time::seconds(2));
-			mScndReqOrderId = CheckScndOrder();
 		}
 	}
 	/*****************************/
