@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -306,11 +306,19 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"OutterBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
+		else
+		{
+			stgArg.outterBollAmp = stgArg.outterBollAmp/100;
+		}
 		if(config.ReadDouble(stgArg.innerBollAmp, "InnerBollAmp") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"InnerBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"InnerBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
+		}
+		else
+		{
+			stgArg.innerBollAmp = stgArg.innerBollAmp/100;
 		}
 		if(config.ReadDouble(stgArg.stopBollAmp, "StopBollAmp") != 0)
 		{
@@ -318,11 +326,19 @@ private:
 			logger.LogThisFast("[ERROR]: Can't find symble \"StopBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
 		}
+		else
+		{
+			stgArg.stopBollAmp = stgArg.stopBollAmp/100;
+		}
 		if(config.ReadDouble(stgArg.winBollAmp, "WinBollAmp") != 0)
 		{
 			cout<<"[ERROR]: Can't find symble \"WinBollAmp\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"WinBollAmp\" in config file");
 			initStatus = CONFIG_ERROR;
+		}
+		else
+		{
+			stgArg.winBollAmp = stgArg.winBollAmp/100;
 		}
 		if(config.ReadInteger(stgArg.bollAmpLimit, "BollAmpLimit") != 0)
 		{
