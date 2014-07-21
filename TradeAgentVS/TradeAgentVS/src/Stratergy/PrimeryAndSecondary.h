@@ -41,7 +41,10 @@ using namespace Pas;
 #include <queue>
 #endif
 
-//#define OPPONENT_PRICE_OPEN
+#define OPPONENT_PRICE_OPEN
+#ifdef OPPONENT_PRICE_OPEN
+//#define OPPONENT_PRICE_JUDGE
+#endif
 namespace Pas
 {
 	// strategy init error type

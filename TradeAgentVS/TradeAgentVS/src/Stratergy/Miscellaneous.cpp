@@ -40,7 +40,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	{
 		return;
 	}// too wide gap between ask and bid price
-#ifdef OPPONENT_PRICE_OPEN
+#ifdef OPPONENT_PRICE_JUDGE
 	if(	lPrim.bidPrice - lScnd.askPrice > lBoll.mOutterUpperLine )
 #else
 	if(	lPrim.bidPrice - lScnd.lastPrice > lBoll.mOutterUpperLine )
@@ -55,7 +55,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		logger.LogThisFast(tempStream.str());
 		SetEvent(OPEN_PRICE_GOOD);
 	}// using bid_price - last_price to do the open timing judge, this is to meet the real situation
-#ifdef OPPONENT_PRICE_OPEN
+#ifdef OPPONENT_PRICE_JUDGE
 	else if( lPrim.askPrice - lScnd.bidPrice < lBoll.mOutterLowerLine )
 #else
 	else if( lPrim.askPrice - lScnd.lastPrice < lBoll.mOutterLowerLine )
@@ -230,7 +230,7 @@ void PrimeryAndSecondary::LogBollData()
 		<<tempData.mInnerLowerLine<<" "<<tempData.mOutterLowerLine<<"] "\
 		<<tempData.mMidLine<<" "<<tempData.mStdDev;
 #else
-#ifdef OPPONENT_PRICE_OPEN
+#ifdef OPPONENT_PRICE_JUDGE
 	double lDeltaPrice1 = lPrim.bidPrice - lScnd.askPrice;
 	double lDeltaPrice2 = lPrim.askPrice - lScnd.bidPrice;
 #else
