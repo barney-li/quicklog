@@ -51,6 +51,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 					StopLoseJudge(*pDepthMarketData);
 					StopWinJudge(*pDepthMarketData);
 					break;
+#ifndef BACK_TEST
 				case CLOSING_BOTH_STATE:
 					CloseBoth();
 					break;
@@ -69,6 +70,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 				case WAITING_PRIM_CLOSE_STATE:
 					ClosePrim();
 					break;
+#endif
 				default:
 					break;
 				}
