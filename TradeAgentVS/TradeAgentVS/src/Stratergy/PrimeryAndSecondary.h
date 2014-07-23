@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-#define BACK_TEST
+//#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -41,7 +41,7 @@ using namespace Pas;
 #include <queue>
 #endif
 
-#define OPPONENT_PRICE_OPEN
+//#define OPPONENT_PRICE_OPEN
 #ifdef OPPONENT_PRICE_OPEN
 //#define OPPONENT_PRICE_JUDGE
 #endif

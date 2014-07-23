@@ -6,7 +6,6 @@
 /************************************************************************/
 void PrimeryAndSecondary::OpenScnd()
 {
-	mTradedShares = 0;//very important, clear this no matter what
 	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
@@ -218,7 +217,6 @@ void PrimeryAndSecondary::CheckPrimPosition()
 		return;
 	}
 	mQueryCD = false;
-
 	ReqQryInvestorPosition(stgArg.primaryInst.c_str());
 	new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownQuery, this));
 }
@@ -229,7 +227,6 @@ void PrimeryAndSecondary::CheckScndPosition()
 		return;
 	}
 	mQueryCD = false;
-
 	ReqQryInvestorPosition(stgArg.secondaryInst.c_str());
 	new boost::thread(boost::bind(&PrimeryAndSecondary::CoolDownQuery, this));
 }
@@ -241,6 +238,7 @@ int PrimeryAndSecondary::CheckPrimOrder()
 	}
 	mQueryCD = false;
 
+	logger.LogThisFast("[ACTION]: CHECK_PRIM_ORDER");
 	int lReturnVal;
 	lReturnVal = ReqQryOrder(stgArg.primaryInst.c_str());
 
@@ -255,6 +253,7 @@ int PrimeryAndSecondary::CheckScndOrder()
 	}
 	mQueryCD = false;
 
+	logger.LogThisFast("[ACTION]: CHECK_SCND_ORDER");
 	int lReturnVal;
 	lReturnVal = ReqQryOrder(stgArg.secondaryInst.c_str());
 

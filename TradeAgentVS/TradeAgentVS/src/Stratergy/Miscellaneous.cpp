@@ -434,7 +434,7 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	boost::lock_guard<boost::mutex> lLockGuard(mStateMachineMutex);
 	TRADE_STATE lLastState = mStateMachine.GetState();
 	TRADE_STATE lNextState = mStateMachine.SetEvent(aLatestEvent);
-	
+	//这里的action仅仅在状态切换的时候才会执行
 	switch(lNextState)
 	{
 	case IDLE_STATE:
@@ -453,6 +453,8 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 		{
 			OpenPrim();
 		}
+		break;
+	case CHECKING_SCND_STATE:
 		break;
 	case PENDING_STATE:
 		break;
