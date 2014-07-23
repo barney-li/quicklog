@@ -459,8 +459,14 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	case PENDING_STATE:
 		break;
 	case CLOSING_BOTH_STATE:
-		CloseBoth();
+#ifdef BACK_TEST
+		if(lNextState != lLastState)
+#endif
+		{
+			CloseBoth();
+		}
 		break;
+#ifndef BACK_TEST
 	case CANCELLING_SCND_STATE:
 		CancelScnd();
 		break;
@@ -476,6 +482,7 @@ void PrimeryAndSecondary::SetEvent(TRADE_EVENT aLatestEvent)
 	case WAITING_PRIM_CLOSE_STATE:
 		ClosePrim();
 		break;
+#endif
 	default:
 		break;
 	}

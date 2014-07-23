@@ -33,7 +33,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -41,7 +41,7 @@ using namespace Pas;
 #include <queue>
 #endif
 
-//#define OPPONENT_PRICE_OPEN
+#define OPPONENT_PRICE_OPEN
 #ifdef OPPONENT_PRICE_OPEN
 //#define OPPONENT_PRICE_JUDGE
 #endif
@@ -173,7 +173,7 @@ public:
 		{
 			lWinRate = 100*mWin/(mWin+mLose);
 		}
-		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit/2<<"	"<<mWin/2<<"	"<<mLose/2;
+		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
 		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
 		cout<<tempStream.str()<<endl;
 #endif
@@ -571,7 +571,7 @@ public:
 	/************************************************************************/
 	void AsyncEventPoster(void)
 	{
-		if(!mEventQueue.empty())
+		while(!mEventQueue.empty())
 		{
 			SetEvent(mEventQueue.front());
 			mEventQueue.pop();
