@@ -375,32 +375,38 @@ void PrimeryAndSecondary::OnRspQryInvestorPosition(CThostFtdcInvestorPositionFie
 		{
 			/*以下代码存在隐患，在解决之前不启用*/
 
-			/*if(mPrimTodayLongPosition == 0 
+			if(mPrimTodayLongPosition == 0 
 				&& mPrimYdLongPosition == 0
 				&& mPrimTodayShortPosition == 0
 				&& mPrimYdShortPosition == 0)
 			{
-				logger.LogThisFast("[EVENT]: PRIM_CLOSED (from investor position query)");
+				//logger.LogThisFast("[EVENT]: PRIM_CLOSED (from investor position query)");
 				SetEvent(PRIM_CLOSED);
 			}
 			else
 			{
-				logger.LogThisFast("[EVENT]: PRIM_OPENED (from investor position query)");
-				SetEvent(PRIM_OPENED);
+				if(mStateMachine.GetState() == IDLE_STATE)
+				{
+					logger.LogThisFast("[EVENT]: PRIM_OPENED (from investor position query)");
+					SetEvent(PRIM_OPENED);
+				}
 			}
 			if(mScndTodayLongPosition == 0 
 				&& mScndYdLongPosition == 0
 				&& mScndTodayShortPosition == 0
 				&& mScndYdShortPosition == 0)
 			{
-				logger.LogThisFast("[EVENT]: SCND_CLOSED (from investor position query)");
+				//logger.LogThisFast("[EVENT]: SCND_CLOSED (from investor position query)");
 				SetEvent(SCND_CLOSED);
 			}
 			else
 			{
-				logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
-				SetEvent(SCND_OPENED);
-			}*/
+				if(mStateMachine.GetState() == IDLE_STATE)
+				{
+					logger.LogThisFast("[EVENT]: SCND_OPENED (from investor position query)");
+					SetEvent(SCND_OPENED);
+				}
+			}
 		}
 			
 	}
