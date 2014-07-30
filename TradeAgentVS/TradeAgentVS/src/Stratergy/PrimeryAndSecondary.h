@@ -33,11 +33,11 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
-//#define KEEP_BOLL
+#define KEEP_BOLL
 #include <queue>
 #endif
 
