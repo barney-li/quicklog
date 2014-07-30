@@ -241,7 +241,7 @@ void PrimeryAndSecondary::LogBollData()
 	tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
 		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"\
 		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
-		<<lPrim.volume<<"	"<<lScnd.volume;
+		<<lPrim.volume<<"	"<<lScnd.volume<<"	";
 	if(mStateMachine.GetState() == OPENING_SCND_STATE || mStateMachine.GetState() == OPENING_PRIM_STATE)
 	{
 		if(OPEN_COND1 == mOpenCond)
