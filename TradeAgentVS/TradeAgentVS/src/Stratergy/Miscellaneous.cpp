@@ -242,31 +242,9 @@ void PrimeryAndSecondary::LogBollData()
 		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"\
 		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
 		<<lPrim.volume<<"	"<<lScnd.volume<<"	";
-	if(mStateMachine.GetState() == OPENING_SCND_STATE || mStateMachine.GetState() == OPENING_PRIM_STATE)
+	if(mStateMachine.GetState() == PENDING_STATE)
 	{
-		if(OPEN_COND1 == mOpenCond)
-		{
-			tempStream<<lDeltaPrice1<<"	";
-		}
-		else
-		{
-			tempStream<<lDeltaPrice2<<"	";
-		}
-	}
-	else
-	{
-		tempStream<<"0"<<"	";
-	}
-	if(mStateMachine.GetState() == CLOSING_BOTH_STATE || mStateMachine.GetState() == WAITING_SCND_CLOSE_STATE||mStateMachine.GetState() == WAITING_PRIM_CLOSE_STATE)
-	{
-		if(OPEN_COND1 == mOpenCond)
-		{
-			tempStream<<lPrim.askPrice-lScnd.bidPrice<<"	";
-		}
-		else
-		{
-			tempStream<<lPrim.bidPrice-lScnd.askPrice<<"	";
-		}
+		tempStream<<mPrimEnterPrice-mScndEnterPrice<<"	";
 	}
 	else
 	{
