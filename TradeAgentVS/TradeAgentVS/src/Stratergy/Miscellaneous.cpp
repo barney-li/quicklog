@@ -237,7 +237,6 @@ void PrimeryAndSecondary::LogBollData()
 	double lDeltaPrice1 = lPrim.bidPrice - lScnd.lastPrice;
 	double lDeltaPrice2 = lPrim.askPrice - lScnd.lastPrice;
 #endif
-	
 	tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
 		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"\
 		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
@@ -250,6 +249,10 @@ void PrimeryAndSecondary::LogBollData()
 	{
 		tempStream<<"0"<<"	";
 	}
+#ifdef COINTEGRATION_TEST
+	tempStream<<lPrim.askPrice<<"	"<<lPrim.bidPrice<<"	"\
+		<<lScnd.askPrice<<"	"<<lScnd.bidPrice<<"	";
+#endif
 #endif
 	mBollLog.LogThisFast(tempStream.str());
 }

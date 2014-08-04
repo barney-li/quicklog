@@ -37,7 +37,7 @@ using namespace Pas;
 
 #ifdef BACK_TEST
 #define SIMULATION
-//#define KEEP_BOLL
+#define KEEP_BOLL
 #include <queue>
 #endif
 
@@ -45,6 +45,9 @@ using namespace Pas;
 #ifdef OPPONENT_PRICE_OPEN
 #define OPPONENT_PRICE_JUDGE //这里打开就是对价判断开仓，注释掉就是最新价判断开仓
 #endif
+
+#define COINTEGRATION_TEST// only for cointegration test
+
 namespace Pas
 {
 	// strategy init error type
