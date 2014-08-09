@@ -41,12 +41,12 @@ using namespace Pas;
 #include <queue>
 #endif
 
-#define OPPONENT_PRICE_OPEN
+//#define OPPONENT_PRICE_OPEN
 #ifdef OPPONENT_PRICE_OPEN
-#define OPPONENT_PRICE_JUDGE //这里打开就是对价判断开仓，注释掉就是最新价判断开仓
+//#define OPPONENT_PRICE_JUDGE //这里打开就是对价判断开仓，注释掉就是最新价判断开仓
 #endif
 
-#define COINTEGRATION_TEST// only for cointegration test
+//#define COINTEGRATION_TEST// only for cointegration test
 
 namespace Pas
 {

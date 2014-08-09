@@ -238,7 +238,7 @@ void PrimeryAndSecondary::LogBollData()
 	double lDeltaPrice2 = lPrim.askPrice - lScnd.lastPrice;
 #endif
 	tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
-		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"\
+		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mMidLine<<"	"\
 		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
 		<<lPrim.volume<<"	"<<lScnd.volume<<"	";
 	if(mStateMachine.GetState() == PENDING_STATE)
