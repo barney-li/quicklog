@@ -124,6 +124,8 @@ namespace Pas
 		double		floatToleration;	// 浮点数误差
 		double		cost;				// 手续费，以跳为单位
 		double		stopWinPoint;		// 止盈点，以跳为单位
+		double		durationStep;		// 每隔这么多时间（s），winBollAmp就会被调整一次
+		double		winBollAmpAdjust;	// 每次调整winBollAmp的调整量
 	}StrategyParameter;
 
 	

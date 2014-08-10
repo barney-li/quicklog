@@ -97,9 +97,10 @@ private:
 	int mLose;
 	double mTotalProfit;
 	queue<TRADE_EVENT> mEventQueue;
-	string mOpenTime;
 #endif
-	//由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
+	// 开仓的时间
+	string mOpenTime;
+	// 由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
 	TThostFtdcVolumeType primLastVolume;
 	TThostFtdcVolumeType scndLastVolume;
 	// 策略运行所需的参数
@@ -250,6 +251,12 @@ private:
 	// 判断是否处于尽快出仓的时间
 	/************************************************************************/
 	bool IsEasyGoTime(string aDataTime);
+
+	/************************************************************************/
+	// 调整出场的布林带宽度
+	/************************************************************************/
+	double AdjustWinBollAmp(string aOpenTime, string aCurrentTime, double aWinBollAmp, double aAdjustVolume, double aDurationStep);
+
 	/*****************************/
 	/* below are all the callback routines*/
 
@@ -442,6 +449,22 @@ private:
 			cout<<"[ERROR]: Can't find symble \"StopWinPoint\" in config file"<<endl;
 			logger.LogThisFast("[ERROR]: Can't find symble \"StopWinPoint\" in config file");
 			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadDouble(stgArg.durationStep, "DurationStep") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"DurationStep\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"DurationStep\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		if(config.ReadDouble(stgArg.winBollAmpAdjust, "WinBollAmpAdjust") != 0)
+		{
+			cout<<"[ERROR]: Can't find symble \"WinBollAmpAdjust\" in config file"<<endl;
+			logger.LogThisFast("[ERROR]: Can't find symble \"WinBollAmpAdjust\" in config file");
+			initStatus = CONFIG_ERROR;
+		}
+		else
+		{
+			stgArg.winBollAmpAdjust = stgArg.winBollAmpAdjust/100;
 		}
 		stgArg.askBidGapLimit = stgArg.askBidGapLimit*stgArg.minMove+stgArg.floatToleration;//这里一定要在min move配置读取之后
 		stgArg.stopWinPoint = stgArg.stopWinPoint*stgArg.minMove+stgArg.floatToleration;

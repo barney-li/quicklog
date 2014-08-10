@@ -53,13 +53,13 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		tempStream.str("");
 		tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mOutterUpperLine;
 		logger.LogThisFast(tempStream.str());
+		mOpenTime = string(lPrim.updateTime);
 #ifdef BACK_TEST
 		BollingerBandData lLastData = mBoll.GetBoll(100);
 		tempStream.clear();
 		tempStream.str("");
 		tempStream<<"[INFO]: delta midline: "<<lBoll.mMidLine-lLastData.mMidLine;
 		logger.LogThisFast(tempStream.str());
-		mOpenTime = string(lPrim.updateTime);
 #endif
 		SetEvent(OPEN_PRICE_GOOD);
 	}// using bid_price - last_price to do the open timing judge, this is to meet the real situation
@@ -76,13 +76,13 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		tempStream.str("");
 		tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mOutterLowerLine;
 		logger.LogThisFast(tempStream.str());
+		mOpenTime = string(lPrim.updateTime);
 #ifdef BACK_TEST
 		BollingerBandData lLastData = mBoll.GetBoll(100);
 		tempStream.clear();
 		tempStream.str("");
 		tempStream<<"[INFO]: delta midline: "<<lBoll.mMidLine-lLastData.mMidLine;
 		logger.LogThisFast(tempStream.str());
-		mOpenTime = string(lPrim.updateTime);
 #endif
 		SetEvent(OPEN_PRICE_GOOD);
 	}
@@ -145,23 +145,36 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 		
 	return lIsClose;
 }
+double PrimeryAndSecondary::AdjustWinBollAmp(string aOpenTime, string aCurrentTime, double aWinBollAmp, double aAdjustVolume, double aDurationStep)
+{
+	if(aOpenTime == aCurrentTime)
+	{
+		return aWinBollAmp;
+	}
+	time_duration lTradeDuration = time_from_string("2012-01-01 "+aCurrentTime) - time_from_string("2012-01-01 "+aOpenTime);
+	double lTradeSeconds = (double)lTradeDuration.total_seconds();
+	return aWinBollAmp - aAdjustVolume*lTradeSeconds/aDurationStep;
+}
 bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDepthMarketData)
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	bool lGoodToClose = false;
+	double lAdjustedWinBollAmp;
+	//根据持仓时间来调整winBollAmp
+	lAdjustedWinBollAmp = AdjustWinBollAmp(mOpenTime, (string)lPrim.updateTime, stgArg.winBollAmp, stgArg.winBollAmpAdjust, stgArg.durationStep);
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{
 		//使用布林带位置判断止盈
 		if(OPEN_COND1 == mOpenCond)
 		{
-			if(lPrim.askPrice - lScnd.bidPrice < lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev)
+			if(lPrim.askPrice - lScnd.bidPrice < lBoll.mMidLine - lAdjustedWinBollAmp*lBoll.mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<(lBoll.mMidLine - stgArg.winBollAmp*lBoll.mStdDev);
+				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" < "<<(lBoll.mMidLine - lAdjustedWinBollAmp*lBoll.mStdDev)<<" adjusted amp: "<<lAdjustedWinBollAmp;
 				logger.LogThisFast(tempStream.str());
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
@@ -169,12 +182,12 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		}
 		else if(OPEN_COND2 == mOpenCond)
 		{
-			if(lPrim.bidPrice - lScnd.askPrice > lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev)
+			if(lPrim.bidPrice - lScnd.askPrice > lBoll.mMidLine + lAdjustedWinBollAmp*lBoll.mStdDev)
 			{
 				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.UpdateTime);
 				tempStream.clear();
 				tempStream.str("");
-				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<(lBoll.mMidLine + stgArg.winBollAmp*lBoll.mStdDev);
+				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" > "<<(lBoll.mMidLine + lAdjustedWinBollAmp*lBoll.mStdDev)<<" adjusted amp: "<<lAdjustedWinBollAmp;
 				logger.LogThisFast(tempStream.str());
 				SetEvent(CLOSE_PRICE_GOOD);
 				lGoodToClose = true;
