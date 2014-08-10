@@ -120,7 +120,7 @@ public:
 	{
 		if(mIndex - aBack>=0)
 		{
-			return mBollData[mIndex];
+			return mBollData[mIndex - aBack];
 		}
 		else
 		{

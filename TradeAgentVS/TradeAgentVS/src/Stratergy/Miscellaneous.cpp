@@ -53,6 +53,14 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		tempStream.str("");
 		tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.lastPrice<<" > "<<lBoll.mOutterUpperLine;
 		logger.LogThisFast(tempStream.str());
+#ifdef BACK_TEST
+		BollingerBandData lLastData = mBoll.GetBoll(100);
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[INFO]: delta midline: "<<lBoll.mMidLine-lLastData.mMidLine;
+		logger.LogThisFast(tempStream.str());
+		mOpenTime = string(lPrim.updateTime);
+#endif
 		SetEvent(OPEN_PRICE_GOOD);
 	}// using bid_price - last_price to do the open timing judge, this is to meet the real situation
 #ifdef OPPONENT_PRICE_JUDGE
@@ -68,6 +76,14 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 		tempStream.str("");
 		tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.lastPrice<<" < "<<lBoll.mOutterLowerLine;
 		logger.LogThisFast(tempStream.str());
+#ifdef BACK_TEST
+		BollingerBandData lLastData = mBoll.GetBoll(100);
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[INFO]: delta midline: "<<lBoll.mMidLine-lLastData.mMidLine;
+		logger.LogThisFast(tempStream.str());
+		mOpenTime = string(lPrim.updateTime);
+#endif
 		SetEvent(OPEN_PRICE_GOOD);
 	}
 

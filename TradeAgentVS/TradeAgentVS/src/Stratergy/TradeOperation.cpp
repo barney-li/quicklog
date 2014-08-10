@@ -459,6 +459,13 @@ void PrimeryAndSecondary::CancelPrim()
 }
 void PrimeryAndSecondary::CloseBoth()
 {
+	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
+	//time_period lTradePeriod = time_period(time_from_string("2012-01-01 "+mOpenTime), time_from_string("2012-01-01 "+(string)lPrim.updateTime));
+	time_duration lTradeDuration = time_from_string("2012-01-01 "+(string)lPrim.updateTime)-time_from_string("2012-01-01 "+mOpenTime);
+	tempStream.clear();
+	tempStream.str("");
+	tempStream<<"[INFO]: trade period: "<<lTradeDuration;
+	logger.LogThisFast(tempStream.str());
 	CloseScnd();
 	ClosePrim();
 }

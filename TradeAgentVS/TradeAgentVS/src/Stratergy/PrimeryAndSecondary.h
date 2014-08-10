@@ -97,6 +97,7 @@ private:
 	int mLose;
 	double mTotalProfit;
 	queue<TRADE_EVENT> mEventQueue;
+	string mOpenTime;
 #endif
 	//由于行情数据中的成交量是累加值，因此需要减去上次成交量来获得成交量增量
 	TThostFtdcVolumeType primLastVolume;
