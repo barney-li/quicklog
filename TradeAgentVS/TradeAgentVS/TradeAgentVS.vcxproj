@@ -144,7 +144,9 @@
     <ClCompile Include="src\common\Log.cpp" />
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
+    <ClCompile Include="src\Stratergy\BacktestSupport.cpp" />
     <ClCompile Include="src\Stratergy\Callback.cpp" />
+    <ClCompile Include="src\Stratergy\Initialize.cpp" />
     <ClCompile Include="src\Stratergy\Miscellaneous.cpp" />
     <ClCompile Include="src\Stratergy\TradeOperation.cpp" />
     <ClCompile Include="src\TradeAgentVS.cpp">

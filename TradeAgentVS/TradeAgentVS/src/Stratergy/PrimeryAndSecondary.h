@@ -97,6 +97,8 @@ private:
 	int mLose;
 	double mTotalProfit;
 	queue<TRADE_EVENT> mEventQueue;
+	string mPrimOpenTime;
+	string mScndOpenTime;
 #endif
 	// 开仓的时间
 	string mOpenTime;
@@ -271,258 +273,21 @@ private:
 	/*****************************/
 	/* below are all the initialization routines */
 	// read configuration, set strategy argument, etc.
-	InitErrorType InitOtherCrap()
-	{
-		initStatus = ALL_GOOD;
-		primDataBuf.resize(STRATEGY_BUFFER_SIZE);
-		scndDataBuf.resize(STRATEGY_BUFFER_SIZE);
-		primBufIndex = 0;
-		scndBufIndex = 0;
-		memset(&stgArg, 0, sizeof(stgArg));
-		mPrimTodayLongPosition = 0;
-		mPrimYdLongPosition = 0;
-		mScndTodayLongPosition = 0;
-		mScndYdLongPosition = 0;
-		mPrimTodayShortPosition = 0;
-		mPrimYdShortPosition = 0;
-		mScndTodayShortPosition = 0;
-		mScndYdShortPosition = 0;
-		mCancelPrimCD = true;
-		mCancelScndCD = true;
-		mClosePrimCD = true;
-		mCloseScndCD = true;
-		mQueryCD = true;
-		mOpenPrimId = 0;
-		mOpenScndId = 0;
-		mLastState = IDLE_STATE;
-		// read strategy arguments from configuration file
-		if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
-		{
-			cout<<"[ERROR]: Can't find symble \"PrimaryInstrument\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"PrimaryInstrument\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadString(stgArg.secondaryInst, "SecondaryInstrument") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"SecondaryInstrument\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"SecondaryInstrument\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.bollPeriod, "BollPeriod") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"BollPeriod\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"BollPeriod\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.outterBollAmp, "OutterBollAmp") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"OutterBollAmp\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"OutterBollAmp\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		else
-		{
-			stgArg.outterBollAmp = stgArg.outterBollAmp/100;
-		}
-		if(config.ReadDouble(stgArg.innerBollAmp, "InnerBollAmp") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"InnerBollAmp\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"InnerBollAmp\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		else
-		{
-			stgArg.innerBollAmp = stgArg.innerBollAmp/100;
-		}
-		if(config.ReadDouble(stgArg.stopBollAmp, "StopBollAmp") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"StopBollAmp\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"StopBollAmp\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		else
-		{
-			stgArg.stopBollAmp = stgArg.stopBollAmp/100;
-		}
-		if(config.ReadDouble(stgArg.winBollAmp, "WinBollAmp") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"WinBollAmp\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"WinBollAmp\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		else
-		{
-			stgArg.winBollAmp = stgArg.winBollAmp/100;
-		}
-		if(config.ReadInteger(stgArg.bollAmpLimit, "BollAmpLimit") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"BollAmpLimit\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"BollAmpLimit\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.stopLossPrice, "StopLossPrice") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"StopLossPrice\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"StopLossPrice\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.openShares, "OpenShares") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"OpenShares\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"OpenShares\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.primOpenTime, "PrimOpenTime") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"PrimOpenTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"PrimOpenTime\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.scndOpenTime, "ScndOpenTime") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"ScndOpenTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"ScndOpenTime\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.primCloseTime, "PrimCloseTime") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"PrimCloseTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"PrimCloseTime\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.scndCloseTime, "ScndCloseTime") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"ScndCloseTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"ScndCloseTime\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.primCancelTime, "PrimCancelTime") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"PrimCancelTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"PrimCancelTime\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadInteger(stgArg.scndCancelTime, "ScndCancelTime") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"ScndCancelTime\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"ScndCancelTime\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.floatToleration, "FloatToleration") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"FloatToleration\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"FloatToleration\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.ceilingPrice, "CeilingPrice") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"CeilingPrice\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"CeilingPrice\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.floorPrice, "FloorPrice") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"FloorPrice\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"FloorPrice\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.minMove, "MinMove") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"MinMove\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"MinMove\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.askBidGapLimit, "AskBidGapLimit") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"AskBidGapLimit\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"AskBidGapLimit\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.cost, "Cost") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"Cost\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"Cost\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.stopWinPoint, "StopWinPoint") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"StopWinPoint\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"StopWinPoint\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.durationStep, "DurationStep") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"DurationStep\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"DurationStep\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		if(config.ReadDouble(stgArg.winBollAmpAdjust, "WinBollAmpAdjust") != 0)
-		{
-			cout<<"[ERROR]: Can't find symble \"WinBollAmpAdjust\" in config file"<<endl;
-			logger.LogThisFast("[ERROR]: Can't find symble \"WinBollAmpAdjust\" in config file");
-			initStatus = CONFIG_ERROR;
-		}
-		else
-		{
-			stgArg.winBollAmpAdjust = stgArg.winBollAmpAdjust/100;
-		}
-		stgArg.askBidGapLimit = stgArg.askBidGapLimit*stgArg.minMove+stgArg.floatToleration;//这里一定要在min move配置读取之后
-		stgArg.stopWinPoint = stgArg.stopWinPoint*stgArg.minMove+stgArg.floatToleration;
-		stgArg.cost = stgArg.cost*stgArg.minMove;
-		stgArg.stopLossPrice = stgArg.stopLossPrice*stgArg.minMove-stgArg.floatToleration;
-		stgArg.bollAmpLimit = stgArg.bollAmpLimit*stgArg.minMove + stgArg.floatToleration;
-		if(ALL_GOOD == initStatus)
-		{
-			cout<<"all arguments ready"<<endl;
-			mPeriodicCheckPositionThread = new boost::thread(boost::bind(&PrimeryAndSecondary::PeriodicCheckPosition, this));
-		}
-		else
-		{
-			cout<<"invalid argument(s), strategy will not be loaded"<<endl;
-		}
-		return initStatus;
 
-	}
-	void InitTradeProcess()
-	{
-		char* tempBroker = new char[20];
-		char* tempInvestor = new char[20];
-		char* tempPassword = new char[20];
-		config.ReadList(&tempBroker, "BrokerID", ";");
-		strcpy(basicTradeProcessData.brokerId, tempBroker);
-		config.ReadList(&tempInvestor, "InvestorID", ";");
-		strcpy(basicTradeProcessData.investorId, tempInvestor);
-		config.ReadList(&tempPassword, "Password", ";");
-		strcpy(basicTradeProcessData.investorPassword, tempPassword);
-		basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(basicTradeProcessData.frontAddress);
-		InitializeProcess();
-		while(InitializeFinished() != true)
-		{
-			boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-		}
-		delete tempBroker;
-		delete tempInvestor;
-		delete tempPassword;
-	}
-	void InitMarketProcess()
-	{
-		char *tempConfig = new char[20];
-		config.ReadList(&tempConfig, "BrokerID", ";");
-		strcpy(marketObj.broker, tempConfig);
-		config.ReadList(&tempConfig, "InvestorID", ";");
-		strcpy(marketObj.investor, tempConfig);
-		config.ReadList(&tempConfig, "Password", ";");
-		strcpy(marketObj.pwd, tempConfig);
-		marketObj.numFrontAddress = config.ReadMarketFrontAddr(marketObj.frontAddress);
-		marketObj.numInstrument = config.ReadInstrumentID(marketObj.instrumentList);
-		// only register this callback when initStatus == ALL_GOOD
-		if(ALL_GOOD == initStatus)
-		{
-			marketObj.SetHook(this); //Register this obj for market data call back
-		}
-		marketObj.StartMarketProcess();
-		delete tempConfig;
-	}
+	/************************************************************************/
+	// 初始化剩余部分
+	/************************************************************************/
+	InitErrorType InitOtherCrap();
+
+	/************************************************************************/
+	// 初始化trade process
+	/************************************************************************/
+	void InitTradeProcess();
+
+	/************************************************************************/
+	// 初始化market process
+	/************************************************************************/
+	void InitMarketProcess();
 	/*****************************/
 public:
 	
@@ -588,108 +353,19 @@ public:
 	/************************************************************************/
 	// 异步事件发送函数，以异步的方式延迟发出事件，用于模拟交易。
 	/************************************************************************/
-	void AsyncEventPoster(TRADE_EVENT aEvent)
-	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
-		SetEvent(aEvent);
-	}
+	void AsyncEventPoster(TRADE_EVENT aEvent);
 	/************************************************************************/
 	// 这个用于回测
 	/************************************************************************/
-	void AsyncEventPoster(void)
-	{
-		int lPostTime=0;
-		const BasicMarketData &lPrim = primDataBuf[primBufIndex];
-		const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
-		switch(mStateMachine.GetState())
-		{
-		case IDLE_STATE:
-			break;
-		case OPENING_SCND_STATE:
-			break;
-		case CHECKING_SCND_STATE:
-			SetEvent(SCND_OPENED);
-			break;
-		case OPENING_PRIM_STATE:
-			break;
-		case PENDING_STATE:
-			break;
-		case CLOSING_BOTH_STATE:
-			break;
-		case CANCELLING_SCND_STATE:
-			break;
-		case CLOSING_SCND_STATE:
-			break;
-		case CANCELLING_PRIM_STATE:
-			break;
-		case WAITING_SCND_CLOSE_STATE:
-			break;
-		case WAITING_PRIM_CLOSE_STATE:
-			break;
-		default:
-			break;
-		}
-	}
+	void AsyncEventPoster(void);
 	/************************************************************************/
 	// 回测中，OPENING_SCND_STATE状态下的异步事件产生函数
 	/************************************************************************/
-	void OpeningScndStateAsyncEventGenerator()
-	{
-		const BasicMarketData &lPrim = primDataBuf[primBufIndex];
-		const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
-		if(OPEN_COND1 == mOpenCond)
-		{
-			if(mScndEnterPrice>=lScnd.askPrice)
-			{
-				mScndEnterPrice = lScnd.askPrice;
-				tempStream.clear();
-				tempStream.str("");
-				tempStream<<"[EVENT]: SCND_OPENED (from async poster) at: "<<mScndEnterPrice;
-				SetEvent(SCND_OPENED);
-			}// 买开，当我的出价大于等于盘口卖价时成交
-		}// 买次主力
-		else
-		{
-			if(mScndEnterPrice<=lScnd.bidPrice)
-			{
-				mScndEnterPrice = lScnd.bidPrice;
-				tempStream.clear();
-				tempStream.str("");
-				tempStream<<"[EVENT]: SCND_OPENED (from async poster) at: "<<mScndEnterPrice;
-				SetEvent(SCND_OPENED);
-			}// 卖开，当我的出价小于等于盘口买价时成交
-		}// 卖次主力
-	}
+	void OpeningScndStateAsyncEventGenerator();
 	/************************************************************************/
 	// 回测中，OPENING_PRIM_STATE状态下的异步事件产生函数
 	/************************************************************************/
-	void OpeningPrimStateAsyncEventGenerator()
-	{
-		const BasicMarketData &lPrim = primDataBuf[primBufIndex];
-		const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
-		if(OPEN_COND2 == mOpenCond)
-		{
-			if(mPrimEnterPrice>=lPrim.askPrice)
-			{
-				mPrimEnterPrice = lPrim.askPrice;
-				tempStream.clear();
-				tempStream.str("");
-				tempStream<<"[EVENT]: PRIM_OPENED (from async poster) at: "<<mPrimEnterPrice;
-				SetEvent(PRIM_OPENED);
-			}// 买开，当我的出价大于等于盘口卖价时成交
-		}// 买主力
-		else
-		{
-			if(mPrimEnterPrice<=lPrim.bidPrice)
-			{
-				mPrimEnterPrice = lPrim.bidPrice;
-				tempStream.clear();
-				tempStream.str("");
-				tempStream<<"[EVENT]: PRIM_OPENED (from async poster) at: "<<mPrimEnterPrice;
-				SetEvent(PRIM_OPENED);
-			}// 卖开，当我的出价小于等于盘口买价时成交
-		}// 卖主力
-	}
+	void OpeningPrimStateAsyncEventGenerator();
 #endif
 public:
 	/* strategy entry */

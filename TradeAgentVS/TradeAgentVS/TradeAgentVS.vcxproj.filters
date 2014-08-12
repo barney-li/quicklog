@@ -62,6 +62,12 @@
     <ClCompile Include="src\Stratergy\Miscellaneous.cpp">
       <Filter>src\Stratergy</Filter>
     </ClCompile>
+    <ClCompile Include="src\Stratergy\BacktestSupport.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Stratergy\Initialize.cpp">
+      <Filter>src\Stratergy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h">
