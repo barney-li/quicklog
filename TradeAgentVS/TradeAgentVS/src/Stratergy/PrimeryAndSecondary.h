@@ -408,6 +408,8 @@ public:
 	// 回测中，CANCELLING_PRIM_STATE状态下的异步事件产生函数
 	/************************************************************************/
 	void CancellingPrimStateAsyncEventGenerator();
+
+
 #endif
 public:
 	/* strategy entry */

@@ -11,6 +11,7 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 		tempStream.clear();
 		tempStream.str("");
 		tempStream<<"[EVENT]: SCND_OPEN_TIMEOUT (from async poster)";
+		logger.LogThisFast(tempStream.str());
 		SetEvent(SCND_OPEN_TIMEOUT);
 	}
 	if(OPEN_COND1 == mOpenCond)
@@ -21,6 +22,7 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: SCND_OPENED (from async poster) at: "<<mScndEnterPrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_OPENED);
 		}// 买开，当我的出价大于等于盘口卖价时成交
 	}// 买次主力
@@ -32,10 +34,12 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: SCND_OPENED (from async poster) at: "<<mScndEnterPrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_OPENED);
 		}// 卖开，当我的出价小于等于盘口买价时成交
 	}// 卖次主力
 }
+
 void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
@@ -47,6 +51,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 		tempStream.clear();
 		tempStream.str("");
 		tempStream<<"[EVENT]: PRIM_OPEN_TIMEOUT (from async poster)";
+		logger.LogThisFast(tempStream.str());
 		SetEvent(PRIM_OPEN_TIMEOUT);
 	}
 	if(OPEN_COND2 == mOpenCond)
@@ -57,6 +62,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: PRIM_OPENED (from async poster) at: "<<mPrimEnterPrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_OPENED);
 		}// 买开，当我的出价大于等于盘口卖价时成交
 	}// 买主力
@@ -68,15 +74,18 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: PRIM_OPENED (from async poster) at: "<<mPrimEnterPrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_OPENED);
 		}// 卖开，当我的出价小于等于盘口买价时成交
 	}// 卖主力
 }
+
 void PrimeryAndSecondary::ClosingBothStateAsyncEventGenerator()
 {
 	ClosingScndStateAsyncEventGenerator();
 	ClosingPrimStateAsyncEventGenerator();
 }
+
 void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
@@ -89,6 +98,7 @@ void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: SCND_CLOSED (from async poster) at: "<<mScndClosePrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_CLOSED);
 		}// 卖平，当我的出价小于等于盘口买价时成交
 	}// 卖平次主力
@@ -100,10 +110,12 @@ void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: SCND_CLOSED (from async poster) at: "<<mScndClosePrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_CLOSED);
 		}// 买平，当我的出价大于等于盘口卖价时成交
 	}// 买平次主力
 }
+
 void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
@@ -116,6 +128,7 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: PRIM_CLOSED (from async poster) at: "<<mPrimClosePrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_CLOSED);
 		}// 卖平，当我的出价小于等于盘口买价时成交
 	}// 卖平主力
@@ -127,6 +140,7 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[EVENT]: PRIM_CLOSED (from async poster) at: "<<mPrimClosePrice;
+			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_CLOSED);
 		}// 买平，当我的出价大于等于盘口卖价时成交
 	}// 买平主力
@@ -150,6 +164,28 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 #endif
 }
 
+void PrimeryAndSecondary::WaitingPrimCloseStateAsyncEventGenerator()
+{
+	ClosingPrimStateAsyncEventGenerator();
+}
+
+void PrimeryAndSecondary::WaitingScndCloseStateAsyncEventGenerator()
+{
+	ClosingScndStateAsyncEventGenerator();
+}
+
+void PrimeryAndSecondary::CancellingPrimStateAsyncEventGenerator()
+{
+	logger.LogThisFast("[EVENT]: PRIM_CANCELLED");
+	SetEvent(PRIM_CANCELLED);
+}
+
+void PrimeryAndSecondary::CancellingScndStateAsyncEventGenerator()
+{
+	logger.LogThisFast("[EVENT]: SCND_CANCELLED");
+	SetEvent(SCND_CANCELLED);
+}
+
 void PrimeryAndSecondary::AsyncEventPoster(void)
 {
 	int lPostTime=0;
@@ -163,7 +199,6 @@ void PrimeryAndSecondary::AsyncEventPoster(void)
 		OpeningScndStateAsyncEventGenerator();
 		break;
 	case CHECKING_SCND_STATE:
-		SetEvent(SCND_OPENED);
 		break;
 	case OPENING_PRIM_STATE:
 		OpeningPrimStateAsyncEventGenerator();
@@ -174,20 +209,25 @@ void PrimeryAndSecondary::AsyncEventPoster(void)
 		ClosingBothStateAsyncEventGenerator();
 		break;
 	case CANCELLING_SCND_STATE:
+		CancellingScndStateAsyncEventGenerator();
 		break;
 	case CLOSING_SCND_STATE:
 		ClosingScndStateAsyncEventGenerator();
 		break;
 	case CANCELLING_PRIM_STATE:
+		CancellingPrimStateAsyncEventGenerator();
 		break;
 	case WAITING_SCND_CLOSE_STATE:
+		WaitingScndCloseStateAsyncEventGenerator();
 		break;
 	case WAITING_PRIM_CLOSE_STATE:
+		WaitingPrimCloseStateAsyncEventGenerator();
 		break;
 	default:
 		break;
 	}
 }
+
 void PrimeryAndSecondary::AsyncEventPoster(TRADE_EVENT aEvent)
 {
 	boost::this_thread::sleep(boost::posix_time::seconds(1));
