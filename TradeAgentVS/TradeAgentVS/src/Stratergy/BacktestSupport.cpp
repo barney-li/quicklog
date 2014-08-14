@@ -10,7 +10,7 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 	{
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"[EVENT]: SCND_OPEN_TIMEOUT (from async poster)";
+		tempStream<<"[EVENT]: SCND_OPEN_TIMEOUT (from async poster) Evidance: from "<<mScndOpenTime<<" to "<<lCurTime;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(SCND_OPEN_TIMEOUT);
 	}
@@ -50,7 +50,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 	{
 		tempStream.clear();
 		tempStream.str("");
-		tempStream<<"[EVENT]: PRIM_OPEN_TIMEOUT (from async poster)";
+		tempStream<<"[EVENT]: PRIM_OPEN_TIMEOUT (from async poster) Evidance: from "<<mScndOpenTime<<" to "<<lCurTime;
 		logger.LogThisFast(tempStream.str());
 		SetEvent(PRIM_OPEN_TIMEOUT);
 	}

@@ -38,4 +38,4 @@ AskBidGapLimit=2;//counted as minimum move
 Cost=3.8;//counted as minimum move
 StopWinPoint=10;//counted as minimum move
 DurationStep=60;
-WinBollAmpAdjust=10;
+WinBollAmpAdjust=0;
