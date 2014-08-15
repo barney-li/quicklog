@@ -272,12 +272,11 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 1 */
 		tempStream<<"[ACTION]: BUY_SCND at ";
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice;
-		tempStream<<scndDataBuf[scndBufIndex].askPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice-stgArg.minMove*stgArg.scndOrderJump;
 #else
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		tempStream<<scndDataBuf[scndBufIndex].lastPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
+		tempStream<<mScndEnterPrice;
 		logger.LogThisFast(tempStream.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
 		mScndOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;// 使用prim instrument的更新时间，更准确
@@ -289,12 +288,11 @@ void PrimeryAndSecondary::OpenScnd()
 		
 		tempStream<<"[ACTION]: SHORT_SCND at ";
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice;
-		tempStream<<scndDataBuf[scndBufIndex].bidPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice+stgArg.minMove*stgArg.scndOrderJump;
 #else
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		tempStream<<scndDataBuf[scndBufIndex].lastPrice;
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
+		tempStream<<mScndEnterPrice;
 		logger.LogThisFast(tempStream.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
 		mScndOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;// 使用prim instrument的更新时间，更准确

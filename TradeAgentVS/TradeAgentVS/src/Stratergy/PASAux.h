@@ -113,6 +113,7 @@ namespace Pas
 		int			primCancelTime;		// 主力合约最大撤单等待时间
 		int			scndCancelTime;		// 次主力合约最大撤单等待时间
 		int			bollAmpLimit;		// 开仓时的布林带要达到的最小价差，以跳为单位
+		int			scndOrderJump;		// 次主力下单时的跳价
 		double		askBidGapLimit;		// 盘口价差上限
 		double		minMove;			// 最小价格变动
 		double		stopLossPrice;		// 止损价

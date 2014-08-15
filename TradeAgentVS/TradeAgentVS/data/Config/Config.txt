@@ -39,3 +39,4 @@ Cost=3.8;//counted as minimum move
 StopWinPoint=10;//counted as minimum move
 DurationStep=60;
 WinBollAmpAdjust=0;
+ScndOrderJump=1;

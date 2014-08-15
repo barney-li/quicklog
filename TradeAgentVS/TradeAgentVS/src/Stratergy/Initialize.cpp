@@ -137,6 +137,12 @@ InitErrorType PrimeryAndSecondary::InitOtherCrap()
 		logger.LogThisFast("[ERROR]: Can't find symble \"ScndCancelTime\" in config file");
 		initStatus = CONFIG_ERROR;
 	}
+	if(config.ReadInteger(stgArg.scndOrderJump, "ScndOrderJump") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"ScndOrderJump\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"ScndOrderJump\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
 	if(config.ReadDouble(stgArg.floatToleration, "FloatToleration") != 0)
 	{
 		cout<<"[ERROR]: Can't find symble \"FloatToleration\" in config file"<<endl;
