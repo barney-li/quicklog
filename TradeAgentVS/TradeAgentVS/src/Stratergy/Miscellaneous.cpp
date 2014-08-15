@@ -162,8 +162,12 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	bool lGoodToClose = false;
 	double lAdjustedWinBollAmp;
+#ifdef WIN_BOLL_ADJUST
 	//根据持仓时间来调整winBollAmp
 	lAdjustedWinBollAmp = AdjustWinBollAmp(mOpenTime, (string)lPrim.updateTime, stgArg.winBollAmp, stgArg.winBollAmpAdjust, stgArg.durationStep);
+#else
+	lAdjustedWinBollAmp = stgArg.winBollAmp;
+#endif
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{
 		//使用布林带位置判断止盈

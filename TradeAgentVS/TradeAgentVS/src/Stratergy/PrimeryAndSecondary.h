@@ -37,7 +37,7 @@ using namespace Pas;
 
 #ifdef BACK_TEST
 #define SIMULATION
-//#define KEEP_BOLL
+#define KEEP_BOLL
 #include <queue>
 #endif
 
@@ -47,6 +47,8 @@ using namespace Pas;
 #endif
 
 //#define COINTEGRATION_TEST// only for cointegration test
+
+//#define WIN_BOLL_ADJUST // 根据持仓时间调节出场boll宽度
 
 namespace Pas
 {
