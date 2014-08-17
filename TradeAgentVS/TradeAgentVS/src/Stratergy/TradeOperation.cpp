@@ -57,7 +57,8 @@ void PrimeryAndSecondary::OpenPrim()
 	{
 		logger.LogThisFast("[ACTION]: SHORT_PRIM");
 		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
-		if(SellShort(stgArg.primaryInst, primDataBuf[primBufIndex].lowerLimit, mTradedShares, &lastPrimOrder) != true)
+		// 开仓价格使用对价减3跳来提高成交率
+		if(SellShort(stgArg.primaryInst, mPrimEnterPrice-3*stgArg.minMove, mTradedShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell prim error");
 		}
@@ -67,7 +68,8 @@ void PrimeryAndSecondary::OpenPrim()
 	{
 		logger.LogThisFast("[ACTION]: BUY_PRIM");
 		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
-		if(Buy(stgArg.primaryInst, primDataBuf[primBufIndex].upperLimit, mTradedShares, &lastPrimOrder) != true)
+		// 开仓价格使用对价加3跳来提高成交率
+		if(Buy(stgArg.primaryInst, mPrimEnterPrice+3*stgArg.minMove, mTradedShares, &lastPrimOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: buy prim error");
 		}
@@ -309,17 +311,17 @@ void PrimeryAndSecondary::OpenPrim()
 	stringstream lPrice;
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
-		lPrice<<"[ACTION]: SHORT_PRIM at "<<primDataBuf[primBufIndex].bidPrice;
+		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice-3*stgArg.minMove;//加3跳以确保成交
+		lPrice<<"[ACTION]: SHORT_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
-		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
 		mPrimOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;
 		mPrimTodayShortPosition = 1;
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
-		lPrice<<"[ACTION]: BUY_PRIM at "<<primDataBuf[primBufIndex].askPrice;
+		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice+3*stgArg.minMove;//加3跳以确保成交
+		lPrice<<"[ACTION]: BUY_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
-		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
 		mPrimOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;
 		mPrimTodayLongPosition = 1;
 	}

@@ -99,6 +99,14 @@ namespace Pas
 	{
 		string		primaryInst;		// 主力合约
 		string		secondaryInst;		// 次主力合约
+		string		tradePeriod1Start;	// 交易时段1起始时间
+		string		tradePeriod1End;	// 交易时段1结束时间
+		string		tradePeriod2Start;	// 交易时段2起始时间
+		string		tradePeriod2End;	// 交易时段2结束时间
+		string		tradePeriod3Start;	// 交易时段3起始时间
+		string		tradePeriod3End;	// 交易时段3结束时间
+		string		tradePeriod4Start;	// 交易时段4起始时间
+		string		tradePeriod4End;	// 交易时段4结束时间
 		int			bollPeriod;			// 布林带标准差计算长度
 		double		outterBollAmp;		// 布林带外部振幅
 		double		innerBollAmp;		// 布林带内部振幅

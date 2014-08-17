@@ -37,6 +37,54 @@ InitErrorType PrimeryAndSecondary::InitOtherCrap()
 		logger.LogThisFast("[ERROR]: Can't find symble \"SecondaryInstrument\" in config file");
 		initStatus = CONFIG_ERROR;
 	}
+	if(config.ReadString(stgArg.tradePeriod1Start, "TradePeriod1Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod1Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod1Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod1End, "TradePeriod1End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod1End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod1End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod2Start, "TradePeriod2Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod2Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod2Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod2End, "TradePeriod2End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod2End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod2End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod3Start, "TradePeriod3Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod3Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod3Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod3End, "TradePeriod3End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod3End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod3End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod4Start, "TradePeriod4Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod4Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod4Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.tradePeriod4End, "TradePeriod4End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"TradePeriod4End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod4End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
 	if(config.ReadInteger(stgArg.bollPeriod, "BollPeriod") != 0)
 	{
 		cout<<"[ERROR]: Can't find symble \"BollPeriod\" in config file"<<endl;

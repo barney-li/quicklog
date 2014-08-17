@@ -510,10 +510,10 @@ bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 	}
 	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
 	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
-	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 09:01:00"), time_from_string("2000-01-01 11:29:00"));
-	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 13:31:00"), time_from_string("2000-01-01 14:59:00"));
-	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 21:01:00"), time_from_string("2000-01-01 24:00:00"));
-	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 00:00:00"), time_from_string("2000-01-01 02:29:00"));
+	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod1Start), time_from_string("2000-01-01 "+stgArg.tradePeriod1End));
+	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod2Start), time_from_string("2000-01-01 "+stgArg.tradePeriod2End));
+	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod3Start), time_from_string("2000-01-01 "+stgArg.tradePeriod3End));
+	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod4Start), time_from_string("2000-01-01 "+stgArg.tradePeriod4End));
 	if(lTradePeriod1.contains(lCurTime))
 	{
 		return true;
