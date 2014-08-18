@@ -105,6 +105,7 @@ private:
 	string mScndCloseTime;
 	double mPrimClosePrice;
 	double mScndClosePrice;
+	bool mCloseScndOnly;
 #endif
 	// 开仓的时间
 	string mOpenTime;

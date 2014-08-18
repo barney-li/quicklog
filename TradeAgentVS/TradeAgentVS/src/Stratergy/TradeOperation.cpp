@@ -311,7 +311,7 @@ void PrimeryAndSecondary::OpenPrim()
 	stringstream lPrice;
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
-		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice-3*stgArg.minMove;//加3跳以确保成交
+		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
 		lPrice<<"[ACTION]: SHORT_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
 		mPrimOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;
@@ -319,7 +319,7 @@ void PrimeryAndSecondary::OpenPrim()
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
-		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice+3*stgArg.minMove;//加3跳以确保成交
+		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
 		lPrice<<"[ACTION]: BUY_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
 		mPrimOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;
@@ -390,6 +390,7 @@ void PrimeryAndSecondary::CancelScnd()
 }
 void PrimeryAndSecondary::CancelPrim()
 {
+	mCloseScndOnly = true; // 这个标志位会使得回测系统在ScndClosed的时候计算盈亏
 	logger.LogThisFast("[ACTION]: CANCELLING_PRIM");
 }
 void PrimeryAndSecondary::CloseBoth()

@@ -56,7 +56,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 	}
 	if(OPEN_COND2 == mOpenCond)
 	{
-		if(mPrimEnterPrice>=lPrim.askPrice)
+		if(mPrimEnterPrice+3*stgArg.minMove>=lPrim.askPrice)
 		{
 			mPrimEnterPrice = lPrim.askPrice;
 			tempStream.clear();
@@ -68,7 +68,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 	}// 买主力
 	else
 	{
-		if(mPrimEnterPrice<=lPrim.bidPrice)
+		if(mPrimEnterPrice-3*stgArg.minMove<=lPrim.bidPrice)
 		{
 			mPrimEnterPrice = lPrim.bidPrice;
 			tempStream.clear();
@@ -114,6 +114,35 @@ void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 			SetEvent(SCND_CLOSED);
 		}// 买平，当我的出价大于等于盘口卖价时成交
 	}// 买平次主力
+
+	if(mCloseScndOnly)
+	{
+		mCloseScndOnly = false;
+		double lNetProfit;
+		double lProfit;
+		if(OPEN_COND1 == mOpenCond)
+		{
+			lNetProfit = mScndClosePrice - mScndEnterPrice;
+		}
+		else
+		{
+			lNetProfit = mScndEnterPrice - mScndClosePrice;
+		}
+		lProfit = lNetProfit - stgArg.cost;// 是不是应该乘minmove，不用，初始化的时候算过了
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[INFO]: estimate profit:	"<<lNetProfit;
+		logger.LogThisFast(tempStream.str());
+		if(lProfit>0)
+		{
+			mWin++;
+		}
+		else
+		{
+			mLose++;
+		}
+		mTotalProfit += lProfit;
+	}
 }
 
 void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
@@ -151,8 +180,8 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 	logger.LogThisFast(tempStream.str());
 #ifdef BACK_TEST
 	mProfitLog.LogThisFast(tempStream.str());
-	double lTempProfit = EstimateProfit()-stgArg.cost;// 连手续费一起算上
-	if(lTempProfit > 0)
+	double lPureProfit = EstimateProfit()-stgArg.cost;// 连手续费一起算上
+	if(lPureProfit > 0)
 	{
 		mWin++;
 	}
@@ -160,7 +189,7 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 	{
 		mLose++;
 	}
-	mTotalProfit += lTempProfit;
+	mTotalProfit += lPureProfit;
 #endif
 }
 
