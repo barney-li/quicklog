@@ -85,9 +85,7 @@ public:
 				{
 					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
-#ifndef KEEP_BOLL
 					strategy.AsyncEventPoster();
-#endif
 					ResetData(&mScndData);
 				}
 				else if(lNextData == NEXT_BOTH)
@@ -98,9 +96,7 @@ public:
 					ResetData(&mPrimData);
 					
 					strategy.HookOnRtnDepthMarketData(&mScndData);
-#ifndef KEEP_BOLL
 					strategy.AsyncEventPoster();
-#endif
 					ResetData(&mScndData);
 				}
 			}
@@ -178,8 +174,9 @@ private:
 		sprintf(lMsBuf, "%d", aMarketData->UpdateMillisec);
 		lMsString = lMsBuf;
 		ptime lDataTime = time_from_string(lDateString+" "+lTimeString+"."+lMsString);
-		ptime lCriticalTime = time_from_string(lDateString+" 21:00:00.0");//过了这个时间点，trading day就会+1
-		if(lDataTime >= lCriticalTime)
+		time_period lPlusOneTradingDayZone = time_period(time_from_string(lDateString+" 21:00:00.0"), time_from_string(lDateString+" 24:00:00.0"));//在这个时段内，trading day会+1
+		
+		if(lPlusOneTradingDayZone.contains(lDataTime))
 		{
 			date_duration lOneDay(1);
 			lDataTime = lDataTime - lOneDay;
