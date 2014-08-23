@@ -153,7 +153,7 @@ private:
 	}
 	/************************************************************************/
 	// 修改交易日期。TradingDay并不是数据的真实日期，晚上九点开始为明天的交易
-	// 日，因此这里稍作处理，对于晚上九点以后，零点以前的日期，做减一处理。
+	// 日，因此这里稍作处理，对于下午三点以后，零点以前的日期，做减一处理。
 	/************************************************************************/
 	ptime ProcessTime(CThostFtdcDepthMarketDataField* aMarketData)
 	{
@@ -174,7 +174,7 @@ private:
 		sprintf(lMsBuf, "%d", aMarketData->UpdateMillisec);
 		lMsString = lMsBuf;
 		ptime lDataTime = time_from_string(lDateString+" "+lTimeString+"."+lMsString);
-		time_period lPlusOneTradingDayZone = time_period(time_from_string(lDateString+" 21:00:00.0"), time_from_string(lDateString+" 24:00:00.0"));//在这个时段内，trading day会+1
+		time_period lPlusOneTradingDayZone = time_period(time_from_string(lDateString+" 15:00:00.0"), time_from_string(lDateString+" 24:00:00.0"));//在这个时段内，trading day会+1
 		
 		if(lPlusOneTradingDayZone.contains(lDataTime))
 		{

@@ -5,6 +5,11 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 	if(BufferData(pDepthMarketData))
 	{
 		
+		if(!IsDataTime(pDepthMarketData->UpdateTime))
+		{
+			mBoll.InitAllData();
+			return;
+		}// return if the data is not coming in the right time
 		if(VerifyMarketData(primDataBuf[primBufIndex]) && VerifyMarketData(scndDataBuf[scndBufIndex]))
 		{
 			if(strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)

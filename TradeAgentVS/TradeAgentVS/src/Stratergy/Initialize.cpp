@@ -86,6 +86,60 @@ InitErrorType PrimeryAndSecondary::InitOtherCrap()
 		logger.LogThisFast("[ERROR]: Can't find symble \"TradePeriod4End\" in config file");
 		initStatus = CONFIG_ERROR;
 	}
+	if(config.ReadString(stgArg.dataPeriod1Start, "DataPeriod1Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod1Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod1Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod1End, "DataPeriod1End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod1End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod1End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod2Start, "DataPeriod2Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod2Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod2Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod2End, "DataPeriod2End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod2End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod2End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod3Start, "DataPeriod3Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod3Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod3Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod3End, "DataPeriod3End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod3End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod3End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod4Start, "DataPeriod4Start") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod4Start\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod4Start\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.dataPeriod4End, "DataPeriod4End") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"DataPeriod4End\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"DataPeriod4End\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
+	if(config.ReadString(stgArg.stopOpenBeforeEnd, "StopOpenBeforeEnd") != 0)
+	{
+		cout<<"[ERROR]: Can't find symble \"StopOpenBeforeEnd\" in config file"<<endl;
+		logger.LogThisFast("[ERROR]: Can't find symble \"StopOpenBeforeEnd\" in config file");
+		initStatus = CONFIG_ERROR;
+	}
 	if(config.ReadInteger(stgArg.bollPeriod, "BollPeriod") != 0)
 	{
 		cout<<"[ERROR]: Can't find symble \"BollPeriod\" in config file"<<endl;
@@ -259,6 +313,21 @@ InitErrorType PrimeryAndSecondary::InitOtherCrap()
 	{
 		cout<<"all arguments ready"<<endl;
 		mPeriodicCheckPositionThread = new boost::thread(boost::bind(&PrimeryAndSecondary::PeriodicCheckPosition, this));
+		mTradePeriod1 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod1Start), time_from_string("2000-01-01 "+stgArg.tradePeriod1End));
+		mTradePeriod2 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod2Start), time_from_string("2000-01-01 "+stgArg.tradePeriod2End));
+		mTradePeriod3 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod3Start), time_from_string("2000-01-01 "+stgArg.tradePeriod3End));
+		mTradePeriod4 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod4Start), time_from_string("2000-01-01 "+stgArg.tradePeriod4End));
+		mDataPeriod1 = new time_period(time_from_string("2000-01-01 "+stgArg.dataPeriod1Start), time_from_string("2000-01-01 "+stgArg.dataPeriod1End));
+		mDataPeriod2 = new time_period(time_from_string("2000-01-01 "+stgArg.dataPeriod2Start), time_from_string("2000-01-01 "+stgArg.dataPeriod2End));
+		mDataPeriod3 = new time_period(time_from_string("2000-01-01 "+stgArg.dataPeriod3Start), time_from_string("2000-01-01 "+stgArg.dataPeriod3End));
+		mDataPeriod4 = new time_period(time_from_string("2000-01-01 "+stgArg.dataPeriod4Start), time_from_string("2000-01-01 "+stgArg.dataPeriod4End));
+		
+		time_duration lStopOpenBeforeEnd = time_from_string("2000-01-01 " + stgArg.stopOpenBeforeEnd) - time_from_string("2000-01-01 00:00:00");
+
+		mOpenPeriod1 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod1Start), time_from_string("2000-01-01 "+stgArg.tradePeriod1End)-lStopOpenBeforeEnd);
+		mOpenPeriod2 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod2Start), time_from_string("2000-01-01 "+stgArg.tradePeriod2End)-lStopOpenBeforeEnd);
+		mOpenPeriod3 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod3Start), time_from_string("2000-01-01 "+stgArg.tradePeriod3End));
+		mOpenPeriod4 = new time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod4Start), time_from_string("2000-01-01 "+stgArg.tradePeriod4End)-lStopOpenBeforeEnd);
 	}
 	else
 	{

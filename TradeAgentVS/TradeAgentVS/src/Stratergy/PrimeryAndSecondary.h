@@ -23,6 +23,7 @@
 #include <boost/bind.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <boost/filesystem.hpp>
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 using namespace boost;
@@ -37,7 +38,7 @@ using namespace Pas;
 
 #ifdef BACK_TEST
 #define SIMULATION
-//#define KEEP_BOLL
+#define KEEP_BOLL
 #include <queue>
 #endif
 
@@ -98,14 +99,22 @@ private:
 	int mWin;
 	int mLose;
 	double mTotalProfit;
-	queue<TRADE_EVENT> mEventQueue;
+	//queue<TRADE_EVENT> mEventQueue;
 	string mPrimOpenTime;
 	string mScndOpenTime;
 	string mPrimCloseTime;
 	string mScndCloseTime;
 	double mPrimClosePrice;
 	double mScndClosePrice;
-	bool mCloseScndOnly;
+	bool mCloseScndOnly;//本次平仓是否仅平仓次主力（主力开仓被撤销的情况）
+	time_duration mAvgInPositionDuration;// 平均持仓时间
+	time_duration mMaxInPositionDuration;// 最大持仓时间
+	double mAvgWin;// 平均盈利
+	double mMaxWin;// 最大盈利
+	double mAvgLose;// 平均亏损
+	double mMaxLose;// 最大亏损
+	int mOrderCount;// 下单次数
+	int mTradeCount;// 成交次数
 #endif
 	// 开仓的时间
 	string mOpenTime;
@@ -164,6 +173,21 @@ private:
 	int mScndReqOrderId;
 	// traded shares
 	int mTradedShares;
+	// trade time period;
+	time_period* mTradePeriod1;
+	time_period* mTradePeriod2;
+	time_period* mTradePeriod3;
+	time_period* mTradePeriod4;
+	// valid data period;
+	time_period* mDataPeriod1;
+	time_period* mDataPeriod2;
+	time_period* mDataPeriod3;
+	time_period* mDataPeriod4;
+	// time period which opening is allowed
+	time_period* mOpenPeriod1;
+	time_period* mOpenPeriod2;
+	time_period* mOpenPeriod3;
+	time_period* mOpenPeriod4;
 public:
 	// constructor
 	PrimeryAndSecondary(void)
@@ -180,6 +204,10 @@ public:
 	~PrimeryAndSecondary(void)
 	{
 #ifdef BACK_TEST
+		if(!boost::filesystem::exists("./Data/Log/Statistics.log"))
+		{
+			mTestStatistics.LogThisNoTimeStamp("BollPeriod	OutterBollAmp	BollAmpLimit	WinBollAmp	StopLosePoint	StopWinPoint	PrimInst-ScndInst	WinRate	TotalProfit	WinCount	LoseCount");
+		}
 		int lWinRate = 0;
 		tempStream.clear();
 		tempStream.str("");
@@ -187,7 +215,8 @@ public:
 		{
 			lWinRate = 100*mWin/(mWin+mLose);
 		}
-		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.winBollAmpAdjust<<"	"<<(int)(stgArg.durationStep)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
+		//tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.winBollAmpAdjust<<"	"<<(int)(stgArg.durationStep)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
+		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
 		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
 		cout<<tempStream.str()<<endl;
 #endif
@@ -245,6 +274,11 @@ private:
 	// 通过开仓时的收盘价与当前的最新价计算浮盈。
 	/************************************************************************/
 	double EstimateProfit();
+
+	/************************************************************************/
+	// 判断是否处于合理的数据时间
+	/************************************************************************/
+	bool IsDataTime(string aDataTime);
 
 	/************************************************************************/
 	// 判断是否处于交易时间

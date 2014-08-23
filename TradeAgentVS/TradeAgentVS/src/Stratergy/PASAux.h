@@ -107,6 +107,15 @@ namespace Pas
 		string		tradePeriod3End;	// 交易时段3结束时间
 		string		tradePeriod4Start;	// 交易时段4起始时间
 		string		tradePeriod4End;	// 交易时段4结束时间
+		string		dataPeriod1Start;	// 数据时段1起始时间
+		string		dataPeriod1End;		// 数据时段1结束时间
+		string		dataPeriod2Start;	// 数据时段2起始时间
+		string		dataPeriod2End;		// 数据时段2结束时间
+		string		dataPeriod3Start;	// 数据时段3起始时间
+		string		dataPeriod3End;		// 数据时段3结束时间
+		string		dataPeriod4Start;	// 数据时段4起始时间
+		string		dataPeriod4End;		// 数据时段4结束时间
+		string		stopOpenBeforeEnd;	// 在交易时段结束前多久停止开仓
 		int			bollPeriod;			// 布林带标准差计算长度
 		double		outterBollAmp;		// 布林带外部振幅
 		double		innerBollAmp;		// 布林带内部振幅

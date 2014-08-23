@@ -510,23 +510,19 @@ bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 	}
 	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
 	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
-	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod1Start), time_from_string("2000-01-01 "+stgArg.tradePeriod1End));
-	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod2Start), time_from_string("2000-01-01 "+stgArg.tradePeriod2End));
-	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod3Start), time_from_string("2000-01-01 "+stgArg.tradePeriod3End));
-	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 "+stgArg.tradePeriod4Start), time_from_string("2000-01-01 "+stgArg.tradePeriod4End));
-	if(lTradePeriod1.contains(lCurTime))
+	if(mTradePeriod1->contains(lCurTime))
 	{
 		return true;
 	}
-	else if(lTradePeriod2.contains(lCurTime))
+	else if(mTradePeriod2->contains(lCurTime))
 	{
 		return true;
 	}
-	else if(lTradePeriod3.contains(lCurTime))
+	else if(mTradePeriod3->contains(lCurTime))
 	{
 		return true;
 	}
-	else if(lTradePeriod4.contains(lCurTime))
+	else if(mTradePeriod4->contains(lCurTime))
 	{
 		return true;
 	}
@@ -538,7 +534,7 @@ bool PrimeryAndSecondary::IsTradeTime(string aDataTime)
 		return false;
 	}
 }
-bool PrimeryAndSecondary::IsOpenTime(string aDataTime)
+bool PrimeryAndSecondary::IsDataTime(string aDataTime)
 {
 	// any valid time should be in size of 8
 	if(aDataTime.size() != 8)
@@ -547,23 +543,48 @@ bool PrimeryAndSecondary::IsOpenTime(string aDataTime)
 	}
 	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
 	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
-	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 09:01:00"), time_from_string("2000-01-01 11:20:00"));
-	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 13:31:00"), time_from_string("2000-01-01 14:50:00"));
-	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 21:01:00"), time_from_string("2000-01-01 24:00:00"));
-	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 00:00:00"), time_from_string("2000-01-01 02:20:00"));
-	if(lTradePeriod1.contains(lCurTime))
+	if(mDataPeriod1->contains(lCurTime))
 	{
 		return true;
 	}
-	else if(lTradePeriod2.contains(lCurTime))
+	else if(mDataPeriod2->contains(lCurTime))
 	{
 		return true;
 	}
-	else if(lTradePeriod3.contains(lCurTime))
+	else if(mDataPeriod3->contains(lCurTime))
 	{
 		return true;
 	}
-	else if(lTradePeriod4.contains(lCurTime))
+	else if(mDataPeriod4->contains(lCurTime))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool PrimeryAndSecondary::IsOpenTime(string aDataTime)
+{
+	// any valid time should be in size of 8
+	if(aDataTime.size() != 8)
+	{
+		return false;
+	}
+	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
+	if(mOpenPeriod1->contains(lCurTime))
+	{
+		return true;
+	}
+	else if(mOpenPeriod2->contains(lCurTime))
+	{
+		return true;
+	}
+	else if(mOpenPeriod3->contains(lCurTime))
+	{
+		return true;
+	}
+	else if(mOpenPeriod4->contains(lCurTime))
 	{
 		return true;
 	}
@@ -580,24 +601,19 @@ bool PrimeryAndSecondary::IsEasyGoTime(string aDataTime)
 		return false;
 	}
 	ptime lCurTime = time_from_string((string)"2000-01-01 "+aDataTime);
-	// 所有时间区间均为[09:01:00, 11:29:00)的形式，前闭后开
-	time_period lTradePeriod1 = time_period(time_from_string("2000-01-01 09:01:00"), time_from_string("2000-01-01 11:20:00"));
-	time_period lTradePeriod2 = time_period(time_from_string("2000-01-01 13:31:00"), time_from_string("2000-01-01 14:50:00"));
-	time_period lTradePeriod3 = time_period(time_from_string("2000-01-01 21:01:00"), time_from_string("2000-01-01 24:00:00"));
-	time_period lTradePeriod4 = time_period(time_from_string("2000-01-01 00:00:00"), time_from_string("2000-01-01 02:20:00"));
-	if(lTradePeriod1.contains(lCurTime))
+	if(mOpenPeriod1->contains(lCurTime))
 	{
 		return false;
 	}
-	else if(lTradePeriod2.contains(lCurTime))
+	else if(mOpenPeriod2->contains(lCurTime))
 	{
 		return false;
 	}
-	else if(lTradePeriod3.contains(lCurTime))
+	else if(mOpenPeriod3->contains(lCurTime))
 	{
 		return false;
 	}
-	else if(lTradePeriod4.contains(lCurTime))
+	else if(mOpenPeriod4->contains(lCurTime))
 	{
 		return false;
 	}
