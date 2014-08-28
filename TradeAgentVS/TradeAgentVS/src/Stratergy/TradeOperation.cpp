@@ -9,16 +9,24 @@ void PrimeryAndSecondary::OpenScnd()
 	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
-		
-		logger.LogThisFast("[ACTION]: BUY_SCND");
-		mTradeDir = BUY_SCND_SELL_PRIM;
+
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice;
-		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].askPrice, stgArg.openShares, &lastScndOrder) != true)
-#else
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		if(Buy(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
+#ifdef LAST_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice-stgArg.minMove*stgArg.scndOrderJump;
+#endif
+#ifdef QUEUE_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice-stgArg.minMove*stgArg.scndOrderJump;
+#endif
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[ACTION]: BUY_SCND at "<<mScndEnterPrice;
+		logger.LogThisFast(tempStream.str());
+
+		mTradeDir = BUY_SCND_SELL_PRIM;
+
+		if(Buy(stgArg.secondaryInst, mScndEnterPrice, stgArg.openShares, &lastScndOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: buy scnd error");
 		}
@@ -27,16 +35,24 @@ void PrimeryAndSecondary::OpenScnd()
 	else if( OPEN_COND2 == mOpenCond )
 	{
 		/* condition 2 */
-		
-		logger.LogThisFast("[ACTION]: SHORT_SCND");
-		mTradeDir = BUY_PRIM_SELL_SCND;
+
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice;
-		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].bidPrice, stgArg.openShares, &lastScndOrder) != true)
-#else
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice;
-		if(SellShort(stgArg.secondaryInst, scndDataBuf[scndBufIndex].lastPrice, stgArg.openShares, &lastScndOrder) != true)
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
+#ifdef LAST_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice+stgArg.minMove*stgArg.scndOrderJump;
+#endif
+#ifdef QUEUE_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice+stgArg.minMove*stgArg.scndOrderJump;
+#endif
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[ACTION]: SHORT_SCND at "<<mScndEnterPrice;
+		logger.LogThisFast(tempStream.str());
+
+		mTradeDir = BUY_PRIM_SELL_SCND;
+
+		if(SellShort(stgArg.secondaryInst, mScndEnterPrice, stgArg.openShares, &lastScndOrder) != true)
 		{
 			logger.LogThisFast("[ERROR]: sell scnd error");
 		}
@@ -55,8 +71,13 @@ void PrimeryAndSecondary::OpenPrim()
 {
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
-		logger.LogThisFast("[ACTION]: SHORT_PRIM");
 		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
+
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[ACTION]: SHORT_PRIM at "<<mPrimEnterPrice;
+		logger.LogThisFast(tempStream.str());
+
 		// 开仓价格使用对价减3跳来提高成交率
 		if(SellShort(stgArg.primaryInst, mPrimEnterPrice-3*stgArg.minMove, mTradedShares, &lastPrimOrder) != true)
 		{
@@ -66,8 +87,13 @@ void PrimeryAndSecondary::OpenPrim()
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
-		logger.LogThisFast("[ACTION]: BUY_PRIM");
 		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
+
+		tempStream.clear();
+		tempStream.str("");
+		tempStream<<"[ACTION]: BUY_PRIM at"<<mPrimEnterPrice;
+		logger.LogThisFast(tempStream.str());
+
 		// 开仓价格使用对价加3跳来提高成交率
 		if(Buy(stgArg.primaryInst, mPrimEnterPrice+3*stgArg.minMove, mTradedShares, &lastPrimOrder) != true)
 		{
@@ -275,8 +301,12 @@ void PrimeryAndSecondary::OpenScnd()
 		tempStream<<"[ACTION]: BUY_SCND at ";
 #ifdef OPPONENT_PRICE_OPEN
 		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice-stgArg.minMove*stgArg.scndOrderJump;
-#else
+#endif
+#ifdef LAST_PRICE_OPEN
 		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice-stgArg.minMove*stgArg.scndOrderJump;
+#endif
+#ifdef QUEUE_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 		tempStream<<mScndEnterPrice;
 		logger.LogThisFast(tempStream.str());
@@ -291,8 +321,12 @@ void PrimeryAndSecondary::OpenScnd()
 		tempStream<<"[ACTION]: SHORT_SCND at ";
 #ifdef OPPONENT_PRICE_OPEN
 		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice+stgArg.minMove*stgArg.scndOrderJump;
-#else
+#endif
+#ifdef LAST_PRICE_OPEN
 		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice+stgArg.minMove*stgArg.scndOrderJump;
+#endif
+#ifdef QUEUE_PRICE_OPEN
+		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 		tempStream<<mScndEnterPrice;
 		logger.LogThisFast(tempStream.str());

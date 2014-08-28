@@ -24,7 +24,9 @@ InitErrorType PrimeryAndSecondary::InitOtherCrap()
 	mOpenPrimId = 0;
 	mOpenScndId = 0;
 	mLastState = IDLE_STATE;
+#ifdef BACK_TEST
 	mCloseScndOnly = false;
+#endif
 	// read strategy arguments from configuration file
 	if(config.ReadString(stgArg.primaryInst, "PrimaryInstrument") !=0 )
 	{

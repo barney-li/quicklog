@@ -34,18 +34,17 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-#define BACK_TEST
+//#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
-#define KEEP_BOLL
+//#define KEEP_BOLL
 #include <queue>
 #endif
 
-//#define OPPONENT_PRICE_OPEN
-#ifdef OPPONENT_PRICE_OPEN
-//#define OPPONENT_PRICE_JUDGE //这里打开就是对价判断开仓，注释掉就是最新价判断开仓
-#endif
+#define OPPONENT_PRICE_OPEN
+//#define QUEUE_PRICE_OPEN
+//#define LAST_PRICE_OPEN
 
 //#define COINTEGRATION_TEST// only for cointegration test
 
@@ -299,6 +298,11 @@ private:
 	// 调整出场的布林带宽度
 	/************************************************************************/
 	double AdjustWinBollAmp(string aOpenTime, string aCurrentTime, double aWinBollAmp, double aAdjustVolume, double aDurationStep);
+	
+	/************************************************************************/
+	// 判断服务器时间是否与本地时间一致
+	/************************************************************************/
+	bool IsServerTimeConsistWithLocal(string aServerDate, string aServerTime);
 
 	/*****************************/
 	/* below are all the callback routines*/
