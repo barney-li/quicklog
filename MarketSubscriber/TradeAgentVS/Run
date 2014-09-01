@@ -1,0 +1,27 @@
+for (( i=200; i<=500; i=i+100 ))
+do
+	sed --in-place "s/^.*BollPeriod=.*;/BollPeriod=${i};/" ./data/Config/Config.txt
+	#sed -n '21p' ./data/Config/Config.txt
+	for (( j=3; j<=5; j++ ))
+	do	
+		sed --in-place "s/^.*OutterBollAmp=.*;/OutterBollAmp=${j};/" ./data/Config/Config.txt
+		#sed -n '22p' ./data/Config/Config.txt
+		for (( k=3; k<=5; k++ ))
+		do
+			
+			sed --in-place "s/^.*BollAmpLimit=.*;/BollAmpLimit=${k};/" ./data/Config/Config.txt
+			#sed -n '26p' ./data/Config/Config.txt
+			for (( h=0; h<=2; h++ ))
+			do
+				sed --in-place "s/^.*WinBollAmp=.*;/WinBollAmp=${h};/" ./data/Config/Config.txt
+				#sed -n '25p' ./data/Config/Config.txt
+				echo $i $j $k $h
+				../Release/TradeAgentVS.exe
+				mv ./data/Log/log.log "./data/Log/${i}_${j}_${k}_${h}_log.log"
+				mv ./data/Log/StateMachine.log "./data/Log/${i}_${j}_${k}_${h}_SM.log"
+				mv ./data/Log/Profit.log "./data/Log/${i}_${j}_${k}_${h}_Profit.log"
+			done
+		done
+	done
+done
+#sed -i 's/^.*BollPeriod.*;$/BollPeriod=500;/g' ./data/Config/Config.txt
