@@ -9,9 +9,10 @@
 #include <string>
 #include <Log.h>
 #include <ConfigReader.h>
+//#define ARBITRAGE_INSTRUMENT
 #define MAX_FRONT 6
 #define FRONT_ADDR_SIZE 128
-#define MAX_INSTRUMENT 128
+#define MAX_INSTRUMENT 2048
 #define INSTRUMENT_SIZE 8
 #define OVERFLOW_CHECK_CODE 0x5AA5
 using namespace boost;
@@ -87,6 +88,37 @@ public:
 	void UnsetDataPushHook(void)
 	{
 		dataPushHook = NULL;
+	}
+	void SetInstrumentList(list<string> aInstrumentList)
+	{
+		numInstrument = 0;
+		if(aInstrumentList == (list<string>)NULL)
+		{
+			logger.LogThisFast("[ERROR]: null instrument list");
+			return;
+		}
+		if(aInstrumentList.size() == 0)
+		{
+			logger.LogThisFast("[ERROR]: empty instrument list");
+			return;
+		}
+		list<string>::iterator lListIterator = aInstrumentList.begin();
+		for(lListIterator = aInstrumentList.begin(); lListIterator != aInstrumentList.end(); lListIterator++)
+		{
+#ifndef ARBITRAGE_INSTRUMENT
+			const int lSpeculationInstrumentSize = 7;
+			if(strlen(&*lListIterator->c_str())>lSpeculationInstrumentSize)
+			{
+				continue;
+			}// 在不抓取套利合约的情况下，长度大于投机合约的一律丢弃
+#endif
+			strncpy(instrumentList[numInstrument++], &*lListIterator->c_str(), INSTRUMENT_SIZE);
+			if(numInstrument>MAX_INSTRUMENT)
+			{
+				logger.LogThisFast("[ERROR]: too many instrument");
+				return;
+			}
+		}
 	}
 
 };

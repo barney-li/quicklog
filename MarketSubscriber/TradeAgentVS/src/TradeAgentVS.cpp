@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include <iostream>
 #include <MarketProcess.h>
+#include <TradeProcess.h>
 #include <ConfigReader.h>
 #include <boost\thread.hpp>
 #include <boost\progress.hpp>
@@ -31,21 +32,46 @@ int _tmain(int argc, _TCHAR* argv[])
 	logger.LogThisFast("[INFO]: market subscriber started...");
 	logger.Sync();
 
+	TradeProcess tradeObj;
 	MarketProcess marketObj;
 	ConfigReader config;
 
 	marketObj.SetDataPushHook(MarketDataCallback);
-	char *tempConfig = new char[20];
-	config.ReadList(&tempConfig, "BrokerID", ";");
-	strcpy(marketObj.broker, tempConfig);
-	config.ReadList(&tempConfig, "InvestorID", ";");
-	strcpy(marketObj.investor, tempConfig);
-	config.ReadList(&tempConfig, "Password", ";");
-	strcpy(marketObj.pwd, tempConfig);
+	char* brokerIdConfig = new char[20];
+	char* investorIdConfig = new char[20];
+	char* passwordConfig = new char[20];
+
+	config.ReadList(&brokerIdConfig, "BrokerID", ";");
+	config.ReadList(&investorIdConfig, "InvestorID", ";");
+	config.ReadList(&passwordConfig, "Password", ";");
+	/* initialize trade agent */
+	strcpy(tradeObj.basicTradeProcessData.brokerId, brokerIdConfig);
+	strcpy(tradeObj.basicTradeProcessData.investorId, investorIdConfig);
+	strcpy(tradeObj.basicTradeProcessData.investorPassword, passwordConfig);
+	tradeObj.basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj.basicTradeProcessData.frontAddress);
+	tradeObj.InitializeProcess();
+	while(!tradeObj.InitializeFinished())
+	{
+		boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));	
+	}
+	tradeObj.ReqQryInstrument();
+	
+	while(!tradeObj.InstrumentListReady())
+	{
+		boost::this_thread::sleep(boost::posix_time::seconds(1));
+	}
+	/* initialize market agent */
+	strcpy(marketObj.broker, brokerIdConfig);
+	strcpy(marketObj.investor, investorIdConfig);
+	strcpy(marketObj.pwd, passwordConfig);
 	marketObj.numFrontAddress = config.ReadMarketFrontAddr(marketObj.frontAddress);
-	marketObj.numInstrument = config.ReadInstrumentID(marketObj.instrumentList);
+	marketObj.SetInstrumentList(tradeObj.GetInstrumentList());
+	//marketObj.numInstrument = config.ReadInstrumentID(marketObj.instrumentList);
 	marketObj.StartMarketProcess();
-	delete tempConfig;
+
+	delete brokerIdConfig;
+	delete investorIdConfig;
+	delete passwordConfig;
 	for(;;)
 	{
 		boost::this_thread::sleep(boost::posix_time::milliseconds(100));
