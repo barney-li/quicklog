@@ -34,7 +34,7 @@ using namespace Pas;
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -241,6 +241,9 @@ private:
 
 	// store market data into local buffer
 	bool BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData);
+
+	// store market data into local buffer, with instrument type specified
+	void BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData, InstrumentType aWhichInst);
 
 	// verify market data, any illegal data will lead to an false return
 	bool VerifyMarketData(CThostFtdcDepthMarketDataField const & pData);

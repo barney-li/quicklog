@@ -273,12 +273,17 @@ void PrimeryAndSecondary::LogBollData()
 		<<tempData.mInnerLowerLine<<" "<<tempData.mOutterLowerLine<<"] "\
 		<<tempData.mMidLine<<" "<<tempData.mStdDev;
 #else
-#ifdef OPPONENT_PRICE_JUDGE
+#ifdef OPPONENT_PRICE_OPEN
 	double lDeltaPrice1 = lPrim.bidPrice - lScnd.askPrice;
 	double lDeltaPrice2 = lPrim.askPrice - lScnd.bidPrice;
-#else
+#endif
+#ifdef LAST_PRICE_OPEN
 	double lDeltaPrice1 = lPrim.bidPrice - lScnd.lastPrice;
 	double lDeltaPrice2 = lPrim.askPrice - lScnd.lastPrice;
+#endif
+#ifdef QUEUE_PRICE_OPEN
+	double lDeltaPrice1 = lPrim.bidPrice - lScnd.bidPrice;
+	double lDeltaPrice2 = lPrim.askPrice - lScnd.askPrice;
 #endif
 	tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
 		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mMidLine<<"	"\
@@ -298,6 +303,62 @@ void PrimeryAndSecondary::LogBollData()
 #endif
 #endif
 	mBollLog.LogThisFast(tempStream.str());
+}
+void PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData, InstrumentType aWhichInst)
+{
+	boost::lock_guard<boost::mutex> lLockGuard(mBufferDataMutex);
+	if(aWhichInst == InstrumentType::PRIM_INSTRUMENT)
+	{
+		// don't forget to increase the index
+		primBufIndex++;
+		// increase vector size when it's almost full
+		if(primDataBuf.size() - primBufIndex < 100)
+		{
+			primDataBuf.resize(primDataBuf.size()+STRATEGY_BUFFER_SIZE);
+		}
+		strncpy(primDataBuf[primBufIndex].instrumentId, pDepthMarketData->InstrumentID, sizeof(primDataBuf[primBufIndex].instrumentId));
+		primDataBuf[primBufIndex].askPrice = pDepthMarketData->AskPrice1;
+		primDataBuf[primBufIndex].askVolume = pDepthMarketData->AskVolume1;
+		primDataBuf[primBufIndex].bidPrice = pDepthMarketData->BidPrice1;
+		primDataBuf[primBufIndex].bidVolume = pDepthMarketData->BidVolume1;
+		primDataBuf[primBufIndex].lastPrice = pDepthMarketData->LastPrice;
+		primDataBuf[primBufIndex].volume = pDepthMarketData->Volume;
+		primDataBuf[primBufIndex].trueVolume = pDepthMarketData->Volume - primLastVolume;
+		primLastVolume = pDepthMarketData->Volume;
+		primDataBuf[primBufIndex].upperLimit = pDepthMarketData->UpperLimitPrice;
+		primDataBuf[primBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
+		strncpy(primDataBuf[primBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(primDataBuf[primBufIndex].updateTime));
+		primDataBuf[primBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
+		primDataBuf[primBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+	}
+	else if(aWhichInst == SCND_INSTRUMENT)
+	{
+		// don't forget to increase the index
+		scndBufIndex++;
+		// increase vector size when it's almost full
+		if(scndDataBuf.size() - scndBufIndex < 100)
+		{
+			scndDataBuf.resize(scndDataBuf.size()+STRATEGY_BUFFER_SIZE);
+		}
+		strncpy(scndDataBuf[scndBufIndex].instrumentId, pDepthMarketData->InstrumentID, sizeof(scndDataBuf[scndBufIndex].instrumentId));
+		scndDataBuf[scndBufIndex].askPrice = pDepthMarketData->AskPrice1;
+		scndDataBuf[scndBufIndex].askVolume = pDepthMarketData->AskVolume1;
+		scndDataBuf[scndBufIndex].bidPrice = pDepthMarketData->BidPrice1;
+		scndDataBuf[scndBufIndex].bidVolume = pDepthMarketData->BidVolume1;
+		scndDataBuf[scndBufIndex].lastPrice = pDepthMarketData->LastPrice;
+		scndDataBuf[scndBufIndex].volume = pDepthMarketData->Volume;
+		scndDataBuf[scndBufIndex].trueVolume = pDepthMarketData->Volume - scndLastVolume;
+		scndLastVolume = pDepthMarketData->Volume;
+		scndDataBuf[scndBufIndex].upperLimit = pDepthMarketData->UpperLimitPrice;
+		scndDataBuf[scndBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
+		strncpy(scndDataBuf[scndBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(scndDataBuf[scndBufIndex].updateTime));
+		scndDataBuf[scndBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
+		scndDataBuf[scndBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+	}
+	else
+	{
+		return;
+	}
 }
 bool PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 {

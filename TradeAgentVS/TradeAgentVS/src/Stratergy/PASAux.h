@@ -60,9 +60,9 @@ namespace Pas
 	// used to identify main and secondary instrument, in multi-instrument strategy
 	typedef enum 
 	{
-		MAIN_INSTRUMENT	= 0,
-		SEC_INSTRUMENT	= 1
-	}MAIN_N_SEC;
+		PRIM_INSTRUMENT	= 0,
+		SCND_INSTRUMENT	= 1,
+	}InstrumentType;
 
 	// used to store last trade info, kind of useful
 	typedef struct 

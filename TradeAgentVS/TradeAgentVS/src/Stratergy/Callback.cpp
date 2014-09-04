@@ -2,88 +2,106 @@
 ///行情数据
 void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 {
-	if(BufferData(pDepthMarketData))
+	if(VerifyMarketData(*pDepthMarketData))
 	{
-		
 		if(!IsDataTime(pDepthMarketData->UpdateTime))
 		{
 			mBoll.InitAllData();
 			return;
 		}// return if the data is not coming in the right time
-		if(VerifyMarketData(primDataBuf[primBufIndex]) && VerifyMarketData(scndDataBuf[scndBufIndex]))
+
+		if(strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.size()) == 0)
 		{
-			if(strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.length()) == 0)
+			BufferData(pDepthMarketData, PRIM_INSTRUMENT);
+			if(!VerifyMarketData(scndDataBuf[scndBufIndex]))
+			{
+				return;
+			}
+			else
 			{
 				//only calculate Boll Band when primary instrument data comes
 				mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
 			}
-#ifndef BACK_TEST
-			LogBollData();
-#endif
-#ifdef KEEP_BOLL
-			LogBollData();
-#endif
-			if(mBoll.IsBollReady())
+		}
+		else if(strncmp(pDepthMarketData->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
+		{
+			BufferData(pDepthMarketData, SCND_INSTRUMENT);
+			if(!VerifyMarketData(primDataBuf[primBufIndex]))
 			{
-				TRADE_STATE lCurState = mStateMachine.GetState();
-				//这里的action在每次新数据到来的时候都会执行
-				switch(lCurState)
-				{
-				case IDLE_STATE:
-					if(mStart && IsTradeTime(pDepthMarketData->UpdateTime))
-					{
-						if(IDLE_STATE != mLastState)
-						{
-							logger.LogThisFastNoTimeStamp(" ");
-					
-						}
-						OpenJudge(*pDepthMarketData);
-					}
-					break;
-				case OPENING_SCND_STATE:
-					IsTradeTime(pDepthMarketData->UpdateTime);
-					StopOpenJudge(*pDepthMarketData);
-					break;
-				case CHECKING_SCND_STATE:
-					CancelScnd();
-					break;
-				case OPENING_PRIM_STATE:
-					IsTradeTime(pDepthMarketData->UpdateTime);
-					StopOpenJudge(*pDepthMarketData);
-					break;
-				case PENDING_STATE:
-					IsTradeTime(pDepthMarketData->UpdateTime);
-					StopLoseJudge(*pDepthMarketData);
-					StopWinJudge(*pDepthMarketData);
-					break;
-#ifndef BACK_TEST
-				case CLOSING_BOTH_STATE:
-					CloseBoth();
-					break;
-				case CANCELLING_SCND_STATE:
-					CancelScnd();
-					break;
-				case CLOSING_SCND_STATE:
-					CloseScnd();
-					break;
-				case CANCELLING_PRIM_STATE:
-					CancelPrim();
-					break;
-				case WAITING_SCND_CLOSE_STATE:
-					CloseScnd();
-					break;
-				case WAITING_PRIM_CLOSE_STATE:
-					ClosePrim();
-					break;
-#endif
-				default:
-					break;
-				}
-				mLastState = lCurState;
+				return;
 			}
 		}
-			
+		else
+		{
+			return;
+		}
+		
+#ifndef BACK_TEST
+		LogBollData();
+#endif
+#ifdef KEEP_BOLL
+		LogBollData();
+#endif
+		if(mBoll.IsBollReady())
+		{
+			TRADE_STATE lCurState = mStateMachine.GetState();
+			//这里的action在每次新数据到来的时候都会执行
+			switch(lCurState)
+			{
+			case IDLE_STATE:
+				if(mStart && IsTradeTime(pDepthMarketData->UpdateTime))
+				{
+					if(IDLE_STATE != mLastState)
+					{
+						logger.LogThisFastNoTimeStamp(" ");
+					
+					}
+					OpenJudge(*pDepthMarketData);
+				}
+				break;
+			case OPENING_SCND_STATE:
+				IsTradeTime(pDepthMarketData->UpdateTime);
+				StopOpenJudge(*pDepthMarketData);
+				break;
+			case CHECKING_SCND_STATE:
+				CancelScnd();
+				break;
+			case OPENING_PRIM_STATE:
+				IsTradeTime(pDepthMarketData->UpdateTime);
+				StopOpenJudge(*pDepthMarketData);
+				break;
+			case PENDING_STATE:
+				IsTradeTime(pDepthMarketData->UpdateTime);
+				StopLoseJudge(*pDepthMarketData);
+				StopWinJudge(*pDepthMarketData);
+				break;
+#ifndef BACK_TEST
+			case CLOSING_BOTH_STATE:
+				CloseBoth();
+				break;
+			case CANCELLING_SCND_STATE:
+				CancelScnd();
+				break;
+			case CLOSING_SCND_STATE:
+				CloseScnd();
+				break;
+			case CANCELLING_PRIM_STATE:
+				CancelPrim();
+				break;
+			case WAITING_SCND_CLOSE_STATE:
+				CloseScnd();
+				break;
+			case WAITING_PRIM_CLOSE_STATE:
+				ClosePrim();
+				break;
+#endif
+			default:
+				break;
+			}
+			mLastState = lCurState;
+		}
 	}
+			
 #ifndef BACK_TEST
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	cout<<pDepthMarketData->UpdateTime<<"	"<<primDataBuf[primBufIndex].lastPrice<<" "<<scndDataBuf[scndBufIndex].lastPrice<<" "<<lBoll.mMidLine<<" "<<lBoll.mOutterUpperLine<<" "<<lBoll.mOutterLowerLine<<endl;
