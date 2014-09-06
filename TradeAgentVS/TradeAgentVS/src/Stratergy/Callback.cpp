@@ -12,6 +12,7 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 
 		if(strncmp(pDepthMarketData->InstrumentID, stgArg.primaryInst.c_str(), stgArg.primaryInst.size()) == 0)
 		{
+			mLatestInstType = PRIM_INSTRUMENT;
 			BufferData(pDepthMarketData, PRIM_INSTRUMENT);
 			if(!VerifyMarketData(scndDataBuf[scndBufIndex]))
 			{
@@ -22,15 +23,16 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 				//only calculate Boll Band when primary instrument data comes
 				mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
 			}
-		}
+		}// the latest instrument is primary
 		else if(strncmp(pDepthMarketData->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
 		{
+			mLatestInstType = SCND_INSTRUMENT;
 			BufferData(pDepthMarketData, SCND_INSTRUMENT);
 			if(!VerifyMarketData(primDataBuf[primBufIndex]))
 			{
 				return;
 			}
-		}
+		}// the latest instrument is secondary
 		else
 		{
 			return;

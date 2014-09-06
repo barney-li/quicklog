@@ -24,6 +24,7 @@ InitErrorType PrimeryAndSecondary::InitOtherCrap()
 	mOpenPrimId = 0;
 	mOpenScndId = 0;
 	mLastState = IDLE_STATE;
+	mLatestInstType = InstrumentType::PRIM_INSTRUMENT;
 #ifdef BACK_TEST
 	mCloseScndOnly = false;
 #endif

@@ -16,7 +16,7 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 	}
 	if(OPEN_COND1 == mOpenCond)
 	{
-		if(mScndEnterPrice>=lScnd.askPrice)
+		if(mScndEnterPrice>=lScnd.askPrice && mLatestInstType == SCND_INSTRUMENT)
 		{
 			mScndEnterPrice = lScnd.askPrice;
 			tempStream.clear();
@@ -24,11 +24,11 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 			tempStream<<"[EVENT]: SCND_OPENED (from async poster) at: "<<mScndEnterPrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_OPENED);
-		}// 买开，当我的出价大于等于盘口卖价时成交
+		}// 买开，当我的出价大于等于盘口卖价时成交，并且只在最新数据为次主力时有效
 	}// 买次主力
 	else
 	{
-		if(mScndEnterPrice<=lScnd.bidPrice)
+		if(mScndEnterPrice<=lScnd.bidPrice && mLatestInstType == SCND_INSTRUMENT)
 		{
 			mScndEnterPrice = lScnd.bidPrice;
 			tempStream.clear();
@@ -36,7 +36,7 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 			tempStream<<"[EVENT]: SCND_OPENED (from async poster) at: "<<mScndEnterPrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_OPENED);
-		}// 卖开，当我的出价小于等于盘口买价时成交
+		}// 卖开，当我的出价小于等于盘口买价时成交，并且只在最新数据为次主力时有效
 	}// 卖次主力
 }
 
@@ -56,7 +56,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 	}
 	if(OPEN_COND2 == mOpenCond)
 	{
-		if(mPrimEnterPrice+3*stgArg.minMove>=lPrim.askPrice)
+		if(mPrimEnterPrice+3*stgArg.minMove>=lPrim.askPrice && mLatestInstType == PRIM_INSTRUMENT)
 		{
 			mPrimEnterPrice = lPrim.askPrice;
 			tempStream.clear();
@@ -64,11 +64,11 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 			tempStream<<"[EVENT]: PRIM_OPENED (from async poster) at: "<<mPrimEnterPrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_OPENED);
-		}// 买开，当我的出价大于等于盘口卖价时成交
+		}// 买开，当我的出价大于等于盘口卖价时成交，并且只在最新数据为主力数据时有效
 	}// 买主力
 	else
 	{
-		if(mPrimEnterPrice-3*stgArg.minMove<=lPrim.bidPrice)
+		if(mPrimEnterPrice-3*stgArg.minMove<=lPrim.bidPrice && mLatestInstType == PRIM_INSTRUMENT)
 		{
 			mPrimEnterPrice = lPrim.bidPrice;
 			tempStream.clear();
@@ -76,7 +76,7 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 			tempStream<<"[EVENT]: PRIM_OPENED (from async poster) at: "<<mPrimEnterPrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_OPENED);
-		}// 卖开，当我的出价小于等于盘口买价时成交
+		}// 卖开，当我的出价小于等于盘口买价时成交，并且只在最新数据为主力数据时有效
 	}// 卖主力
 }
 
@@ -225,12 +225,12 @@ void PrimeryAndSecondary::AsyncEventPoster(void)
 	case IDLE_STATE:
 		break;
 	case OPENING_SCND_STATE:
-		OpeningScndStateAsyncEventGenerator();
+			OpeningScndStateAsyncEventGenerator();
 		break;
 	case CHECKING_SCND_STATE:
 		break;
 	case OPENING_PRIM_STATE:
-		OpeningPrimStateAsyncEventGenerator();
+			OpeningPrimStateAsyncEventGenerator();
 		break;
 	case PENDING_STATE:
 		break;

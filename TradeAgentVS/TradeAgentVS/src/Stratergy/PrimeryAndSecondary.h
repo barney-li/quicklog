@@ -42,8 +42,8 @@ using namespace Pas;
 #include <queue>
 #endif
 
-#define OPPONENT_PRICE_OPEN
-//#define QUEUE_PRICE_OPEN
+//#define OPPONENT_PRICE_OPEN
+#define QUEUE_PRICE_OPEN
 //#define LAST_PRICE_OPEN
 
 //#define COINTEGRATION_TEST// only for cointegration test
@@ -187,6 +187,7 @@ private:
 	time_period* mOpenPeriod2;
 	time_period* mOpenPeriod3;
 	time_period* mOpenPeriod4;
+	InstrumentType mLatestInstType;//最新的数据类型，是主力还是次主力
 public:
 	// constructor
 	PrimeryAndSecondary(void)
