@@ -307,7 +307,7 @@ void PrimeryAndSecondary::LogBollData()
 void PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData, InstrumentType aWhichInst)
 {
 	boost::lock_guard<boost::mutex> lLockGuard(mBufferDataMutex);
-	if(aWhichInst == InstrumentType::PRIM_INSTRUMENT)
+	if(aWhichInst == PRIM_INSTRUMENT)
 	{
 		// don't forget to increase the index
 		primBufIndex++;

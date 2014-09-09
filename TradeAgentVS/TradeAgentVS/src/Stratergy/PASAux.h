@@ -122,7 +122,7 @@ namespace Pas
 		double		stopBollAmp;		// 止损振幅
 		double		winBollAmp;			// 止盈振幅
 		int			openShares;			// 开仓手数
-		int			secVolumeDiff;		// 当前盘口的买卖数量差
+		//int			secVolumeDiff;		// 当前盘口的买卖数量差
 		int			primOpenTime;		// 主力合约最大开仓等待时间
 		int			scndOpenTime;		// 次主力合约最大开仓等待时间
 		int			primCloseTime;		// 主力合约最大平仓等待时间
@@ -136,8 +136,8 @@ namespace Pas
 		double		stopLossPrice;		// 止损价
 		double		ceilingPrice;		// 合理价格上限
 		double		floorPrice;			// 合理价格下限
-		double		mainPriceDelta;		// Delta为本次数据与上次数据的价格变动
-		double		secPriceDiff;		// Diff为当前盘口的买卖价差
+		//double		mainPriceDelta;		// Delta为本次数据与上次数据的价格变动
+		//double		secPriceDiff;		// Diff为当前盘口的买卖价差
 		double		closePriceConst;	// 平仓时的价格上浮常数
 		double		floatToleration;	// 浮点数误差
 		double		cost;				// 手续费，以跳为单位
