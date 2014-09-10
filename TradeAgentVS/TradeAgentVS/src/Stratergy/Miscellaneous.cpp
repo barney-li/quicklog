@@ -329,7 +329,11 @@ void PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarke
 		primDataBuf[primBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
 		strncpy(primDataBuf[primBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(primDataBuf[primBufIndex].updateTime));
 		primDataBuf[primBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
-		primDataBuf[primBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+		primDataBuf[primBufIndex].openInterest = pDepthMarketData->OpenInterest;
+		//primDataBuf[primBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+#ifdef BACK_TEST
+		primDataBuf[primBufIndex].tradingDay = pDepthMarketData->TradingDay;
+#endif
 	}
 	else if(aWhichInst == SCND_INSTRUMENT)
 	{
@@ -353,7 +357,11 @@ void PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarke
 		scndDataBuf[scndBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
 		strncpy(scndDataBuf[scndBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(scndDataBuf[scndBufIndex].updateTime));
 		scndDataBuf[scndBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
-		scndDataBuf[scndBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+		scndDataBuf[scndBufIndex].openInterest = pDepthMarketData->OpenInterest;
+		//scndDataBuf[scndBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+#ifdef BACK_TEST
+		scndDataBuf[scndBufIndex].tradingDay = pDepthMarketData->TradingDay;
+#endif
 	}
 	else
 	{
@@ -388,8 +396,11 @@ bool PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarke
 			primDataBuf[primBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
 			strncpy(primDataBuf[primBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(primDataBuf[primBufIndex].updateTime));
 			primDataBuf[primBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
-			primDataBuf[primBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
-				
+			primDataBuf[primBufIndex].openInterest = pDepthMarketData->OpenInterest;
+			//primDataBuf[primBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+#ifdef BACK_TEST
+		primDataBuf[primBufIndex].tradingDay = pDepthMarketData->TradingDay;
+#endif	
 		}
 		else if(strncmp(pDepthMarketData->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
 		{
@@ -413,8 +424,11 @@ bool PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarke
 			scndDataBuf[scndBufIndex].lowerLimit = pDepthMarketData->LowerLimitPrice;
 			strncpy(scndDataBuf[scndBufIndex].updateTime, pDepthMarketData->UpdateTime, sizeof(scndDataBuf[scndBufIndex].updateTime));
 			scndDataBuf[scndBufIndex].updateMillisec = pDepthMarketData->UpdateMillisec;
-			scndDataBuf[scndBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
-				
+			scndDataBuf[scndBufIndex].openInterest = pDepthMarketData->OpenInterest;
+			//scndDataBuf[scndBufIndex].localTime = boost::posix_time::microsec_clock::local_time();
+#ifdef BACK_TEST
+		scndDataBuf[scndBufIndex].tradingDay = pDepthMarketData->TradingDay;
+#endif			
 		}
 		else
 		{

@@ -1,4 +1,24 @@
 #pragma once
+
+#define STRATEGY_BUFFER_SIZE 4096UL
+#define PRICE_UPPER_LIM 100000UL
+
+#define BACK_TEST
+
+#ifdef BACK_TEST
+#define SIMULATION
+//#define KEEP_BOLL
+#include <queue>
+#endif
+
+#define OPPONENT_PRICE_OPEN
+//#define QUEUE_PRICE_OPEN
+//#define LAST_PRICE_OPEN
+
+//#define COINTEGRATION_TEST// only for cointegration test
+
+//#define WIN_BOLL_ADJUST // 根据持仓时间调节出场boll宽度
+
 #include <stdafx.h>
 #include <stdio.h>
 #include <TradeProcess.h>
@@ -31,24 +51,6 @@ using namespace std;
 using namespace boost::asio;
 using namespace Finicial;
 using namespace Pas;
-#define STRATEGY_BUFFER_SIZE 4096UL
-#define PRICE_UPPER_LIM 100000UL
-
-#define BACK_TEST
-
-#ifdef BACK_TEST
-#define SIMULATION
-#define KEEP_BOLL
-#include <queue>
-#endif
-
-//#define OPPONENT_PRICE_OPEN
-#define QUEUE_PRICE_OPEN
-//#define LAST_PRICE_OPEN
-
-//#define COINTEGRATION_TEST// only for cointegration test
-
-//#define WIN_BOLL_ADJUST // 根据持仓时间调节出场boll宽度
 
 namespace Pas
 {
@@ -206,7 +208,7 @@ public:
 #ifdef BACK_TEST
 		if(!boost::filesystem::exists("./Data/Log/Statistics.log"))
 		{
-			mTestStatistics.LogThisNoTimeStamp("BollPeriod	OutterBollAmp	BollAmpLimit	WinBollAmp	StopLosePoint	StopWinPoint	PrimInst-ScndInst	WinRate	TotalProfit	WinCount	LoseCount");
+			mTestStatistics.LogThisNoTimeStamp("BollPeriod	OutterBollAmp	BollAmpLimit	WinBollAmp	StopLosePoint	StopWinPoint	PrimInst-ScndInst	WinRate	TotalProfit	WinCount	LoseCount	PrimInterest	ScndInterest	TradingDay");
 		}
 		int lWinRate = 0;
 		tempStream.clear();
@@ -216,7 +218,21 @@ public:
 			lWinRate = 100*mWin/(mWin+mLose);
 		}
 		//tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.winBollAmpAdjust<<"	"<<(int)(stgArg.durationStep)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
-		tempStream<<stgArg.bollPeriod<<"	"<<stgArg.outterBollAmp<<"	"<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"<<stgArg.winBollAmp<<"	"<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"<<stgArg.primaryInst<<"-"<<stgArg.secondaryInst<<"	"<<lWinRate<<"	"<<mTotalProfit<<"	"<<mWin<<"	"<<mLose;
+		tempStream<<stgArg.bollPeriod<<"	"\
+			<<stgArg.outterBollAmp<<"	"\
+			<<(int)(stgArg.bollAmpLimit/stgArg.minMove)<<"	"\
+			<<stgArg.winBollAmp<<"	"\
+			<<(int)(stgArg.stopLossPrice/stgArg.minMove)<<"	"\
+			<<(int)(stgArg.stopWinPoint/stgArg.minMove)<<"	"\
+			<<stgArg.primaryInst<<"-"\
+			<<stgArg.secondaryInst<<"	"\
+			<<lWinRate<<"	"\
+			<<mTotalProfit<<"	"\
+			<<mWin<<"	"\
+			<<mLose<<"	"\
+			<<primDataBuf[primBufIndex].openInterest<<"	"\
+			<<scndDataBuf[scndBufIndex].openInterest<<"	"\
+			<<primDataBuf[primBufIndex].tradingDay<<"	";
 		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
 		cout<<tempStream.str()<<endl;
 #endif

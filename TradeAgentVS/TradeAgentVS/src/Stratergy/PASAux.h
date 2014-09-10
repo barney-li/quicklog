@@ -91,7 +91,11 @@ namespace Pas
 		TThostFtdcPriceType			lowerLimit;//跌停板价
 		TThostFtdcTimeType			updateTime;//更新时间
 		TThostFtdcMillisecType		updateMillisec;//更新毫秒数
-		boost::posix_time::ptime	localTime;//本地时间戳
+		//boost::posix_time::ptime	localTime;//本地时间戳
+		TThostFtdcLargeVolumeType	openInterest;//持仓
+#ifdef BACK_TEST
+		string						tradingDay;
+#endif
 	}BasicMarketData;
 
 	// strategy parameters
