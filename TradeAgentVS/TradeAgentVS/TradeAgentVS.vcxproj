@@ -101,6 +101,8 @@
       <CallingConvention>Cdecl</CallingConvention>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

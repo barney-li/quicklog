@@ -98,8 +98,8 @@ bool TradeProcess::OrderInsert(string aInstrument, double aPrice, int aVolume, O
 	
 	///GTD日期
 	//	TThostFtdcDateType	GTDDate;
-	///成交量类型: 全部数量
-	req.VolumeCondition = THOST_FTDC_VC_CV;
+	///成交量类型: 任意数量
+	req.VolumeCondition = THOST_FTDC_VC_AV;
 	///最小成交量: 1
 	req.MinVolume = 1;
 	///触发条件: 立即
