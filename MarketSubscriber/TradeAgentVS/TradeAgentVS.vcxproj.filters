@@ -17,9 +17,6 @@
     <Filter Include="src\MarketProcess">
       <UniqueIdentifier>{ee17a89c-04f7-4fbd-91f3-6d52bcfb5e42}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Stratergy">
-      <UniqueIdentifier>{ab88bb7a-244c-410b-99de-3325a5ae873a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="lib">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -101,6 +98,12 @@
       <Filter>src\common</Filter>
     </ClInclude>
     <ClInclude Include="src\common\BackTestAgent.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\CommonLog.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\InstrumentLog.h">
       <Filter>src\common</Filter>
     </ClInclude>
   </ItemGroup>

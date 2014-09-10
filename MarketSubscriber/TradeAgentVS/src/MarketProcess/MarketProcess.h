@@ -7,7 +7,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/unordered_map.hpp>
 #include <string>
-#include <Log.h>
+#include <InstrumentLog.h>
+#include <CommonLog.h>
 #include <ConfigReader.h>
 //#define ARBITRAGE_INSTRUMENT
 #define MAX_FRONT 6
@@ -29,7 +30,7 @@ private:
 	bool logInSuccess;
 	static const int tabMark = 9;
 	int iReqID;
-	Log logger;
+	CommonLog logger;
 	boost::posix_time::ptime startReqTime;
 	boost::posix_time::ptime getRspTime;
 	void (*dataPushHook)(CThostFtdcDepthMarketDataField* marketData);
@@ -37,7 +38,7 @@ private:
 	typedef unordered_map<string, int> InstMapType;
 	InstMapType logInstMap;
 	// log handler pool
-	Log* logHandlerPool[MAX_INSTRUMENT];
+	InstrumentLog* logHandlerPool[MAX_INSTRUMENT];
 	// temp index
 	int logHandlerIndex;
 	// this value is used to determine if the data is illegal

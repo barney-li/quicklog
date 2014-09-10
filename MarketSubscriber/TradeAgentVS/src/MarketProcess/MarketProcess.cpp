@@ -405,7 +405,7 @@ int MarketProcess::InsertLogHandler(string instrumentId)
 		{
 			logInstMap[instrumentId] = logHandlerIndex;
 			logHandlerIndex++;
-			logHandlerPool[logInstMap.at(instrumentId)] = new Log(instrumentId);
+			logHandlerPool[logInstMap.at(instrumentId)] = new InstrumentLog(instrumentId);
 		}
 	}
 	else

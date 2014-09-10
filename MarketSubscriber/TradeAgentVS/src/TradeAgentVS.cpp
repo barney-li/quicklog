@@ -7,7 +7,7 @@
 #include <ConfigReader.h>
 #include <boost\thread.hpp>
 #include <boost\progress.hpp>
-#include <Log.h>
+#include <CommonLog.h>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 using namespace boost::gregorian;
@@ -28,7 +28,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		progressDisp+=1;
 	}
 
-	Log logger;
+	CommonLog logger;
 	logger.LogThisFast("[INFO]: market subscriber started...");
 	logger.Sync();
 

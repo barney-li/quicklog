@@ -112,13 +112,7 @@ void Log::LogThisFast(string message, bool enter)
 			bufferNo1.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
-		if(bufferNo1.size() >= SIZE_TO_SYNC)
-		{
-			bufferIndex = 2;
-			logFileHandler<<bufferNo1;
-			logFileHandler.flush();
-			bufferNo1.clear();
-		}
+		TrySync();	
 	}
 	else if(bufferIndex == 2)
 	{
@@ -135,13 +129,7 @@ void Log::LogThisFast(string message, bool enter)
 			bufferNo2.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
-		if(bufferNo2.size() >= SIZE_TO_SYNC)
-		{
-			bufferIndex = 1;
-			logFileHandler<<bufferNo2;
-			logFileHandler.flush();
-			bufferNo2.clear();
-		}
+		TrySync();	
 	}
 #endif
 
@@ -183,13 +171,7 @@ void Log::LogThisFastNoTimeStamp(string message, bool enter)
 			bufferNo1.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
-		if(bufferNo1.size() >= SIZE_TO_SYNC)
-		{
-			bufferIndex = 2;
-			logFileHandler<<bufferNo1;
-			logFileHandler.flush();
-			bufferNo1.clear();
-		}
+		TrySync();
 	}
 	else if(bufferIndex == 2)
 	{
@@ -202,13 +184,7 @@ void Log::LogThisFastNoTimeStamp(string message, bool enter)
 			bufferNo2.append("\n");
 		}
 		// do not sync the file unless it excees the threashold
-		if(bufferNo2.size() >= SIZE_TO_SYNC)
-		{
-			bufferIndex = 1;
-			logFileHandler<<bufferNo2;
-			logFileHandler.flush();
-			bufferNo2.clear();
-		}
+		TrySync();
 	}
 #endif
 }
@@ -224,7 +200,7 @@ void Log::Sync(void)
 			bufferIndex = 2;
 			logFileHandler<<bufferNo1;
 			logFileHandler.flush();
-			bufferNo1.clear();
+			bufferNo1.clear();			
 		}
 	}
 	else if(2 == bufferIndex)
@@ -240,22 +216,31 @@ void Log::Sync(void)
 	}
 #endif
 }
-void Log::AutoSync(Log* logger)
-{
-#ifndef FAST_SYSTEM
-	while(!logger->endAutoSyncThread)
-	{
-		//cout<<logger->logName<<endl;
-		boost::this_thread::sleep_for(boost::chrono::seconds(1));
-		logger->Sync();
-		// do not sync the file unless it excees the threashold
-	}
-#endif
-}
+//void Log::AutoSync(Log* logger)
+//{
+//#ifndef FAST_SYSTEM
+//	while(!logger->endAutoSyncThread)
+//	{
+//		boost::this_thread::sleep_for(boost::chrono::seconds(logger->autoSyncPeriod));
+//		logger->TrySync();// do not sync the file unless it excees the threashold
+//	}
+//#endif
+//}
 void Log::SetLogFile(string aDir, string aLogName)
 {
 #ifndef FAST_SYSTEM
 	this->logDir = aDir;
 	this->logName = aLogName;
 #endif
+}
+void Log::TrySync()
+{
+	if(bufferNo1.size()>syncSize && bufferIndex == 1)
+	{
+		Sync();
+	}
+	if(bufferNo2.size()>syncSize && bufferIndex == 2)
+	{
+		Sync();
+	}
 }
