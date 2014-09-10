@@ -3,7 +3,7 @@
 #define STRATEGY_BUFFER_SIZE 4096UL
 #define PRICE_UPPER_LIM 100000UL
 
-//#define BACK_TEST
+#define BACK_TEST
 
 #ifdef BACK_TEST
 #define SIMULATION
@@ -208,7 +208,7 @@ public:
 #ifdef BACK_TEST
 		if(!boost::filesystem::exists("./Data/Log/Statistics.log"))
 		{
-			mTestStatistics.LogThisNoTimeStamp("BollPeriod	OutterBollAmp	BollAmpLimit	WinBollAmp	StopLosePoint	StopWinPoint	PrimInst-ScndInst	WinRate	TotalProfit	WinCount	LoseCount	PrimInterest	ScndInterest	TradingDay");
+			mTestStatistics.LogThisNoTimeStamp("BollPeriod	OutterBollAmp	BollAmpLimit	WinBollAmp	StopLosePoint	StopWinPoint	PrimInst-ScndInst	WinRate	TotalProfit	WinCount	LoseCount	PrimInterest/ScndInterest	PrimVol/ScndVol	TradingDay");
 		}
 		int lWinRate = 0;
 		tempStream.clear();
@@ -230,8 +230,8 @@ public:
 			<<mTotalProfit<<"	"\
 			<<mWin<<"	"\
 			<<mLose<<"	"\
-			<<primDataBuf[primBufIndex].openInterest<<"	"\
-			<<scndDataBuf[scndBufIndex].openInterest<<"	"\
+			<<primDataBuf[primBufIndex].openInterest/scndDataBuf[scndBufIndex].openInterest<<"	"\
+			<<(double)primDataBuf[primBufIndex].volume/(double)scndDataBuf[scndBufIndex].volume<<"	"\
 			<<primDataBuf[primBufIndex].tradingDay<<"	";
 		mTestStatistics.LogThisNoTimeStamp(tempStream.str().c_str());
 		cout<<tempStream.str()<<endl;
