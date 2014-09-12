@@ -141,6 +141,8 @@
     <None Include="src\CTPAPI\thosttraderapi.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\common\CommonLog.cpp" />
+    <ClCompile Include="src\common\InstrumentLog.cpp" />
     <ClCompile Include="src\common\Log.cpp" />
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
     <ClCompile Include="src\stdafx.cpp" />

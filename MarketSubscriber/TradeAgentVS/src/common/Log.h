@@ -11,25 +11,24 @@ private:
 	string logDir;
 	string logName;
 	int syncSize;
-	int autoSyncPeriod;
+	//int autoSyncPeriod;
 	string bufferNo1;
 	string bufferNo2;
 	int bufferIndex;
-	boost::thread* autoSyncThread;
-	bool endAutoSyncThread;
+	//boost::thread* autoSyncThread;
+	//bool endAutoSyncThread;
 public:
-	Log(string aLogDir, string aLogName, int aSyncSize, int aAutoSyncPeriod)
+	Log(string aLogDir, string aLogName, int aSyncSize)
 	{
 		logDir = aLogDir;
 		logName = aLogName;
 		syncSize = aSyncSize;
-		autoSyncPeriod = aAutoSyncPeriod;
 		Init();
 	}
 	virtual ~Log(void)
 	{
 		// end auto sync thread by setting the loop condition
-		endAutoSyncThread = true;
+		//endAutoSyncThread = true;
 		// sync all the buffered data
 		Sync();
 		if(logFileHandler.is_open())
@@ -60,7 +59,7 @@ private:
 		bufferNo1.reserve(syncSize*2);
 		bufferNo2.reserve(syncSize*2);
 		bufferIndex = 1;
-		endAutoSyncThread = false;
+		//endAutoSyncThread = false;
 		//autoSyncThread = new boost::thread(AutoSync, this);
 #endif
 	}

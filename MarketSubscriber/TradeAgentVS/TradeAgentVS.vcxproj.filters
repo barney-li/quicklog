@@ -50,6 +50,12 @@
     <ClCompile Include="src\TradeProcess\TradeService.cpp">
       <Filter>src\TradeProcess</Filter>
     </ClCompile>
+    <ClCompile Include="src\common\InstrumentLog.cpp">
+      <Filter>src\common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\common\CommonLog.cpp">
+      <Filter>src\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\stdafx.h">
