@@ -114,8 +114,10 @@ private:
 	double mMaxWin;// 最大盈利
 	double mAvgLose;// 平均亏损
 	double mMaxLose;// 最大亏损
-	int mOrderCount;// 下单次数
-	int mTradeCount;// 成交次数
+	int mPrimOrderCount;// 主力下单次数
+	int mPrimTradeCount;// 主力成交次数
+	int mScndOrderCount;// 次主力下单次数
+	int mScndTradeCount;// 次主力成交次数
 #endif
 	// 开仓的时间
 	string mOpenTime;
@@ -323,6 +325,11 @@ private:
 	// 判断服务器时间是否与本地时间一致
 	/************************************************************************/
 	bool IsServerTimeConsistWithLocal(string aServerDate, string aServerTime);
+	
+	/************************************************************************/
+	// 判断主力与次主力数据是否同一时刻的
+	/************************************************************************/
+	bool IsDataAligned();
 
 	/*****************************/
 	/* below are all the callback routines*/

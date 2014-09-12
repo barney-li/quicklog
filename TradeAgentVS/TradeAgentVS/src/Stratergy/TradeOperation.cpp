@@ -6,18 +6,19 @@
 /************************************************************************/
 void PrimeryAndSecondary::OpenScnd()
 {
+	const BasicMarketData& lScnd = scndDataBuf[scndBufIndex];
 	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
 
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice-stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.askPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef LAST_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice-stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.lastPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef QUEUE_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice-stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.bidPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 		tempStream.clear();
 		tempStream.str("");
@@ -37,13 +38,13 @@ void PrimeryAndSecondary::OpenScnd()
 		/* condition 2 */
 
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice+stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.bidPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef LAST_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice+stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.lastPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef QUEUE_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice+stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.askPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 		tempStream.clear();
 		tempStream.str("");
@@ -69,9 +70,10 @@ void PrimeryAndSecondary::OpenScnd()
 /************************************************************************/
 void PrimeryAndSecondary::OpenPrim()
 {
+	const BasicMarketData& lPrim = primDataBuf[primBufIndex];
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
-		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
+		mPrimEnterPrice = lPrim.bidPrice;
 
 		tempStream.clear();
 		tempStream.str("");
@@ -87,7 +89,7 @@ void PrimeryAndSecondary::OpenPrim()
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
-		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
+		mPrimEnterPrice = lPrim.askPrice;
 
 		tempStream.clear();
 		tempStream.str("");
@@ -292,26 +294,45 @@ int PrimeryAndSecondary::CheckScndOrder()
 #ifdef SIMULATION
 void PrimeryAndSecondary::OpenScnd()
 {
+	const BasicMarketData& lPrim = primDataBuf[primBufIndex];
+	const BasicMarketData& lScnd = scndDataBuf[scndBufIndex];
+	string lPrimTime = "2000-01-01 "+(string)lPrim.updateTime;
+	string lScndTime = "2000-01-01 "+(string)lScnd.updateTime;
+	if(lPrim.updateMillisec == 500)
+	{
+		lPrimTime = lPrimTime + ".500";
+	}
+	if(lScnd.updateMillisec == 500)
+	{
+		lScndTime = lScndTime + ".500";
+	}
+	if(time_from_string(lPrimTime)>time_from_string(lScndTime))
+	{
+		mScndOpenTime = lPrimTime;
+	}
+	else
+	{
+		mScndOpenTime = lScndTime;
+	}
+	
 	tempStream.clear();
 	tempStream.str("");
-	
 	if( OPEN_COND1 == mOpenCond )
 	{
 		/* condition 1 */
 		tempStream<<"[ACTION]: BUY_SCND at ";
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice-stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.askPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef LAST_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice-stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.lastPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef QUEUE_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice-stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.bidPrice-stgArg.minMove*stgArg.scndOrderJump;
 #endif
 		tempStream<<mScndEnterPrice;
 		logger.LogThisFast(tempStream.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
-		mScndOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;// 使用prim instrument的更新时间，更准确
 		mScndTodayLongPosition = 1;
 	}
 	else if( OPEN_COND2 == mOpenCond )
@@ -320,18 +341,17 @@ void PrimeryAndSecondary::OpenScnd()
 		
 		tempStream<<"[ACTION]: SHORT_SCND at ";
 #ifdef OPPONENT_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].bidPrice+stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.bidPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef LAST_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].lastPrice+stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.lastPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 #ifdef QUEUE_PRICE_OPEN
-		mScndEnterPrice = scndDataBuf[scndBufIndex].askPrice+stgArg.minMove*stgArg.scndOrderJump;
+		mScndEnterPrice = lScnd.askPrice+stgArg.minMove*stgArg.scndOrderJump;
 #endif
 		tempStream<<mScndEnterPrice;
 		logger.LogThisFast(tempStream.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
-		mScndOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;// 使用prim instrument的更新时间，更准确
 		mScndTodayShortPosition = 1;
 	}
 	else
@@ -342,13 +362,32 @@ void PrimeryAndSecondary::OpenScnd()
 }
 void PrimeryAndSecondary::OpenPrim()
 {
+	const BasicMarketData& lPrim = primDataBuf[primBufIndex];
+	const BasicMarketData& lScnd = scndDataBuf[scndBufIndex];
+	string lPrimTime = "2000-01-01 "+(string)lPrim.updateTime;
+	string lScndTime = "2000-01-01 "+(string)lScnd.updateTime;
+	if(lPrim.updateMillisec == 500)
+	{
+		lPrimTime = lPrimTime + ".500";
+	}
+	if(lScnd.updateMillisec == 500)
+	{
+		lScndTime = lScndTime + ".500";
+	}
+	if(time_from_string(lPrimTime)>time_from_string(lScndTime))
+	{
+		mPrimOpenTime = lPrimTime;
+	}
+	else
+	{
+		mPrimOpenTime = lScndTime;
+	}
 	stringstream lPrice;
 	if(BUY_SCND_SELL_PRIM == mTradeDir)
 	{
 		mPrimEnterPrice = primDataBuf[primBufIndex].bidPrice;
 		lPrice<<"[ACTION]: SHORT_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
-		mPrimOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;
 		mPrimTodayShortPosition = 1;
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
@@ -356,7 +395,6 @@ void PrimeryAndSecondary::OpenPrim()
 		mPrimEnterPrice = primDataBuf[primBufIndex].askPrice;
 		lPrice<<"[ACTION]: BUY_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
-		mPrimOpenTime = "2000-01-01 "+(string)primDataBuf[primBufIndex].updateTime;
 		mPrimTodayLongPosition = 1;
 	}
 	else
@@ -367,6 +405,27 @@ void PrimeryAndSecondary::OpenPrim()
 }
 void PrimeryAndSecondary::CloseScnd()
 {
+	const BasicMarketData& lPrim = primDataBuf[primBufIndex];
+	const BasicMarketData& lScnd = scndDataBuf[scndBufIndex];
+	string lPrimTime = "2000-01-01 "+(string)lPrim.updateTime;
+	string lScndTime = "2000-01-01 "+(string)lScnd.updateTime;
+	if(lPrim.updateMillisec == 500)
+	{
+		lPrimTime = lPrimTime + ".500";
+	}
+	if(lScnd.updateMillisec == 500)
+	{
+		lScndTime = lScndTime + ".500";
+	}
+	if(time_from_string(lPrimTime)>time_from_string(lScndTime))
+	{
+		mScndCloseTime = lPrimTime;
+	}
+	else
+	{
+		mScndCloseTime = lScndTime;
+	}
+	
 #ifndef BACK_TEST
 	if(!mCloseScndCD)
 	{
@@ -376,13 +435,13 @@ void PrimeryAndSecondary::CloseScnd()
 	//平多头
 	if(OPEN_COND1 == mOpenCond)
 	{
-		mScndClosePrice = scndDataBuf[scndBufIndex].bidPrice;
+		mScndClosePrice = lScnd.bidPrice;
 		logger.LogThisFast("[ACTION]: SELL_SCND");
 	}
 	//平空头
 	if(OPEN_COND2 == mOpenCond)
 	{
-		mScndClosePrice = scndDataBuf[scndBufIndex].askPrice;
+		mScndClosePrice = lScnd.askPrice;
 		logger.LogThisFast("[ACTION]: COVER_SCND");
 	}
 #ifndef BACK_TEST
@@ -392,6 +451,26 @@ void PrimeryAndSecondary::CloseScnd()
 }
 void PrimeryAndSecondary::ClosePrim()
 {
+	const BasicMarketData& lPrim = primDataBuf[primBufIndex];
+	const BasicMarketData& lScnd = scndDataBuf[scndBufIndex];
+	string lPrimTime = "2000-01-01 "+(string)lPrim.updateTime;
+	string lScndTime = "2000-01-01 "+(string)lScnd.updateTime;
+	if(lPrim.updateMillisec == 500)
+	{
+		lPrimTime = lPrimTime + ".500";
+	}
+	if(lScnd.updateMillisec == 500)
+	{
+		lScndTime = lScndTime + ".500";
+	}
+	if(time_from_string(lPrimTime)>time_from_string(lScndTime))
+	{
+		mPrimCloseTime = lPrimTime;
+	}
+	else
+	{
+		mPrimCloseTime = lScndTime;
+	}
 #ifndef BACK_TEST
 	//如果CD还没到就直接返回
 	if(!mClosePrimCD)
@@ -402,14 +481,14 @@ void PrimeryAndSecondary::ClosePrim()
 	//平空头
 	if(OPEN_COND1 == mOpenCond)
 	{
-		mPrimClosePrice = primDataBuf[primBufIndex].askPrice;
+		mPrimClosePrice = lPrim.askPrice;
 		logger.LogThisFast("[ACTION]: COVER_PRIM");
 	}
 
 	//平多头
 	if(OPEN_COND2 == mOpenCond)
 	{
-		mPrimClosePrice = primDataBuf[primBufIndex].bidPrice;
+		mPrimClosePrice = lPrim.bidPrice;
 		logger.LogThisFast("[ACTION]: SELL_PRIM");
 	}
 	

@@ -4,7 +4,15 @@ void PrimeryAndSecondary::OpeningScndStateAsyncEventGenerator(void)
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
-	string lCurTime = "2000-01-01 "+(string)lPrim.updateTime;
+	string lCurTime = "2000-01-01 "+(string)lScnd.updateTime;
+	if(lScnd.updateMillisec == 500)
+	{
+		lCurTime = lCurTime + ".500";
+	}
+	if(time_from_string(lCurTime) <= time_from_string(mScndOpenTime))
+	{
+		return;
+	}//如果当前时间没有大于下单时间，不做任何判断
 	time_duration lOpenDuration = time_from_string(lCurTime)-time_from_string(mScndOpenTime);
 	if(lOpenDuration.total_milliseconds()>stgArg.scndOpenTime)
 	{
@@ -45,6 +53,14 @@ void PrimeryAndSecondary::OpeningPrimStateAsyncEventGenerator(void)
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	string lCurTime = "2000-01-01 "+(string)lPrim.updateTime;
+	if(lPrim.updateMillisec == 500)
+	{
+		lCurTime = lCurTime + ".500";
+	}
+	if(time_from_string(lCurTime) <= time_from_string(mPrimOpenTime))
+	{
+		return;
+	}//如果当前时间没有大于下单时间，不做任何判断
 	time_duration lOpenDuration = time_from_string(lCurTime)-time_from_string(mPrimOpenTime);
 	if(lOpenDuration.total_milliseconds()>stgArg.primOpenTime)
 	{
@@ -90,6 +106,15 @@ void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
+	string lCurTime = "2000-01-01 "+(string)lScnd.updateTime;
+	if(lScnd.updateMillisec == 500)
+	{
+		lCurTime = lCurTime + ".500";
+	}
+	if(time_from_string(lCurTime) <= time_from_string(mScndCloseTime))
+	{
+		return;
+	}//如果当前时间没有大于平仓下单时间，不做任何判断
 	if(OPEN_COND1 == mOpenCond)
 	{
 		if(mScndClosePrice<=lScnd.bidPrice)
@@ -149,6 +174,15 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 {
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
+	string lCurTime = "2000-01-01 "+(string)lPrim.updateTime;
+	if(lPrim.updateMillisec == 500)
+	{
+		lCurTime = lCurTime + ".500";
+	}
+	if(time_from_string(lCurTime) <= time_from_string(mPrimCloseTime))
+	{
+		return;
+	}//如果当前时间没有大于下单时间，不做任何判断
 	if(OPEN_COND2 == mOpenCond)
 	{
 		if(mPrimClosePrice<=lPrim.bidPrice)

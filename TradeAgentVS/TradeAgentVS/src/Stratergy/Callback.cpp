@@ -18,11 +18,6 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 			{
 				return;
 			}
-			else
-			{
-				//only calculate Boll Band when primary instrument data comes
-				mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
-			}
 		}// the latest instrument is primary
 		else if(strncmp(pDepthMarketData->InstrumentID, stgArg.secondaryInst.c_str(), stgArg.secondaryInst.size()) == 0)
 		{
@@ -38,12 +33,18 @@ void PrimeryAndSecondary::HookOnRtnDepthMarketData(CThostFtdcDepthMarketDataFiel
 			return;
 		}
 		
+		if(IsDataAligned() == true)
+		{
+			//only calculate Boll Band when data aligned
+			mBoll.CalcBoll(primDataBuf[primBufIndex].lastPrice-scndDataBuf[scndBufIndex].lastPrice, stgArg.bollPeriod, stgArg.outterBollAmp, stgArg.innerBollAmp);
 #ifndef BACK_TEST
-		LogBollData();
+			LogBollData();
 #endif
 #ifdef KEEP_BOLL
-		LogBollData();
-#endif
+			LogBollData();
+#endif		
+		}
+
 		if(mBoll.IsBollReady())
 		{
 			TRADE_STATE lCurState = mStateMachine.GetState();
