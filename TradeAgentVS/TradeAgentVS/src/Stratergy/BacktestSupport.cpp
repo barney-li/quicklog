@@ -125,6 +125,35 @@ void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 			tempStream<<"[EVENT]: SCND_CLOSED (from async poster) at: "<<mScndClosePrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_CLOSED);
+
+			if(mCloseScndOnly)
+			{
+				mCloseScndOnly = false;
+				double lNetProfit;
+				double lProfit;
+				if(OPEN_COND1 == mOpenCond)
+				{
+					lNetProfit = mScndClosePrice - mScndEnterPrice;
+				}
+				else
+				{
+					lNetProfit = mScndEnterPrice - mScndClosePrice;
+				}
+				lProfit = lNetProfit - stgArg.cost;// 是不是应该乘minmove，不用，初始化的时候算过了
+				tempStream.clear();
+				tempStream.str("");
+				tempStream<<"[INFO]: estimate profit:	"<<lNetProfit;
+				logger.LogThisFast(tempStream.str());
+				if(lProfit>0)
+				{
+					mWin++;
+				}
+				else
+				{
+					mLose++;
+				}
+				mTotalProfit += lProfit;
+			}
 		}// 卖平，当我的出价小于等于盘口买价时成交
 	}// 卖平次主力
 	else
@@ -137,37 +166,39 @@ void PrimeryAndSecondary::ClosingScndStateAsyncEventGenerator()
 			tempStream<<"[EVENT]: SCND_CLOSED (from async poster) at: "<<mScndClosePrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(SCND_CLOSED);
+
+			if(mCloseScndOnly)
+			{
+				mCloseScndOnly = false;
+				double lNetProfit;
+				double lProfit;
+				if(OPEN_COND1 == mOpenCond)
+				{
+					lNetProfit = mScndClosePrice - mScndEnterPrice;
+				}
+				else
+				{
+					lNetProfit = mScndEnterPrice - mScndClosePrice;
+				}
+				lProfit = lNetProfit - stgArg.cost;// 是不是应该乘minmove，不用，初始化的时候算过了
+				tempStream.clear();
+				tempStream.str("");
+				tempStream<<"[INFO]: estimate profit:	"<<lNetProfit;
+				logger.LogThisFast(tempStream.str());
+				if(lProfit>0)
+				{
+					mWin++;
+				}
+				else
+				{
+					mLose++;
+				}
+				mTotalProfit += lProfit;
+			}
 		}// 买平，当我的出价大于等于盘口卖价时成交
 	}// 买平次主力
 
-	if(mCloseScndOnly)
-	{
-		mCloseScndOnly = false;
-		double lNetProfit;
-		double lProfit;
-		if(OPEN_COND1 == mOpenCond)
-		{
-			lNetProfit = mScndClosePrice - mScndEnterPrice;
-		}
-		else
-		{
-			lNetProfit = mScndEnterPrice - mScndClosePrice;
-		}
-		lProfit = lNetProfit - stgArg.cost;// 是不是应该乘minmove，不用，初始化的时候算过了
-		tempStream.clear();
-		tempStream.str("");
-		tempStream<<"[INFO]: estimate profit:	"<<lNetProfit;
-		logger.LogThisFast(tempStream.str());
-		if(lProfit>0)
-		{
-			mWin++;
-		}
-		else
-		{
-			mLose++;
-		}
-		mTotalProfit += lProfit;
-	}
+	
 }
 
 void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
@@ -193,6 +224,24 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 			tempStream<<"[EVENT]: PRIM_CLOSED (from async poster) at: "<<mPrimClosePrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_CLOSED);
+
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: estimate profit:	"<<EstimateProfit();
+			logger.LogThisFast(tempStream.str());
+		#ifdef BACK_TEST
+			mProfitLog.LogThisFast(tempStream.str());
+			double lPureProfit = EstimateProfit()-stgArg.cost;// 连手续费一起算上
+			if(lPureProfit > 0)
+			{
+				mWin++;
+			}
+			else
+			{
+				mLose++;
+			}
+			mTotalProfit += lPureProfit;
+		#endif
 		}// 卖平，当我的出价小于等于盘口买价时成交
 	}// 卖平主力
 	else
@@ -205,26 +254,28 @@ void PrimeryAndSecondary::ClosingPrimStateAsyncEventGenerator()
 			tempStream<<"[EVENT]: PRIM_CLOSED (from async poster) at: "<<mPrimClosePrice;
 			logger.LogThisFast(tempStream.str());
 			SetEvent(PRIM_CLOSED);
+
+			tempStream.clear();
+			tempStream.str("");
+			tempStream<<"[INFO]: estimate profit:	"<<EstimateProfit();
+			logger.LogThisFast(tempStream.str());
+		#ifdef BACK_TEST
+			mProfitLog.LogThisFast(tempStream.str());
+			double lPureProfit = EstimateProfit()-stgArg.cost;// 连手续费一起算上
+			if(lPureProfit > 0)
+			{
+				mWin++;
+			}
+			else
+			{
+				mLose++;
+			}
+			mTotalProfit += lPureProfit;
+		#endif
 		}// 买平，当我的出价大于等于盘口卖价时成交
 	}// 买平主力
 
-	tempStream.clear();
-	tempStream.str("");
-	tempStream<<"[INFO]: estimate profit:	"<<EstimateProfit();
-	logger.LogThisFast(tempStream.str());
-#ifdef BACK_TEST
-	mProfitLog.LogThisFast(tempStream.str());
-	double lPureProfit = EstimateProfit()-stgArg.cost;// 连手续费一起算上
-	if(lPureProfit > 0)
-	{
-		mWin++;
-	}
-	else
-	{
-		mLose++;
-	}
-	mTotalProfit += lPureProfit;
-#endif
+	
 }
 
 void PrimeryAndSecondary::WaitingPrimCloseStateAsyncEventGenerator()
