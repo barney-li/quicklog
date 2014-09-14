@@ -435,13 +435,13 @@ void PrimeryAndSecondary::CloseScnd()
 	//平多头
 	if(OPEN_COND1 == mOpenCond)
 	{
-		mScndClosePrice = lScnd.bidPrice;
+		mScndClosePrice = lScnd.lowerLimit;
 		logger.LogThisFast("[ACTION]: SELL_SCND");
 	}
 	//平空头
 	if(OPEN_COND2 == mOpenCond)
 	{
-		mScndClosePrice = lScnd.askPrice;
+		mScndClosePrice = lScnd.upperLimit;
 		logger.LogThisFast("[ACTION]: COVER_SCND");
 	}
 #ifndef BACK_TEST
@@ -481,14 +481,14 @@ void PrimeryAndSecondary::ClosePrim()
 	//平空头
 	if(OPEN_COND1 == mOpenCond)
 	{
-		mPrimClosePrice = lPrim.askPrice;
+		mPrimClosePrice = lPrim.upperLimit;
 		logger.LogThisFast("[ACTION]: COVER_PRIM");
 	}
 
 	//平多头
 	if(OPEN_COND2 == mOpenCond)
 	{
-		mPrimClosePrice = lPrim.bidPrice;
+		mPrimClosePrice = lPrim.lowerLimit;
 		logger.LogThisFast("[ACTION]: SELL_PRIM");
 	}
 	
