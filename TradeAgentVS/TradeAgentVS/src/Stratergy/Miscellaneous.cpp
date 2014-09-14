@@ -768,9 +768,11 @@ bool PrimeryAndSecondary::IsDataAligned(void)
 {
 	const BasicMarketData& lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData& lScnd = scndDataBuf[scndBufIndex];
+	string lPrimUpdateTime = (string)lPrim.updateTime;
+	string lScndUpdateTime = (string)lScnd.updateTime;
 	string lPrimTradingDay = (string)lPrim.tradingDay;
 	string lScndTradingDay = (string)lScnd.tradingDay;
-	if( (lPrim.updateTime == lScnd.updateTime) && (lPrim.updateMillisec == lScnd.updateMillisec) && (lPrimTradingDay == lScndTradingDay) )
+	if( (lPrimUpdateTime == lScndUpdateTime) && (lPrim.updateMillisec == lScnd.updateMillisec) && (lPrimTradingDay == lScndTradingDay) )
 	{
 		return true;
 	}
