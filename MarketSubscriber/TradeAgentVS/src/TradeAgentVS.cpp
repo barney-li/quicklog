@@ -50,16 +50,22 @@ int _tmain(int argc, _TCHAR* argv[])
 	strcpy(tradeObj.basicTradeProcessData.investorPassword, passwordConfig);
 	tradeObj.basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj.basicTradeProcessData.frontAddress);
 	tradeObj.InitializeProcess();
+	boost::this_thread::sleep(boost::posix_time::seconds(1));	
 	while(!tradeObj.InitializeFinished())
 	{
-		boost::this_thread::sleep_for(boost::chrono::milliseconds(1000));	
+		boost::this_thread::sleep(boost::posix_time::seconds(30));	
 	}
+	logger.LogThisFast("[INFO]: trade process initialization finished");	
+
 	tradeObj.ReqQryInstrument();
-	
+	boost::this_thread::sleep(boost::posix_time::seconds(10));
 	while(!tradeObj.InstrumentListReady())
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(1));
+		tradeObj.ReqQryInstrument();
+		boost::this_thread::sleep(boost::posix_time::seconds(30));
 	}
+	logger.LogThisFast("[INFO]: instrument list ready");
+
 	/* initialize market agent */
 	strcpy(marketObj.broker, brokerIdConfig);
 	strcpy(marketObj.investor, investorIdConfig);
