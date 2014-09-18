@@ -7,7 +7,7 @@
 
 #ifdef BACK_TEST
 #define SIMULATION
-//#define KEEP_BOLL
+#define KEEP_BOLL
 #include <queue>
 #endif
 

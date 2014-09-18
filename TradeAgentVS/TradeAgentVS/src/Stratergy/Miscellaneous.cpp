@@ -77,11 +77,16 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	double lNegDeltPrim = lPrim.askPrice;
 	double lNegDeltScnd = lScnd.lastPrice;
 #endif
+	string lServerTime = (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime;
+	if(pDepthMarketData.UpdateMillisec == 500)
+	{
+		lServerTime = lServerTime + ".500";
+	}
 	if( lPosDeltPrice > lBoll.mOutterUpperLine )	
 	{
 		/* condition 1 */
 		mOpenCond = OPEN_COND1;
-		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
+		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND1	ServerTime: " + lServerTime);
 		tempStream.clear();
 		tempStream.str("");
 		tempStream<<"[INFO]: Evidence: "<<lPosDeltPrim<<" - "<<lPosDeltScnd<<" = "<<lPosDeltPrice<<" > "<<lBoll.mOutterUpperLine;
@@ -100,7 +105,7 @@ void PrimeryAndSecondary::OpenJudge(CThostFtdcDepthMarketDataField const& pDepth
 	{
 		/* condition 2 */
 		mOpenCond = OPEN_COND2;
-		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime);
+		logger.LogThisFast("[EVENT]: OPEN_PRICE_GOOD_COND2	ServerTime: " + lServerTime);
 		tempStream.clear();
 		tempStream.str("");
 		tempStream<<"[INFO]: Evidence: "<<lNegDeltPrim<<" - "<<lNegDeltScnd<<" = "<<lNegDeltPrice<<" < "<<lBoll.mOutterLowerLine;
@@ -124,6 +129,11 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 		return false;
 	}//don't stop lose if the data is not aligned
 	bool lIsClose = false;
+	string lServerTime = (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime;
+	if(pDepthMarketData.UpdateMillisec == 500)
+	{
+		lServerTime = lServerTime + ".500";
+	}
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{	
 		double lProfit = 0;
@@ -139,7 +149,7 @@ bool PrimeryAndSecondary::StopLoseJudge(CThostFtdcDepthMarketDataField const& pD
 		if(lProfit<stgArg.stopLossPrice)
 		{
 			//使用绝对浮亏来止损
-			logger.LogThisFast("[EVENT]: MUST_STOP (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+			logger.LogThisFast("[EVENT]: MUST_STOP (from estimate profit)	ServerTime: " + lServerTime);
 			tempStream.clear();
 			tempStream.str("");
 			if(BUY_SCND_SELL_PRIM == mTradeDir)
@@ -199,6 +209,11 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 	BollingerBandData lBoll = mBoll.GetBoll(0);
 	bool lGoodToClose = false;
 	double lAdjustedWinBollAmp;
+	string lServerTime = (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime;
+	if(pDepthMarketData.UpdateMillisec == 500)
+	{
+		lServerTime = lServerTime + ".500";
+	}
 #ifdef WIN_BOLL_ADJUST
 	//根据持仓时间来调整winBollAmp
 	lAdjustedWinBollAmp = AdjustWinBollAmp(mOpenTime, (string)lPrim.updateTime, stgArg.winBollAmp, stgArg.winBollAmpAdjust, stgArg.durationStep);
@@ -212,7 +227,7 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		{
 			if(lPrim.askPrice - lScnd.bidPrice < lBoll.mMidLine - lAdjustedWinBollAmp*lBoll.mStdDev)
 			{
-				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND1	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND1	ServerTime: " + lServerTime);
 				tempStream.clear();
 				tempStream.str("");
 				tempStream<<"[INFO]: Evidence: "<<lPrim.askPrice<<" - "<<lScnd.bidPrice<<" = "<<lPrim.askPrice - lScnd.bidPrice<<" < "<<(lBoll.mMidLine - lAdjustedWinBollAmp*lBoll.mStdDev)<<" adjusted amp: "<<lAdjustedWinBollAmp;
@@ -225,7 +240,7 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		{
 			if(lPrim.bidPrice - lScnd.askPrice > lBoll.mMidLine + lAdjustedWinBollAmp*lBoll.mStdDev)
 			{
-				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND2	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+				logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD_COND2	ServerTime: " + lServerTime);
 				tempStream.clear();
 				tempStream.str("");
 				tempStream<<"[INFO]: Evidence: "<<lPrim.bidPrice<<" - "<<lScnd.askPrice<<" = "<<lPrim.bidPrice - lScnd.askPrice<<" > "<<(lBoll.mMidLine + lAdjustedWinBollAmp*lBoll.mStdDev)<<" adjusted amp: "<<lAdjustedWinBollAmp;
@@ -257,7 +272,7 @@ bool PrimeryAndSecondary::StopWinJudge(CThostFtdcDepthMarketDataField const& pDe
 		if(lProfit>lStopWinPoint)
 		{
 			//使用绝对浮亏来止损
-			logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD (from estimate profit)	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+			logger.LogThisFast("[EVENT]: CLOSE_PRICE_GOOD (from estimate profit)	ServerTime: " + lServerTime);
 			tempStream.clear();
 			tempStream.str("");
 			if(BUY_SCND_SELL_PRIM == mTradeDir)
@@ -316,20 +331,35 @@ void PrimeryAndSecondary::LogBollData()
 		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mMidLine<<"	"\
 		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
 		<<lPrim.volume<<"	"<<lScnd.volume<<"	";
+	tempStream\
+				<<lPrim.askPrice<<"	"\
+				<<lPrim.bidPrice<<"	"\
+				<<lScnd.askPrice<<"	"\
+				<<lScnd.bidPrice<<"	"\
+				<<lDeltaPrice1<<"	"\
+				<<lDeltaPrice2<<"	"\
+				<<tempData.mOutterUpperLine<<"	"\
+				<<tempData.mInnerUpperLine<<"	"\
+				<<tempData.mMidLine<<"	"\
+				<<tempData.mInnerLowerLine<<"	"\
+				<<tempData.mOutterLowerLine<<"	"\
+				<<lPrim.volume<<"	"\
+				<<lScnd.volume<<"	";
 	if(mStateMachine.GetState() == PENDING_STATE)
 	{
 		tempStream<<mPrimEnterPrice-mScndEnterPrice<<"	";
 	}
 	else
 	{
-		tempStream<<"0"<<"	";
+		tempStream<<"99999	";
 	}
+	tempStream<<"99999	"<<"99999	"<<"99999	"<<"99999	";
 #ifdef COINTEGRATION_TEST
 	tempStream<<lPrim.askPrice<<"	"<<lPrim.bidPrice<<"	"\
 		<<lScnd.askPrice<<"	"<<lScnd.bidPrice<<"	";
 #endif
 #endif
-	mBollLog.LogThisFast(tempStream.str());
+	mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 }
 void PrimeryAndSecondary::BufferData(CThostFtdcDepthMarketDataField* pDepthMarketData, InstrumentType aWhichInst)
 {
@@ -489,6 +519,11 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 	{
 		return;
 	}//don't judge if the data is not aligned
+	string lServerTime = (string)pDepthMarketData.TradingDay + " "+(string)pDepthMarketData.UpdateTime;
+	if(pDepthMarketData.UpdateMillisec == 500)
+	{
+		lServerTime = lServerTime + ".500";
+	}
 	const BasicMarketData &lPrim = primDataBuf[primBufIndex];
 	const BasicMarketData &lScnd = scndDataBuf[scndBufIndex];
 	//c++ 结构体提供了拷贝构造函数以及等号的重载
@@ -516,7 +551,7 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 
 		if( lPrimPrice - lScndPrice < lBoll.mInnerUpperLine )
 		{
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_BAD	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+			logger.LogThisFast("[EVENT]: OPEN_PRICE_BAD	ServerTime: " + lServerTime);
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[INFO]: Evidence: "<<lPrimPrice<<" - "<<lScndPrice<<" = "<<lPrimPrice - lScndPrice<<" < "<<lBoll.mInnerUpperLine;
@@ -545,7 +580,7 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 
 		if( lPrimPrice - lScndPrice > lBoll.mInnerLowerLine )
 		{
-			logger.LogThisFast("[EVENT]: OPEN_PRICE_BAD	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+			logger.LogThisFast("[EVENT]: OPEN_PRICE_BAD	ServerTime: " + lServerTime);
 			tempStream.clear();
 			tempStream.str("");
 			tempStream<<"[INFO]: Evidence: "<<lPrimPrice<<" - "<<lScndPrice<<" = "<<lPrimPrice - lScndPrice<<" > "<<lBoll.mInnerLowerLine;
@@ -555,7 +590,7 @@ void PrimeryAndSecondary::StopOpenJudge(CThostFtdcDepthMarketDataField const& pD
 	}
 	else
 	{
-		logger.LogThisFast("[FATAL ERROR]: ILLEGAL OPEN COND	ServerTime: " + (string)pDepthMarketData.UpdateTime);
+		logger.LogThisFast("[FATAL ERROR]: ILLEGAL OPEN COND	ServerTime: " + lServerTime);
 	}
 	
 }

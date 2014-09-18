@@ -334,6 +334,31 @@ void PrimeryAndSecondary::OpenScnd()
 		logger.LogThisFast(tempStream.str());
 		mTradeDir = BUY_SCND_SELL_PRIM;
 		mScndTodayLongPosition = 1;
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<mScndEnterPrice<<"	"\
+				<<"99999"<<"	"
+				<<"99999"<<"	"
+				<<"99999"<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+
+#endif
 	}
 	else if( OPEN_COND2 == mOpenCond )
 	{
@@ -353,6 +378,30 @@ void PrimeryAndSecondary::OpenScnd()
 		logger.LogThisFast(tempStream.str());
 		mTradeDir = BUY_PRIM_SELL_SCND;
 		mScndTodayShortPosition = 1;
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<mScndEnterPrice<<"	"\
+				<<"99999"<<"	"
+				<<"99999"<<"	"
+				<<"99999"<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 	else
 	{
@@ -389,6 +438,30 @@ void PrimeryAndSecondary::OpenPrim()
 		lPrice<<"[ACTION]: SHORT_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
 		mPrimTodayShortPosition = 1;
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<mPrimEnterPrice<<"	"
+				<<"99999"<<"	"
+				<<"99999"<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 	else if(BUY_PRIM_SELL_SCND == mTradeDir)
 	{
@@ -396,6 +469,30 @@ void PrimeryAndSecondary::OpenPrim()
 		lPrice<<"[ACTION]: BUY_PRIM at "<<mPrimEnterPrice;
 		logger.LogThisFast(lPrice.str());
 		mPrimTodayLongPosition = 1;
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<mPrimEnterPrice<<"	"
+				<<"99999"<<"	"
+				<<"99999"<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 	else
 	{
@@ -437,12 +534,60 @@ void PrimeryAndSecondary::CloseScnd()
 	{
 		mScndClosePrice = lScnd.lowerLimit;
 		logger.LogThisFast("[ACTION]: SELL_SCND");
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"
+				<<mScndClosePrice<<"	"
+				<<"99999"<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 	//平空头
 	if(OPEN_COND2 == mOpenCond)
 	{
 		mScndClosePrice = lScnd.upperLimit;
 		logger.LogThisFast("[ACTION]: COVER_SCND");
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"
+				<<mScndClosePrice<<"	"
+				<<"99999"<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 #ifndef BACK_TEST
 	mCloseScndCD = false;
@@ -483,6 +628,30 @@ void PrimeryAndSecondary::ClosePrim()
 	{
 		mPrimClosePrice = lPrim.upperLimit;
 		logger.LogThisFast("[ACTION]: COVER_PRIM");
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"
+				<<"99999"<<"	"
+				<<mPrimClosePrice<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 
 	//平多头
@@ -490,6 +659,30 @@ void PrimeryAndSecondary::ClosePrim()
 	{
 		mPrimClosePrice = lPrim.lowerLimit;
 		logger.LogThisFast("[ACTION]: SELL_PRIM");
+#ifdef KEEP_BOLL
+		tempStream.clear();
+		tempStream.str("");
+		tempStream\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"
+				<<"99999"<<"	"
+				<<mPrimClosePrice<<"	";
+		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
+#endif
 	}
 	
 #ifndef BACK_TEST
