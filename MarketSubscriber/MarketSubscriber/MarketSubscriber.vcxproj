@@ -14,10 +14,49 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\common\CommonLog.cpp" />
+    <ClCompile Include="src\common\InstrumentLog.cpp" />
+    <ClCompile Include="src\common\Log.cpp" />
+    <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
+    <ClCompile Include="src\stdafx.cpp" />
+    <ClCompile Include="src\MarketSubscriber.cpp" />
+    <ClCompile Include="src\TradeProcess\TradeProcess.cpp" />
+    <ClCompile Include="src\TradeProcess\TradeService.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\common\BackTestAgent.h" />
+    <ClInclude Include="src\common\CommonLog.h" />
+    <ClInclude Include="src\common\ConfigReader.h" />
+    <ClInclude Include="src\common\DataReader.h" />
+    <ClInclude Include="src\common\DataTypes.h" />
+    <ClInclude Include="src\common\Hook.h" />
+    <ClInclude Include="src\common\InstrumentLog.h" />
+    <ClInclude Include="src\common\Log.h" />
+    <ClInclude Include="src\common\ParseTradeInfo.h" />
+    <ClInclude Include="src\common\Timer.h" />
+    <ClInclude Include="src\CTPAPI\ThostFtdcMdApi.h" />
+    <ClInclude Include="src\CTPAPI\ThostFtdcTraderApi.h" />
+    <ClInclude Include="src\CTPAPI\ThostFtdcUserApiDataType.h" />
+    <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h" />
+    <ClInclude Include="src\MarketProcess\MarketProcess.h" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\targetver.h" />
+    <ClInclude Include="src\TradeProcess\TradeProcess.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\CTPAPI\thostmduserapi.dll" />
+    <None Include="src\CTPAPI\thosttraderapi.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="src\CTPAPI\thostmduserapi.lib" />
+    <Library Include="src\CTPAPI\thosttraderapi.lib" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D83E0CA3-92AB-435C-9EB2-D42B5684FF87}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>TradeAgentVS</RootNamespace>
+    <RootNamespace>MarketSubscriber</RootNamespace>
+    <ProjectName>MarketSubscriber</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -52,27 +91,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
-    <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
+    <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
-    <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
+    <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
-    <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
+    <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -135,49 +174,6 @@
       <StackCommitSize>0x400000</StackCommitSize>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <None Include="ReadMe.txt" />
-    <None Include="src\CTPAPI\thostmduserapi.dll" />
-    <None Include="src\CTPAPI\thosttraderapi.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\common\CommonLog.cpp" />
-    <ClCompile Include="src\common\InstrumentLog.cpp" />
-    <ClCompile Include="src\common\Log.cpp" />
-    <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
-    <ClCompile Include="src\stdafx.cpp" />
-    <ClCompile Include="src\TradeAgentVS.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="src\TradeProcess\TradeProcess.cpp" />
-    <ClCompile Include="src\TradeProcess\TradeService.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\common\CommonLog.h" />
-    <ClInclude Include="src\common\ConfigReader.h" />
-    <ClInclude Include="src\common\DataReader.h" />
-    <ClInclude Include="src\common\DataTypes.h" />
-    <ClInclude Include="src\common\Hook.h" />
-    <ClInclude Include="src\common\InstrumentLog.h" />
-    <ClInclude Include="src\common\Log.h" />
-    <ClInclude Include="src\common\ParseTradeInfo.h" />
-    <ClInclude Include="src\common\Timer.h" />
-    <ClInclude Include="src\common\BackTestAgent.h" />
-    <ClInclude Include="src\CTPAPI\ThostFtdcMdApi.h" />
-    <ClInclude Include="src\CTPAPI\ThostFtdcTraderApi.h" />
-    <ClInclude Include="src\CTPAPI\ThostFtdcUserApiDataType.h" />
-    <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h" />
-    <ClInclude Include="src\MarketProcess\MarketProcess.h" />
-    <ClInclude Include="src\stdafx.h" />
-    <ClInclude Include="src\targetver.h" />
-    <ClInclude Include="src\TradeProcess\TradeProcess.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="src\CTPAPI\thostmduserapi.lib" />
-    <Library Include="src\CTPAPI\thosttraderapi.lib" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
