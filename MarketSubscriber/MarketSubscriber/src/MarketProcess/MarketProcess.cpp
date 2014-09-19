@@ -139,7 +139,7 @@ void MarketProcess::OnFrontConnected(void)
 	frontServerReached = true;
 	getRspTime = boost::posix_time::microsec_clock::local_time();
 	std::cout<<"\nFront server reached, delay= "<<getRspTime - startReqTime<<", now logging in..."<<std::endl;
-	logger.LogThisFast("[INFO]: Front server connected");
+	logger.LogThisFast("[INFO]: market front server connected");
 	ReqLogIn();
 }
 
@@ -182,15 +182,15 @@ void MarketProcess::OnRspUserLogin(CThostFtdcRspUserLoginField* pRspUserLogin, C
 {
 	if(pRspInfo->ErrorID != 0)
     {
-		logger.LogThisFast("[ERROR]: Log in failed: ", false);
+		logger.LogThisFast("[ERROR]: market server login failed: ", false);
 		logger.LogThisFastNoTimeStamp(pRspInfo->ErrorMsg);
-        printf("\nlog in failed, error msg: %s\n", pRspInfo->ErrorMsg);
+        printf("\nlogin failed, error msg: %s\n", pRspInfo->ErrorMsg);
 		printf("error ID: %d\n", pRspInfo->ErrorID);
     }
     else
     {
-		printf("\nlog in successful, now subscribe instruments...\n");
-		logger.LogThisFast("[INFO]: Log in successful");
+		printf("\nlogin successful, now subscribe instruments...\n");
+		logger.LogThisFast("[INFO]: market server login successful");
 		logInSuccess = true;
 		//Market process initialization accomplished at this point
 		printf("########################################################\n");

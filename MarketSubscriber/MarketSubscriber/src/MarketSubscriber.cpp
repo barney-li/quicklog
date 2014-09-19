@@ -32,7 +32,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	logger.LogThisFast("[INFO]: market subscriber started...");
 	logger.Sync();
 
-	TradeProcess tradeObj;
+	TradeProcess* tradeObj = null;
 	MarketProcess marketObj;
 	ConfigReader config;
 
@@ -45,34 +45,53 @@ int _tmain(int argc, _TCHAR* argv[])
 	config.ReadList(&investorIdConfig, "InvestorID", ";");
 	config.ReadList(&passwordConfig, "Password", ";");
 	/* initialize trade agent */
-	strcpy(tradeObj.basicTradeProcessData.brokerId, brokerIdConfig);
-	strcpy(tradeObj.basicTradeProcessData.investorId, investorIdConfig);
-	strcpy(tradeObj.basicTradeProcessData.investorPassword, passwordConfig);
-	tradeObj.basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj.basicTradeProcessData.frontAddress);
-	tradeObj.InitializeProcess();
-	boost::this_thread::sleep(boost::posix_time::seconds(1));	
-	while(!tradeObj.InitializeFinished())
+	do
 	{
-		boost::this_thread::sleep(boost::posix_time::seconds(30));	
+		if(tradeObj)
+		{
+			delete tradeObj;
+		}
+		tradeObj = new TradeProcess();
+		strcpy(tradeObj->basicTradeProcessData.brokerId, brokerIdConfig);
+		strcpy(tradeObj->basicTradeProcessData.investorId, investorIdConfig);
+		strcpy(tradeObj->basicTradeProcessData.investorPassword, passwordConfig);
+		tradeObj->basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj->basicTradeProcessData.frontAddress);
+		tradeObj->InitializeProcess();
+		int lTryInitCount = 0;
+		while( lTryInitCount<100 )
+		{
+			lTryInitCount++;
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+			if(tradeObj->InitializeFinished())
+			{
+				logger.LogThisFast("[INFO]: trade process initialization finished");
+				break;
+			}
+		}
+		if(tradeObj->InitializeFinished())
+		{
+			tradeObj->ReqQryInstrument();
+			int lTryQryListCount = 0;
+			while(lTryQryListCount<10)
+			{
+				lTryQryListCount++;
+				boost::this_thread::sleep(boost::posix_time::seconds(10));
+				if(tradeObj->InstrumentListReady())
+				{
+					logger.LogThisFast("[INFO]: instrument list ready");
+					break;
+				}
+			}
+		}
 	}
-	logger.LogThisFast("[INFO]: trade process initialization finished");	
-
-	tradeObj.ReqQryInstrument();
-	boost::this_thread::sleep(boost::posix_time::seconds(10));
-	while(!tradeObj.InstrumentListReady())
-	{
-		tradeObj.ReqQryInstrument();
-		boost::this_thread::sleep(boost::posix_time::seconds(30));
-	}
-	logger.LogThisFast("[INFO]: instrument list ready");
+	while(tradeObj->InstrumentListReady() == false);
 
 	/* initialize market agent */
 	strcpy(marketObj.broker, brokerIdConfig);
 	strcpy(marketObj.investor, investorIdConfig);
 	strcpy(marketObj.pwd, passwordConfig);
 	marketObj.numFrontAddress = config.ReadMarketFrontAddr(marketObj.frontAddress);
-	marketObj.SetInstrumentList(tradeObj.GetInstrumentList());
-	//marketObj.numInstrument = config.ReadInstrumentID(marketObj.instrumentList);
+	marketObj.SetInstrumentList(tradeObj->GetInstrumentList());
 	marketObj.StartMarketProcess();
 
 	delete brokerIdConfig;
