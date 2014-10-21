@@ -47,41 +47,62 @@ int _tmain(int argc, _TCHAR* argv[])
 	/* initialize trade agent */
 	do
 	{
-		if(tradeObj)
+		try
 		{
-			delete tradeObj;
-		}
-		tradeObj = new TradeProcess();
-		strcpy(tradeObj->basicTradeProcessData.brokerId, brokerIdConfig);
-		strcpy(tradeObj->basicTradeProcessData.investorId, investorIdConfig);
-		strcpy(tradeObj->basicTradeProcessData.investorPassword, passwordConfig);
-		tradeObj->basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj->basicTradeProcessData.frontAddress);
-		tradeObj->InitializeProcess();
-		int lTryInitCount = 0;
-		while( lTryInitCount<100 )
-		{
-			lTryInitCount++;
-			boost::this_thread::sleep(boost::posix_time::seconds(1));
-			if(tradeObj->InitializeFinished())
+			if(tradeObj)
 			{
-				logger.LogThisFast("[INFO]: trade process initialization finished");
-				break;
+				delete tradeObj;
 			}
-		}
-		if(tradeObj->InitializeFinished())
-		{
-			tradeObj->ReqQryInstrument();
-			int lTryQryListCount = 0;
-			while(lTryQryListCount<10)
+			tradeObj = new TradeProcess();
+			strcpy(tradeObj->basicTradeProcessData.brokerId, brokerIdConfig);
+			strcpy(tradeObj->basicTradeProcessData.investorId, investorIdConfig);
+			strcpy(tradeObj->basicTradeProcessData.investorPassword, passwordConfig);
+			tradeObj->basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj->basicTradeProcessData.frontAddress);
+			tradeObj->InitializeProcess();
+			int lTryInitCount = 0;
+			while( lTryInitCount<100 )
 			{
-				lTryQryListCount++;
-				boost::this_thread::sleep(boost::posix_time::seconds(10));
-				if(tradeObj->InstrumentListReady())
+				lTryInitCount++;
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+				if(tradeObj->InitializeFinished())
 				{
-					logger.LogThisFast("[INFO]: instrument list ready");
+					logger.LogThisFast("[INFO]: trade process initialization finished");
 					break;
 				}
 			}
+			if(tradeObj->InitializeFinished())
+			{
+				tradeObj->ReqQryInstrument();
+				int lTryQryListCount = 0;
+				while(lTryQryListCount<10)
+				{
+					lTryQryListCount++;
+					boost::this_thread::sleep(boost::posix_time::seconds(10));
+					if(tradeObj->InstrumentListReady())
+					{
+						logger.LogThisFast("[INFO]: instrument list ready");
+						break;
+					}
+				}
+			}
+		}
+		catch(std::exception ex)
+		{
+			stringstream tempStream;
+			tempStream.str("");
+			tempStream<<"exception in main(), error message: "<<ex.what();
+			cout<<tempStream<<endl;
+			logger.LogThisFast(tempStream.str());
+			logger.Sync();
+		}
+		catch(...)
+		{
+			stringstream tempStream;
+			tempStream.str("");
+			tempStream<<"exception in main(), error message: unknown";
+			cout<<tempStream<<endl;
+			logger.LogThisFast(tempStream.str());
+			logger.Sync();
 		}
 	}
 	while(tradeObj->InstrumentListReady() == false);

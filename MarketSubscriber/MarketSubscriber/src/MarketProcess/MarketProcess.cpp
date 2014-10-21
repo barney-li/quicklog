@@ -80,48 +80,94 @@ void MarketProcess::OnRspUserLogout(CThostFtdcUserLogoutField *pUserLogout, CTho
 }
 void MarketProcess::SubscribeInstrument(void)
 {
-if(1 == saveMarketData)
-{
-	for(int i=0; i<numInstrument; i++)
+	try
 	{
-		if(instrumentList[i] != NULL)
+		if(1 == saveMarketData)
 		{
-			// create and insert log handler into log handler pool
-			InsertLogHandler(instrumentList[i]);
-			CreateMarketDataFile(instrumentList[i]);
-			cout<<"Instrument Map: "<<instrumentList[i]<<"["<<logInstMap.at(instrumentList[i])<<"]"<<endl;
+			for(int i=0; i<numInstrument; i++)
+			{
+				if(instrumentList[i] != NULL)
+				{
+					// create and insert log handler into log handler pool
+					InsertLogHandler(instrumentList[i]);
+					CreateMarketDataFile(instrumentList[i]);
+					cout<<"Instrument Map: "<<instrumentList[i]<<"["<<logInstMap.at(instrumentList[i])<<"]"<<endl;
+				}
+			}
 		}
+		printf("\nsubscribe market data return: %d\n", pUserApi->SubscribeMarketData(instrumentList, numInstrument));
 	}
-}
-	printf("\nsubscribe market data return: %d\n", pUserApi->SubscribeMarketData(instrumentList, numInstrument));
+	catch(std::exception ex)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in SubscribInstrument(), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception(ex);
+	}
+	catch(...)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in SubscribeInstrument(), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception();
+	}
 }
 void MarketProcess::SubscribeInstrument(char* instrumentID[], int numInstrument)
 {
-	if(numInstrument<1)
+	try
 	{
-		printf("\ndidn't get instrument IDs, quiting program\n");
-		return;
-	}
-	char** instrumentIDFit = (char**)calloc(numInstrument,sizeof(int));
-	memcpy(instrumentIDFit, instrumentID, numInstrument*sizeof(int));
-	if(1 == saveMarketData)
-	{
-		for(int i=0; i<numInstrument; i++)
+		if(numInstrument<1)
 		{
-			if(instrumentList[i] != NULL)
+			printf("\ndidn't get instrument IDs, quiting program\n");
+			return;
+		}
+		char** instrumentIDFit = (char**)calloc(numInstrument,sizeof(int));
+		memcpy(instrumentIDFit, instrumentID, numInstrument*sizeof(int));
+		if(1 == saveMarketData)
+		{
+			for(int i=0; i<numInstrument; i++)
 			{
-				// create and insert log handler into log handler pool
-				InsertLogHandler(instrumentList[i]);
-				CreateMarketDataFile(instrumentList[i]);
-			}
+				if(instrumentList[i] != NULL)
+				{
+					// create and insert log handler into log handler pool
+					InsertLogHandler(instrumentList[i]);
+					CreateMarketDataFile(instrumentList[i]);
+				}
 		
+			}
+		}
+		printf("\nsubscribe market data return: %d\n", pUserApi->SubscribeMarketData(instrumentIDFit, numInstrument));
+		if(instrumentIDFit)
+		{
+			free(instrumentIDFit);
+			instrumentIDFit = NULL;
 		}
 	}
-	printf("\nsubscribe market data return: %d\n", pUserApi->SubscribeMarketData(instrumentIDFit, numInstrument));
-	if(instrumentIDFit)
+	catch(std::exception ex)
 	{
-		free(instrumentIDFit);
-		instrumentIDFit = NULL;
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in SubscribeInstrument(char*[],int), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception(ex);
+	}
+	catch(...)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in SubscribeInstrument(char*[], int), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception();
 	}
 }
 void MarketProcess::ReqConnect(void)
@@ -151,15 +197,37 @@ void MarketProcess::OnFrontDisconnected(void)
 
 void MarketProcess::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-	
-	if(pRspInfo->ErrorID != 0)
+	try
 	{
-		printf("\nsubscribe instrument error, error msg: %s\n", pRspInfo->ErrorMsg);
-		printf("error ID: %d\n", pRspInfo->ErrorID);
+		if(pRspInfo->ErrorID != 0)
+		{
+			printf("\nsubscribe instrument error, error msg: %s\n", pRspInfo->ErrorMsg);
+			printf("error ID: %d\n", pRspInfo->ErrorID);
+		}
+		else
+		{
+			printf("\nsubscribe instrument successful, instrument ID: %s\n", pSpecificInstrument->InstrumentID);
+		}
 	}
-	else
+	catch(std::exception ex)
 	{
-		printf("\nsubscribe instrument successful, instrument ID: %s\n", pSpecificInstrument->InstrumentID);
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in OnRspSubMarketData(), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception(ex);
+	}
+	catch(...)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in OnRspSubMarketData(), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception();
 	}
 }
 
@@ -170,12 +238,35 @@ void MarketProcess::OnHeartBeatWarning(int nTimeLapse)
 }
 void MarketProcess::ReqLogIn(void)
 {
-	CThostFtdcReqUserLoginField req;
-    memset(&req, 0, sizeof(req));
-    strcpy(req.BrokerID, broker);
-    strcpy(req.UserID, investor);
-    strcpy(req.Password, pwd);
-    pUserApi->ReqUserLogin(&req, ++iReqID);
+	try
+	{
+		CThostFtdcReqUserLoginField req;
+		memset(&req, 0, sizeof(req));
+		strcpy(req.BrokerID, broker);
+		strcpy(req.UserID, investor);
+		strcpy(req.Password, pwd);
+		pUserApi->ReqUserLogin(&req, ++iReqID);
+	}
+	catch(std::exception ex)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in ReqLogIn(), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception(ex);
+	}
+	catch(...)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in ReqLogIn(), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception();
+	}
 }
 
 void MarketProcess::OnRspUserLogin(CThostFtdcRspUserLoginField* pRspUserLogin, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
@@ -207,186 +298,249 @@ void MarketProcess::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID,
 
 void MarketProcess::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 {
-	// push data via hook first
-	if(dataPushHook)
+	try
 	{
-		dataPushHook(pDepthMarketData);
+		// push data via hook first
+		if(dataPushHook)
+		{
+			dataPushHook(pDepthMarketData);
+		}
+		if(hookObj)
+		{
+			hookObj->HookOnRtnDepthMarketData(pDepthMarketData);
+		}
+		if(1 == saveMarketData)
+		{
+			RecordMarketData(pDepthMarketData);
+		}
 	}
-	if(hookObj)
+	catch(std::exception ex)
 	{
-		hookObj->HookOnRtnDepthMarketData(pDepthMarketData);
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in OnRtnDepthMarketData(), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
 	}
-	if(1 == saveMarketData)
+	catch(...)
 	{
-		RecordMarketData(pDepthMarketData);
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in OnRtnDepthMarketData(), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
 	}
 }
 
 void MarketProcess::RecordMarketData(CThostFtdcDepthMarketDataField* pDepthMarketData)
 {
-	sprintf(marketDataBuf,   "%s	" //TradingDay
-			        "%s	" //InstrumentID
-					//"%s	" //ExchangeID
-					//"%s	" //ExchangeInstID
-					"%.2f	" //LastPrice
-					"%.2f	" //PreSettlementPrice
-					"%.2f	" //PreClosePrice
-					"%.2f	" //PreOpenInterest
-					"%.2f	" //OpenPrice
-					"%.2f	" //HighestPrice
-					"%.2f	" //LowestPrice
-					"%d	" //Volume
-					//"%.2f	" //Turnover
-					"%.2f	" //OpenInterest
-					//"%.2f	" //ClosePrice
-					//"%.2f	" //SettlementPrice
-					"%.2f	" //UpperLimitPrice
-					"%.2f	" //LowerLimitPrice
-					//"%.2f	" //PreDelta
-					//"%.2f	" //CurrDelta
-					"%s	" //UpdateTime
-					"%d	" //UpdateMillisec
-					"%.2f	" //BidPrice1
-					"%d	" //BidVolume1
-					"%.2f	" //AskPrice1
-					"%d	" //AskVolume1
-					//"%f	" //BidPrice2
-					//"%d	" //BidVolume2
-					//"%f	" //AskPrice2
-					//"%d	" //AskVolume2
-					//"%f	" //BidPrice3
-					//"%d	" //BidVolume3
-					//"%f	" //AskPrice3
-					//"%d	" //AskVolume3
-					//"%f	" //BidPrice4
-					//"%d	" //BidVolume4
-					//"%f	" //AskPrice4
-					//"%d	" //AskVolume4
-					//"%f	" //BidPrice5
-					//"%d	" //BidVolume5
-					//"%f	" //AskPrice5
-					//"%d	" //AskVolume5
-					//"%f	" //AveragePrice
-					,
-					pDepthMarketData->TradingDay,
-					pDepthMarketData->InstrumentID,
-					//pDepthMarketData->ExchangeID,
-					//pDepthMarketData->ExchangeInstID,
-					pDepthMarketData->LastPrice > unreasonableBig? 0.0 : pDepthMarketData->LastPrice,
-					pDepthMarketData->PreSettlementPrice > unreasonableBig? 0.0 : pDepthMarketData->PreSettlementPrice,
-					pDepthMarketData->PreClosePrice > unreasonableBig? 0.0 : pDepthMarketData->PreClosePrice,
-					pDepthMarketData->PreOpenInterest > unreasonableBig? 0.0 : pDepthMarketData->PreOpenInterest,
-					pDepthMarketData->OpenPrice > unreasonableBig? 0.0 : pDepthMarketData->OpenPrice,
-					pDepthMarketData->HighestPrice > unreasonableBig? 0.0 : pDepthMarketData->HighestPrice,
-					pDepthMarketData->LowestPrice > unreasonableBig? 0.0 : pDepthMarketData->LowestPrice,
-					pDepthMarketData->Volume,
-					//pDepthMarketData->Turnover,
-					pDepthMarketData->OpenInterest > unreasonableBig? 0.0 : pDepthMarketData->OpenInterest,
-					//pDepthMarketData->ClosePrice,
-					//pDepthMarketData->SettlementPrice,
-					pDepthMarketData->UpperLimitPrice > unreasonableBig? 0.0 : pDepthMarketData->UpperLimitPrice,
-					pDepthMarketData->LowerLimitPrice > unreasonableBig? 0.0 : pDepthMarketData->LowerLimitPrice,
-					//pDepthMarketData->PreDelta,
-					//pDepthMarketData->CurrDelta,
-					pDepthMarketData->UpdateTime,
-					pDepthMarketData->UpdateMillisec,
-					pDepthMarketData->BidPrice1 > unreasonableBig? 0.0 : pDepthMarketData->BidPrice1,
-					pDepthMarketData->BidVolume1,
-					pDepthMarketData->AskPrice1 > unreasonableBig? 0.0 : pDepthMarketData->AskPrice1,
-					pDepthMarketData->AskVolume1/*,
-					pDepthMarketData->BidPrice2,
-					pDepthMarketData->BidVolume2,
-					pDepthMarketData->AskPrice2,
-					pDepthMarketData->AskVolume2,
-					pDepthMarketData->BidPrice3,
-					pDepthMarketData->BidVolume3,
-					pDepthMarketData->AskPrice3,
-					pDepthMarketData->AskVolume3,
-					pDepthMarketData->BidPrice4,
-					pDepthMarketData->BidVolume4,
-					pDepthMarketData->AskPrice4,
-					pDepthMarketData->AskVolume4,
-					pDepthMarketData->BidPrice5,
-					pDepthMarketData->BidVolume5,
-					pDepthMarketData->AskPrice5,
-					pDepthMarketData->AskVolume5,
-					pDepthMarketData->AveragePrice*/);
-	if(OVERFLOW_CHECK_CODE != overflowCheck)
+	try
 	{
-		logger.LogThisFast("[LOCAL ERROR]: Temporary market data buffer overflowed!");
-		cerr<<"[LOCAL ERROR]: Temporary market data buffer overflowed!"<<endl;
-		overflowCheck = OVERFLOW_CHECK_CODE;
+		sprintf(marketDataBuf,   "%s	" //TradingDay
+						"%s	" //InstrumentID
+						//"%s	" //ExchangeID
+						//"%s	" //ExchangeInstID
+						"%.2f	" //LastPrice
+						"%.2f	" //PreSettlementPrice
+						"%.2f	" //PreClosePrice
+						"%.2f	" //PreOpenInterest
+						"%.2f	" //OpenPrice
+						"%.2f	" //HighestPrice
+						"%.2f	" //LowestPrice
+						"%d	" //Volume
+						//"%.2f	" //Turnover
+						"%.2f	" //OpenInterest
+						//"%.2f	" //ClosePrice
+						//"%.2f	" //SettlementPrice
+						"%.2f	" //UpperLimitPrice
+						"%.2f	" //LowerLimitPrice
+						//"%.2f	" //PreDelta
+						//"%.2f	" //CurrDelta
+						"%s	" //UpdateTime
+						"%d	" //UpdateMillisec
+						"%.2f	" //BidPrice1
+						"%d	" //BidVolume1
+						"%.2f	" //AskPrice1
+						"%d	" //AskVolume1
+						//"%f	" //BidPrice2
+						//"%d	" //BidVolume2
+						//"%f	" //AskPrice2
+						//"%d	" //AskVolume2
+						//"%f	" //BidPrice3
+						//"%d	" //BidVolume3
+						//"%f	" //AskPrice3
+						//"%d	" //AskVolume3
+						//"%f	" //BidPrice4
+						//"%d	" //BidVolume4
+						//"%f	" //AskPrice4
+						//"%d	" //AskVolume4
+						//"%f	" //BidPrice5
+						//"%d	" //BidVolume5
+						//"%f	" //AskPrice5
+						//"%d	" //AskVolume5
+						//"%f	" //AveragePrice
+						,
+						pDepthMarketData->TradingDay,
+						pDepthMarketData->InstrumentID,
+						//pDepthMarketData->ExchangeID,
+						//pDepthMarketData->ExchangeInstID,
+						pDepthMarketData->LastPrice > unreasonableBig? 0.0 : pDepthMarketData->LastPrice,
+						pDepthMarketData->PreSettlementPrice > unreasonableBig? 0.0 : pDepthMarketData->PreSettlementPrice,
+						pDepthMarketData->PreClosePrice > unreasonableBig? 0.0 : pDepthMarketData->PreClosePrice,
+						pDepthMarketData->PreOpenInterest > unreasonableBig? 0.0 : pDepthMarketData->PreOpenInterest,
+						pDepthMarketData->OpenPrice > unreasonableBig? 0.0 : pDepthMarketData->OpenPrice,
+						pDepthMarketData->HighestPrice > unreasonableBig? 0.0 : pDepthMarketData->HighestPrice,
+						pDepthMarketData->LowestPrice > unreasonableBig? 0.0 : pDepthMarketData->LowestPrice,
+						pDepthMarketData->Volume,
+						//pDepthMarketData->Turnover,
+						pDepthMarketData->OpenInterest > unreasonableBig? 0.0 : pDepthMarketData->OpenInterest,
+						//pDepthMarketData->ClosePrice,
+						//pDepthMarketData->SettlementPrice,
+						pDepthMarketData->UpperLimitPrice > unreasonableBig? 0.0 : pDepthMarketData->UpperLimitPrice,
+						pDepthMarketData->LowerLimitPrice > unreasonableBig? 0.0 : pDepthMarketData->LowerLimitPrice,
+						//pDepthMarketData->PreDelta,
+						//pDepthMarketData->CurrDelta,
+						pDepthMarketData->UpdateTime,
+						pDepthMarketData->UpdateMillisec,
+						pDepthMarketData->BidPrice1 > unreasonableBig? 0.0 : pDepthMarketData->BidPrice1,
+						pDepthMarketData->BidVolume1,
+						pDepthMarketData->AskPrice1 > unreasonableBig? 0.0 : pDepthMarketData->AskPrice1,
+						pDepthMarketData->AskVolume1/*,
+						pDepthMarketData->BidPrice2,
+						pDepthMarketData->BidVolume2,
+						pDepthMarketData->AskPrice2,
+						pDepthMarketData->AskVolume2,
+						pDepthMarketData->BidPrice3,
+						pDepthMarketData->BidVolume3,
+						pDepthMarketData->AskPrice3,
+						pDepthMarketData->AskVolume3,
+						pDepthMarketData->BidPrice4,
+						pDepthMarketData->BidVolume4,
+						pDepthMarketData->AskPrice4,
+						pDepthMarketData->AskVolume4,
+						pDepthMarketData->BidPrice5,
+						pDepthMarketData->BidVolume5,
+						pDepthMarketData->AskPrice5,
+						pDepthMarketData->AskVolume5,
+						pDepthMarketData->AveragePrice*/);
+		if(OVERFLOW_CHECK_CODE != overflowCheck)
+		{
+			logger.LogThisFast("[LOCAL ERROR]: Temporary market data buffer overflowed!");
+			cerr<<"[LOCAL ERROR]: Temporary market data buffer overflowed!"<<endl;
+			overflowCheck = OVERFLOW_CHECK_CODE;
+		}
+		if(logInstMap.find(pDepthMarketData->InstrumentID) == logInstMap.end())
+		{
+			logger.LogThisFast("[LOCAL ERROR]: Don't have a record file for this instrument: ", false);
+			logger.LogThisFastNoTimeStamp(pDepthMarketData->InstrumentID);
+			cerr<<"[LOCAL ERROR]: Don't have a record file for this instrument: "<<pDepthMarketData->InstrumentID<<endl;
+		}
+		else
+		{
+			logHandlerPool[logInstMap.at(pDepthMarketData->InstrumentID)]->LogThisFast(marketDataBuf);
+		}
 	}
-	if(logInstMap.find(pDepthMarketData->InstrumentID) == logInstMap.end())
+	catch(std::exception ex)
 	{
-		logger.LogThisFast("[LOCAL ERROR]: Don't have a record file for this instrument: ", false);
-		logger.LogThisFastNoTimeStamp(pDepthMarketData->InstrumentID);
-		cerr<<"[LOCAL ERROR]: Don't have a record file for this instrument: "<<pDepthMarketData->InstrumentID<<endl;
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in RecordMarketData(), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
 	}
-	else
+	catch(...)
 	{
-		logHandlerPool[logInstMap.at(pDepthMarketData->InstrumentID)]->LogThisFast(marketDataBuf);
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in RecordMarketData(), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
 	}
-	
 }
 
 bool MarketProcess::CreateMarketDataFile(char* instrumentID)
 {
-	bool status = true;
-	
-	char* data = new char[1000];
-	sprintf(data, "LocalTime	"
-				  "TradingDay	"
-				  "InstrumentID	"
-				  //"ExchangeID	"
-				  //"ExchangeInstID "
-				  "LastPrice	"
-				  "PreSettlementPrice	"
-				  "PreClosePrice	"
-				  "PreOpenInterest	"
-				  "OpenPrice	"
-				  "HighestPrice	"
-				  "LowestPrice	"
-				  "Volume	"
-				  //"Turnover	"
-				  "OpenInterest	"
-				  //"ClosePrice	"
-				  //"SettlementPrice	"
-				  "UpperLimitPrice	"
-				  "LowerLimitPrice	"
-				  //"PreDelta	"
-				  //"CurrDelta	"
-				  "UpdateTime	"
-				  "UpdateMillisec	"
-				  "BidPrice1	"
-				  "BidVolume1	"
-				  "AskPrice1	"
-				  "AskVolume1	"
-				  //"BidPrice2	"
-				  //"BidVolume2	"
-				  //"AskPrice2	"
-				  //"AskVolume2	"
-				  //"BidPrice3	"
-				  //"BidVolume3	"
-				  //"AskPrice3	"
-				  //"AskVolume3	"
-				  //"BidPrice4	"
-				  //"BidVolume4	"
-				  //"AskPrice4	"
-				  //"AskVolume4	"
-				  //"BidPrice5	"
-				  //"BidVolume5	"
-				  //"AskPrice5	"
-				  //"AskVolume5	"
-				  //"AveragePrice	"
-				  );
-	logHandlerPool[logInstMap.at(instrumentID)]->LogThisFastNoTimeStamp(data);
-	if(data)
+	try
 	{
-		delete [] data;
-		data = NULL;
+		bool status = true;
+		char* data = new char[1000];
+		sprintf(data, "LocalTime	"
+					  "TradingDay	"
+					  "InstrumentID	"
+					  //"ExchangeID	"
+					  //"ExchangeInstID "
+					  "LastPrice	"
+					  "PreSettlementPrice	"
+					  "PreClosePrice	"
+					  "PreOpenInterest	"
+					  "OpenPrice	"
+					  "HighestPrice	"
+					  "LowestPrice	"
+					  "Volume	"
+					  //"Turnover	"
+					  "OpenInterest	"
+					  //"ClosePrice	"
+					  //"SettlementPrice	"
+					  "UpperLimitPrice	"
+					  "LowerLimitPrice	"
+					  //"PreDelta	"
+					  //"CurrDelta	"
+					  "UpdateTime	"
+					  "UpdateMillisec	"
+					  "BidPrice1	"
+					  "BidVolume1	"
+					  "AskPrice1	"
+					  "AskVolume1	"
+					  //"BidPrice2	"
+					  //"BidVolume2	"
+					  //"AskPrice2	"
+					  //"AskVolume2	"
+					  //"BidPrice3	"
+					  //"BidVolume3	"
+					  //"AskPrice3	"
+					  //"AskVolume3	"
+					  //"BidPrice4	"
+					  //"BidVolume4	"
+					  //"AskPrice4	"
+					  //"AskVolume4	"
+					  //"BidPrice5	"
+					  //"BidVolume5	"
+					  //"AskPrice5	"
+					  //"AskVolume5	"
+					  //"AveragePrice	"
+					  );
+		logHandlerPool[logInstMap.at(instrumentID)]->LogThisFastNoTimeStamp(data);
+		if(data)
+		{
+			delete [] data;
+			data = NULL;
+		}
+		return status;
 	}
-	return status;
+	catch(std::exception ex)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in CreateMarketDataFile(), error message: "<<ex.what();
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception(ex);
+	}
+	catch(...)
+	{
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in CreateMarketDataFile(), error message: unkonwn";
+		cout<<tempStream<<endl;
+		logger.LogThisFast(tempStream.str());
+		logger.Sync();
+		throw std::exception();
+	}
 }
 
 void MarketProcess::SetInstrument(char* instrumentID[])

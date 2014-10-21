@@ -7,3 +7,4 @@ TradeFrontServer=tcp://zjzx-front3.ctp.shcifco.com:41205;
 BrokerID=8070;
 InvestorID=885822;
 Password=072413;
+SaveMarketData=1;

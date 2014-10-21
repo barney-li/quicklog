@@ -102,7 +102,7 @@
     <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
     <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib;$(SolutionDir)\MarketSubscriber\src\CTPAPI</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'">
@@ -110,7 +110,7 @@
     <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
     <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib;$(SolutionDir)\MarketSubscriber\src\CTPAPI</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -119,6 +119,7 @@
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,6 +141,7 @@
       <CallingConvention>Cdecl</CallingConvention>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,6 +166,7 @@
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
