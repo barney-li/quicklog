@@ -101,7 +101,7 @@ void MarketProcess::SubscribeInstrument(void)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in SubscribInstrument(), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in SubscribInstrument(), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -111,7 +111,7 @@ void MarketProcess::SubscribeInstrument(void)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in SubscribeInstrument(), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in SubscribeInstrument(), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -153,7 +153,7 @@ void MarketProcess::SubscribeInstrument(char* instrumentID[], int numInstrument)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in SubscribeInstrument(char*[],int), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in SubscribeInstrument(char*[],int), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -163,7 +163,7 @@ void MarketProcess::SubscribeInstrument(char* instrumentID[], int numInstrument)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in SubscribeInstrument(char*[], int), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in SubscribeInstrument(char*[], int), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -213,7 +213,7 @@ void MarketProcess::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpeci
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in OnRspSubMarketData(), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in OnRspSubMarketData(), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -223,7 +223,7 @@ void MarketProcess::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpeci
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in OnRspSubMarketData(), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in OnRspSubMarketData(), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -251,7 +251,7 @@ void MarketProcess::ReqLogIn(void)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in ReqLogIn(), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in ReqLogIn(), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -261,7 +261,7 @@ void MarketProcess::ReqLogIn(void)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in ReqLogIn(), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in ReqLogIn(), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -318,7 +318,7 @@ void MarketProcess::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthM
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in OnRtnDepthMarketData(), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in OnRtnDepthMarketData(), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -327,7 +327,7 @@ void MarketProcess::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField* pDepthM
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in OnRtnDepthMarketData(), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in OnRtnDepthMarketData(), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -446,7 +446,7 @@ void MarketProcess::RecordMarketData(CThostFtdcDepthMarketDataField* pDepthMarke
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in RecordMarketData(), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in RecordMarketData(), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -455,7 +455,7 @@ void MarketProcess::RecordMarketData(CThostFtdcDepthMarketDataField* pDepthMarke
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in RecordMarketData(), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in RecordMarketData(), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -525,7 +525,7 @@ bool MarketProcess::CreateMarketDataFile(char* instrumentID)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in CreateMarketDataFile(), error message: "<<ex.what();
+		tempStream<<"[EXCEPTION]: exception in CreateMarketDataFile(), error message: "<<ex.what();
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();
@@ -535,7 +535,7 @@ bool MarketProcess::CreateMarketDataFile(char* instrumentID)
 	{
 		stringstream tempStream;
 		tempStream.str("");
-		tempStream<<"exception in CreateMarketDataFile(), error message: unkonwn";
+		tempStream<<"[EXCEPTION]: exception in CreateMarketDataFile(), error message: unkonwn";
 		cout<<tempStream<<endl;
 		logger.LogThisFast(tempStream.str());
 		logger.Sync();

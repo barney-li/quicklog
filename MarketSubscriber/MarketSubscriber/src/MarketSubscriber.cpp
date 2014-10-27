@@ -44,6 +44,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	config.ReadList(&brokerIdConfig, "BrokerID", ";");
 	config.ReadList(&investorIdConfig, "InvestorID", ";");
 	config.ReadList(&passwordConfig, "Password", ";");
+
+	bool lInstrumentListReady = false;
+	int lExceptionCount = 0;
 	/* initialize trade agent */
 	do
 	{
@@ -81,6 +84,7 @@ int _tmain(int argc, _TCHAR* argv[])
 					if(tradeObj->InstrumentListReady())
 					{
 						logger.LogThisFast("[INFO]: instrument list ready");
+						lInstrumentListReady = true;
 						break;
 					}
 				}
@@ -88,24 +92,40 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		catch(std::exception ex)
 		{
+			lExceptionCount++;
 			stringstream tempStream;
 			tempStream.str("");
-			tempStream<<"exception in main(), error message: "<<ex.what();
-			cout<<tempStream<<endl;
+			tempStream<<"[EXCEPTION]: exception in main(), error message: "<<ex.what();
+			cout<<tempStream.str()<<endl;
 			logger.LogThisFast(tempStream.str());
 			logger.Sync();
+			if(lExceptionCount>10000)
+			{
+				cout<<"[ERROR]: too many exceptions, system halt"<<endl;
+				logger.LogThisFast((string)"[EXCEPTION]: too many exceptions, system halt");
+				logger.Sync();
+				return -1;
+			}
 		}
 		catch(...)
 		{
+			lExceptionCount++;
 			stringstream tempStream;
 			tempStream.str("");
-			tempStream<<"exception in main(), error message: unknown";
-			cout<<tempStream<<endl;
+			tempStream<<"[EXCEPTION]: exception in main(), error message: unknown";
+			cout<<tempStream.str()<<endl;
 			logger.LogThisFast(tempStream.str());
 			logger.Sync();
+			if(lExceptionCount>10000)
+			{
+				cout<<"[ERROR]: too many exceptions, system halt"<<endl;
+				logger.LogThisFast((string)"[EXCEPTION]: too many exceptions, system halt");
+				logger.Sync();
+				return -1;
+			}
 		}
 	}
-	while(tradeObj->InstrumentListReady() == false);
+	while(lInstrumentListReady == false);
 
 	/* initialize market agent */
 	strcpy(marketObj.broker, brokerIdConfig);
