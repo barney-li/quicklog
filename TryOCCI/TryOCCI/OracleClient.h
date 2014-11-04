@@ -49,7 +49,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in CreateConnection(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				return SQL_EXCEPTION;
 			}
 			catch(std::exception ex)
@@ -57,7 +57,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in CreateConnection(), error message: "<<ex.what();
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				return UNKNOWN_EXCEPTION; 
 			}
 			catch(...)
@@ -65,34 +65,33 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in CreateConnection(), error message: unknown";
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				return UNKNOWN_EXCEPTION; 
 			}
 		}
-		/*virtual TRANSACTION_RESULT_TYPE CreateMarketDataTable(string aTableName)
+		virtual TRANSACTION_RESULT_TYPE CreateMarketDataTable(string aTableName)
 		{
-			return TRANSACTION_RESULT_TYPE::NO_ERROR;
 			Statement* mStat = NULL;
 			try
 			{
 				int i=0;
-				const string lSqlStatement = "CREATE TABLE " + aTableName + " (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33,:34,:35,:36,:37,:38,:39,:40,:41,:42,:43,:44)";
-				mStat = mConn->createStatement();
-				if(mStat == NULL) throw(std::exception("create statement failed"));
-				mStat->setSQL(lSqlStatement);
-
+				string lSqlStatement = "CREATE TABLE " + aTableName + "(";
+				lSqlStatement += " trading_day varchar2(9),";	
+				lSqlStatement += " instrument_id varchar2(11),";
+				lSqlStatement += " exchange_id varchar2(9)";
+				lSqlStatement += ")";
 				///交易日				TThostFtdcDateType	TradingDay;
-				mStat->setString(++i,(string)aMarketData.TradingDay);
+				//mStat->setString(++i,"trading_day varchar2(9)");
 
 				///合约代码				TThostFtdcInstrumentIDType	InstrumentID;
-				mStat->setString(++i,(string)aMarketData.InstrumentID);
+				//mStat->setString(++i,"instrument_id varchar2(11)");
 
 				///交易所代码			TThostFtdcExchangeIDType	ExchangeID;
-				mStat->setString(++i,(string)aMarketData.ExchangeID);
+				//mStat->setString(++i,"exchange_id varchar2(9)");
 
 				///合约在交易所的代码	TThostFtdcExchangeInstIDType	ExchangeInstID;
-				mStat->setString(++i,(string)aMarketData.ExchangeInstID);
-
+				//mStat->setString(++i,"exchange_instrument_id varchar2(31)");
+/*
 				///最新价				TThostFtdcPriceType	LastPrice;
 				mStat->setDouble(++i,aMarketData.LastPrice);
 
@@ -212,9 +211,12 @@ namespace DatabaseUtilities
 
 				///业务日期				TThostFtdcDateType	ActionDay;
 				mStat->setString(++i, (string)aMarketData.ActionDay);
-
+*/
+				mStat = mConn->createStatement();
+				if(mStat == NULL) throw(std::exception("create statement failed"));
+				mStat->setSQL(lSqlStatement);
 				mStat->executeUpdate();
-				cout<<"insert market data successful"<<endl;
+				cout<<"create market data table \""<<aTableName<<"\" successful"<<endl;
 				return NO_ERROR; 
 			}
 			catch(SQLException ex)
@@ -222,7 +224,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in CreateMarketDataTable(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				if(mStat != NULL) mConn->terminateStatement(mStat);
 				return SQL_EXCEPTION;
 			}
@@ -231,7 +233,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in CreateMarketDataTable(), error message: "<<ex.what();
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				if(mStat != NULL) mConn->terminateStatement(mStat);
 				return UNKNOWN_EXCEPTION; 
 			}
@@ -240,11 +242,11 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in CreateMarketDataTable(), error message: unknown";
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				if(mStat != NULL) mConn->terminateStatement(mStat);
 				return UNKNOWN_EXCEPTION; 
 			}
-		}*/
+		}
 		virtual TRANSACTION_RESULT_TYPE InsertMarketData(string aTableName, const CThostFtdcDepthMarketDataField& aMarketData)
 		{
 			int i=0;
@@ -398,7 +400,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in InsertMarketData(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				if(mStat != NULL) mConn->terminateStatement(mStat);
 				return SQL_EXCEPTION;
 			}
@@ -407,7 +409,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in InsertMarketData(), error message: "<<ex.what();
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				if(mStat != NULL) mConn->terminateStatement(mStat);
 				return UNKNOWN_EXCEPTION; 
 			}
@@ -416,7 +418,7 @@ namespace DatabaseUtilities
 				std::stringstream tempStream;
 				tempStream.str("");	
 				tempStream<<"exception in InsertMarketData(), error message: unknown";
-				cout<<tempStream<<endl;
+				cout<<tempStream.str()<<endl;
 				if(mStat != NULL) mConn->terminateStatement(mStat);
 				return UNKNOWN_EXCEPTION; 
 			}

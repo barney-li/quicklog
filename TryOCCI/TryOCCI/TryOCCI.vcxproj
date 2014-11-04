@@ -175,6 +175,8 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TestClass.h" />
+    <ClInclude Include="ThostFtdcUserApiDataType.h" />
+    <ClInclude Include="ThostFtdcUserApiStruct.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
