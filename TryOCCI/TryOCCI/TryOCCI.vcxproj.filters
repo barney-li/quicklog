@@ -36,12 +36,24 @@
     <ClInclude Include="ThostFtdcUserApiStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TestMarketDataType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TestMarketDataTypeMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TryOCCI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestMarketDataType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TestMarketDataTypeMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
