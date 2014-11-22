@@ -16,6 +16,17 @@ int _tmain(int argc, _TCHAR* argv[])
 	boost::posix_time::ptime endTime;
 	boost::posix_time::time_duration duration;
 
+	/*Log* logger5 = new Log(lLogDir, "LogThisAdvance.log", 128, false, 1);
+	startTime = boost::posix_time::microsec_clock::local_time();
+	for(i=0; i<100000; i++)
+	{
+		logger5->LogThisAdvance("log system test", LOG_INFO, LOG_STDIO_FILESYSTEM, true, true, true);
+	}
+	delete logger5;
+	endTime = boost::posix_time::microsec_clock::local_time();
+	duration = endTime-startTime;
+	cout<<"100000 times LogThisAdvance takes "<<duration.total_milliseconds()<<" ms"<<endl;*/
+
 	Log* logger1 = new Log(lLogDir, "LogThisFastTest.log", 128, true, 1);
 	startTime = boost::posix_time::microsec_clock::local_time();
 	for(i=0; i<100000; i++)

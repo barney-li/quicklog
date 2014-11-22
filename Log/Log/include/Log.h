@@ -13,6 +13,21 @@ namespace Utilities
 		CLOSE_FILE_FAILED,
 		WRITE_BUFFER_FAILED
 	};
+	enum LOG_LEVEL
+	{
+		LOG_DEBUG,
+		LOG_INFO,
+		LOG_WARNING,
+		LOG_ERROR,
+		LOG_FATAL,
+		LOG_LEVEL_MAX
+	};
+	enum LOG_OUTPUT
+	{
+		LOG_STDIO,
+		LOG_FILESYSTEM,
+		LOG_STDIO_FILESYSTEM
+	};
 	class Log
 	{
 	private:
@@ -57,6 +72,8 @@ namespace Utilities
 		__declspec(dllexport) LOG_OPS_STATUS TrySync(void);
 		// set log file name
 		__declspec(dllexport) void SetLogFile(string aDir, string aFileName);
+		// write log interface
+		__declspec(dllexport) LOG_OPS_STATUS LogThisAdvance(string aMessage, LOG_LEVEL aLevel, LOG_OUTPUT aOutput, bool aAsyncMode, bool aWithTimeStamp, bool aEnter = true);
 	
 	private:
 		// open log file

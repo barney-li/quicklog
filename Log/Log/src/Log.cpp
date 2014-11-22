@@ -190,6 +190,7 @@ LOG_OPS_STATUS Log::Sync(void)
 					bufferNo2.clear();
 				}
 			}
+			CloseLogFile();
 			return LOG_NO_ERROR;
 		}
 		else
@@ -300,4 +301,68 @@ LOG_OPS_STATUS Log::CloseLogFile()
 		cout<<"error in CloseLogFile()"<<endl;
 		return CLOSE_FILE_FAILED; 
 	}
+}
+LOG_OPS_STATUS Log::LogThisAdvance(string aMessage, LOG_LEVEL aLevel, LOG_OUTPUT aOutput, bool aAsyncMode, bool aWithTimeStamp, bool aEnter)
+{
+	string lLevelPrefix;
+	switch (aLevel)
+	{
+	case LOG_DEBUG:
+		lLevelPrefix = "[DEBUG]: ";
+		break;
+	case LOG_INFO:
+		lLevelPrefix = "[INFO]: ";
+		break;
+	case LOG_WARNING:
+		lLevelPrefix = "[WARNING]: ";
+		break;
+	case LOG_ERROR:
+		lLevelPrefix = "[ERROR]: ";
+		break;
+	case LOG_FATAL:
+		lLevelPrefix = "[FATAL]: ";
+		break;
+	default:
+		lLevelPrefix = "";
+	}
+	aMessage = lLevelPrefix + aMessage;
+	if(LOG_STDIO == aOutput || LOG_STDIO_FILESYSTEM == aOutput)
+	{
+		if(aWithTimeStamp)
+		{
+			boost::posix_time::ptime localTime = boost::posix_time::microsec_clock::local_time();
+			cout<<boost::gregorian::to_iso_extended_string(localTime.date())<<" "<<localTime.time_of_day()<<"	"<<aMessage.c_str();
+		}
+		else
+		{
+			cout<<aMessage.c_str();
+		}
+		if(aEnter) cout<<endl;
+	}
+	if(aOutput == LOG_FILESYSTEM || aOutput == LOG_STDIO_FILESYSTEM)
+	{
+		if(aWithTimeStamp)
+		{
+			if(aAsyncMode)
+			{
+				return LogThisFast(aMessage, aEnter);
+			}
+			else
+			{
+				return LogThis(aMessage, aEnter);
+			}
+		}
+		else
+		{
+			if(aAsyncMode)
+			{
+				return LogThisFastNoTimeStamp(aMessage, aEnter);
+			}
+			else
+			{
+				return LogThisNoTimeStamp(aMessage, aEnter);
+			}
+		}
+	}
+	
 }
