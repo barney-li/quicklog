@@ -73,6 +73,7 @@
     <IncludePath>C:\boost_1_57_0\VC10\include\boost-1_57;$(ProjectDir)include;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(ProjectDir)include;$(ProjectDir)src;$(SourcePath)</SourcePath>
+    <TargetName>$(ProjectName)-dg</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
