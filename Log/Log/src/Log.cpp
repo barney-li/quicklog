@@ -372,5 +372,5 @@ LOG_OPS_STATUS Log::LogThisAdvance(string aMessage, LOG_LEVEL aLevel, LOG_OUTPUT
 			}
 		}
 	}
-	
+	return LOG_NO_ERROR;	
 }

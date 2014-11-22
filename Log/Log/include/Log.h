@@ -73,7 +73,7 @@ namespace Utilities
 		// set log file name
 		__declspec(dllexport) void SetLogFile(string aDir, string aFileName);
 		// write log interface
-		__declspec(dllexport) LOG_OPS_STATUS LogThisAdvance(string aMessage, LOG_LEVEL aLevel, LOG_OUTPUT aOutput, bool aAsyncMode, bool aWithTimeStamp, bool aEnter = true);
+		__declspec(dllexport) LOG_OPS_STATUS LogThisAdvance(string aMessage, LOG_LEVEL aLevel, LOG_OUTPUT aOutput = LOG_STDIO_FILESYSTEM, bool aAsyncMode = true, bool aWithTimeStamp = true, bool aEnter = true);
 	
 	private:
 		// open log file
