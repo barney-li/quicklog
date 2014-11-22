@@ -166,37 +166,45 @@ LOG_OPS_STATUS Log::Sync(void)
 {
 	try
 	{
-		if(OpenLogFile() == LOG_NO_ERROR)
+		if(1 == bufferIndex)
 		{
-			if(1 == bufferIndex)
+			// do not sync the file unless there are new datas in the buffer
+			if(bufferNo1.size() > 0)
 			{
-				// do not sync the file unless there are new datas in the buffer
-				if(bufferNo1.size() > 0)
+				if(OpenLogFile() == LOG_NO_ERROR)
 				{
 					bufferIndex = 2;
 					logFileHandler<<bufferNo1;
 					logFileHandler.flush();
 					bufferNo1.clear();			
+					CloseLogFile();
+				}
+				else
+				{
+					return OPEN_FILE_FAILED;
 				}
 			}
-			else if(2 == bufferIndex)
+		}
+		else if(2 == bufferIndex)
+		{
+			// do not sync the file unless there are new datas in the buffer
+			if(bufferNo2.size() > 0)
 			{
-				// do not sync the file unless there are new datas in the buffer
-				if(bufferNo2.size() > 0)
+				if(OpenLogFile() == LOG_NO_ERROR)
 				{
 					bufferIndex = 1;
 					logFileHandler<<bufferNo2;
 					logFileHandler.flush();
 					bufferNo2.clear();
+					CloseLogFile();
+				}
+				else
+				{
+					return OPEN_FILE_FAILED;
 				}
 			}
-			CloseLogFile();
-			return LOG_NO_ERROR;
 		}
-		else
-		{
-			return OPEN_FILE_FAILED;
-		}
+		return LOG_NO_ERROR;
 	}
 	catch(...)
 	{
