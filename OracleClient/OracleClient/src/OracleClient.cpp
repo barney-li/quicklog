@@ -62,10 +62,12 @@ TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string 
 		mConnPkg[0].mConn->setStmtCacheSize(aCacheSize);
 		mConnPkg[0].mStat = mConnPkg[0].mConn->createStatement();
 		mConnPkg[0].mCacheSize = aCacheSize;
+		mConnPkg[0].mSyncSize = aCacheSize>>1;
 		mConnPkg[1].mConn = mEnv->createConnection(aUser, aPwd, aDb);
 		mConnPkg[1].mConn->setStmtCacheSize(aCacheSize);
 		mConnPkg[1].mStat = mConnPkg[1].mConn->createStatement();
 		mConnPkg[1].mCacheSize = aCacheSize;
+		mConnPkg[1].mSyncSize = aCacheSize>>1;
 		logger->LogThisAdvance("oracle client connected", LOG_INFO);
 		return TRANS_NO_ERROR;
 	}
@@ -224,10 +226,82 @@ TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConst
 }
 TRANSACTION_RESULT_TYPE OracleClient::Commit()
 {
-	;
+	try
+	{
+		unsigned int lConnIndex = GetDactConnIdx();
+		boost::lock_guard<boost::mutex> lLockGuard(mConnPkg[lConnIndex].mMutex);
+		if(mConnPkg[lConnIndex].mCacheUsed > 0)
+		{
+			mConnPkg[lConnIndex].mConn->commit();
+		}
+		return TRANS_NO_ERROR;
+	}
+	catch(SQLException ex)
+	{
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in Commit(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
+		cout<<tempStream.str()<<endl;
+		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		return SQL_EXCEPTION;
+	}
+	catch(...)
+	{
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in Commit(), error message: unknown";
+		cout<<tempStream.str()<<endl;
+		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		return UNKNOWN_EXCEPTION; 
+	}
 }
 
 TRANSACTION_RESULT_TYPE OracleClient::TryCommit()
 {
-	;
+	try
+	{
+		unsigned int lConnIndex = GetActConnIdx();
+		boost::lock_guard<boost::mutex> lLockGuard(mConnPkg[lConnIndex].mMutex);
+		if(mConnPkg[lConnIndex].mCacheUsed > mConnPkg[lConnIndex].mSyncSize)
+		{
+			SwitchActivedConnection();
+			/* signal the auto commit thread */
+			mCommitThreadCV.notify_one();
+		}// if the used cache size is bigger than sync size, signal the auto commit thread
+		if(mConnPkg[lConnIndex].mCacheUsed >= mConnPkg[lConnIndex].mCacheSize)
+		{
+			SwitchActivedConnection();
+			mConnPkg[lConnIndex].mConn->commit();
+		}// if the used cache size is no less than total cache size, commit no matter what
+		return TRANS_NO_ERROR;
+	}
+	catch(SQLException ex)
+	{
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in TryCommit(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
+		cout<<tempStream.str()<<endl;
+		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		return SQL_EXCEPTION;
+	}
+	catch(...)
+	{
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in TryCommit(), error message: unknown";
+		cout<<tempStream.str()<<endl;
+		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		return UNKNOWN_EXCEPTION; 
+	}
+}
+
+void OracleClient::CommitTask()
+{
+	boost::unique_lock<boost::mutex> lCommitTaskLock(mCommitThreadMutex);
+	while(mDestroyCommitThread == false)
+	{
+		// wait for 10 seconds before time out and commit, or wait for waking up by from external
+		mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(10));
+		Commit();
+	}
 }

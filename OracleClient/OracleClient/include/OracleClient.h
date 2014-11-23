@@ -7,6 +7,8 @@
 #include <list>
 #include <Log.h>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread.hpp>
+#include <boost/atomic.hpp>
 using namespace Utilities;
 using namespace oracle::occi;
 using namespace std;
@@ -28,6 +30,7 @@ namespace DatabaseUtilities
 			mStat = aStat;
 			mCacheSize = 0;
 			mCacheUsed = 0;
+			mSyncSize = 0;
 		}
 		ConnectionPackage()
 		{
@@ -35,6 +38,7 @@ namespace DatabaseUtilities
 			mStat = NULL;
 			mCacheSize = 0;
 			mCacheUsed = 0;
+			mSyncSize = 0;
 		}
 		~ConnectionPackage()
 		{
@@ -42,12 +46,14 @@ namespace DatabaseUtilities
 			mStat = NULL;
 			mCacheSize = 0;
 			mCacheUsed = 0;
+			mSyncSize = 0;
 		}
 		Connection* mConn;
 		Statement* mStat;
 		boost::mutex mMutex;
 		unsigned int mCacheUsed;
 		unsigned int mCacheSize;
+		unsigned int mSyncSize;
 	};
 	class OracleClient
 	{
@@ -62,6 +68,14 @@ namespace DatabaseUtilities
 		Log* logger;
 		// to protect mActivedConn 
 		boost::mutex mActivedConnMutex;
+		// to synchronize commit thread
+		boost::condition_variable mCommitThreadCV;
+		// to protect commit thread
+		boost::mutex mCommitThreadMutex;
+		// commit thread
+		boost::thread* mCommitThread;
+		// destroy commit thread flag
+		boost::atomic<bool> mDestroyCommitThread;
 
 		// get actived connection index
 		__declspec(dllexport) unsigned int GetActConnIdx();
@@ -69,16 +83,23 @@ namespace DatabaseUtilities
 		__declspec(dllexport) unsigned int GetDactConnIdx();
 		// switch actived connection to another
 		__declspec(dllexport) void SwitchActivedConnection();
+		// commit thread
+		__declspec(dllexport) void CommitTask();
 
 	public:
 		__declspec(dllexport) OracleClient()
 		{
 			mEnv = Environment::createEnvironment(Environment::OBJECT);
 			mActivedConn = 0;
+			mDestroyCommitThread = false;
+			mCommitThread = new boost::thread(boost::bind(&OracleClient::CommitTask, this));
 			logger = new Log(".\\Log\\", "OracleClientRunTimeLog.log", 1024, true, 100);
+
 		}
 		__declspec(dllexport) virtual ~OracleClient()
 		{
+			mDestroyCommitThread = true;
+			mCommitThread->join();
 			Disconnect();
 			if(mEnv != NULL)
 			{
