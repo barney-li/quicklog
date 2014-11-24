@@ -93,7 +93,7 @@ namespace DatabaseUtilities
 			mActivedConn = 0;
 			mDestroyCommitThread = false;
 			mCommitThread = new boost::thread(boost::bind(&OracleClient::CommitTask, this));
-			logger = new Log(".\\Log\\", "OracleClientRunTimeLog.log", 1024, true, 100);
+			logger = new Log("./Log/", "OracleClientRunTimeLog.log", 1024, true, 100);
 
 		}
 		__declspec(dllexport) virtual ~OracleClient()
@@ -117,7 +117,7 @@ namespace DatabaseUtilities
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Connect(string aUser, string aPwd, string aDb, unsigned int aCacheSize=100000);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, unsigned int& aCount);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit();
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Commit();

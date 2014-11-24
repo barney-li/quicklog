@@ -182,11 +182,11 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aOb
 		return UNKNOWN_EXCEPTION; 
 	}
 }
-TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, unsigned int& aCount)
+TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount)
 {
 	try
 	{
-		int lColIndex=1;
+		unsigned int lColIndex=1;
 		unsigned int lConnIndex = GetActConnIdx();
 		boost::lock_guard<boost::mutex> lLockGuard(mConnPkg[lConnIndex].mMutex);
 		oracle::occi::ResultSet* lResultSet;
@@ -300,8 +300,27 @@ void OracleClient::CommitTask()
 	boost::unique_lock<boost::mutex> lCommitTaskLock(mCommitThreadMutex);
 	while(mDestroyCommitThread == false)
 	{
-		// wait for 10 seconds before time out and commit, or wait for waking up by from external
+		try
+		{
+		// wait for 10 seconds before time out and commit, or wait for waking up from external
 		mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(10));
 		Commit();
+		}
+		catch(SQLException ex)
+		{
+			std::stringstream tempStream;
+			tempStream.str("");	
+			tempStream<<"exception in CommitTask(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
+			cout<<tempStream.str()<<endl;
+			logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		}
+		catch(...)
+		{
+			std::stringstream tempStream;
+			tempStream.str("");	
+			tempStream<<"exception in CommitTask(), error message: unknown";
+			cout<<tempStream.str()<<endl;
+			logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		}
 	}
 }
