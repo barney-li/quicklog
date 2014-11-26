@@ -4,6 +4,9 @@
 #include "stdafx.h"
 #include <Log.h>
 #include <OracleClient.h>
+#include "MarketDataType.h"
+#include "MarketDataTypeMap.h"
+#include <boost\date_time\posix_time\posix_time.hpp>
 using namespace Utilities;
 using namespace DatabaseUtilities;
 TRANSACTION_RESULT_TYPE CreateTypeTest(OracleClient* aClient)
@@ -156,6 +159,10 @@ TRANSACTION_RESULT_TYPE CreateTableTest(OracleClient* aClient)
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
+	boost::posix_time::ptime startTime;
+	boost::posix_time::ptime endTime;
+	boost::posix_time::time_duration duration;
+
 	Log* logger = new Log("./log/", "oracle client example log.log", 1024, true, 1);	
 	logger->LogThisAdvance("oracle client example started", 
 							LOG_INFO, 
@@ -163,7 +170,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	try
 	{
 		OracleClient* lClient = new OracleClient();
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 100) == TRANS_NO_ERROR)
+		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
+		MarketDataTypeMap(lEnv);
+		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 100, 0) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
@@ -189,6 +198,27 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			logger->LogThisAdvance("create table failed", LOG_INFO);
 		}
+		
+		double lLastPrice = 1000.1;
+		int lCount = 0;
+		MarketDataType* lMarketData = new MarketDataType();
+		oracle::occi::Timestamp lTimeStamp;
+		startTime = boost::posix_time::microsec_clock::local_time();
+		for(lCount=0; lCount<200; lCount++)
+		{
+			lMarketData->setdata_type_version(1.0);
+			lTimeStamp.fromText("2014-11-26 15:58:59.789000", "yyyy-mm-dd hh24:mi:ss.ff", "", lEnv);
+			lMarketData->settime_stamp(lTimeStamp);
+			lMarketData->settrading_day("20141126");
+			lMarketData->setlast_price(lLastPrice);
+			lLastPrice = lLastPrice+1.0;
+			lClient->InsertData("ag1412", lMarketData);
+			cout<<"insert data "<<lCount<<endl;
+		}
+		endTime = boost::posix_time::microsec_clock::local_time();
+		duration = endTime-startTime;
+		cout<<"200 times insert takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		delete lClient;
 	}
 	catch(SQLException ex)
 	{
@@ -202,6 +232,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		std::cout<<"exception in main()"<<std::endl;
 	}
+	
 	delete logger;
 	return 0;
 }

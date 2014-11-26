@@ -54,7 +54,7 @@ void OracleClient::SwitchActivedConnection()
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string aDb, unsigned int aCacheSize)
+TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize, unsigned long long aMaxCommitPeriod)
 {
 	try
 	{
@@ -68,6 +68,7 @@ TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string 
 		mConnPkg[1].mStat = mConnPkg[1].mConn->createStatement();
 		mConnPkg[1].mCacheSize = aCacheSize;
 		mConnPkg[1].mSyncSize = aCacheSize>>1;
+		mMaxCommitPeriod = aMaxCommitPeriod;
 		logger->LogThisAdvance("oracle client connected", LOG_INFO);
 		return TRANS_NO_ERROR;
 	}
@@ -161,7 +162,6 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aOb
 		mConnPkg[lConnIndex].mStat->setObject(1, aObj);
 		mConnPkg[lConnIndex].mStat->executeUpdate();
 		mConnPkg[lConnIndex].mCacheUsed++;
-		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
 	{
@@ -181,12 +181,13 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aOb
 		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
 		return UNKNOWN_EXCEPTION; 
 	}
+	return TryCommit();
 }
-TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount)
+TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned long long aRequiredSize, list<PObject*>& aObj, size_t& aCount)
 {
 	try
 	{
-		unsigned int lColIndex=1;
+		unsigned long long lColIndex=1;
 		unsigned int lConnIndex = GetActConnIdx();
 		boost::lock_guard<boost::mutex> lLockGuard(mConnPkg[lConnIndex].mMutex);
 		oracle::occi::ResultSet* lResultSet;
@@ -233,6 +234,7 @@ TRANSACTION_RESULT_TYPE OracleClient::Commit()
 		if(mConnPkg[lConnIndex].mCacheUsed > 0)
 		{
 			mConnPkg[lConnIndex].mConn->commit();
+			mConnPkg[lConnIndex].mCacheUsed = 0;
 		}
 		return TRANS_NO_ERROR;
 	}
@@ -267,6 +269,8 @@ TRANSACTION_RESULT_TYPE OracleClient::TryCommit()
 			SwitchActivedConnection();
 			/* signal the auto commit thread */
 			mCommitThreadCV.notify_one();
+			// test code
+			cout<<"notify condition variable"<<endl;
 		}// if the used cache size is bigger than sync size, signal the auto commit thread
 		if(mConnPkg[lConnIndex].mCacheUsed >= mConnPkg[lConnIndex].mCacheSize)
 		{
@@ -302,9 +306,13 @@ void OracleClient::CommitTask()
 	{
 		try
 		{
-		// wait for 10 seconds before time out and commit, or wait for waking up from external
-		mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(10));
-		Commit();
+			// wait for 10 seconds before time out and commit, or wait for waking up from external
+			if( 0 == mMaxCommitPeriod ) mCommitThreadCV.wait(lCommitTaskLock);
+			else mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(mMaxCommitPeriod));
+			Commit();
+			// test code
+			//mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(1));
+			cout<<"commit task running..."<<endl;
 		}
 		catch(SQLException ex)
 		{
