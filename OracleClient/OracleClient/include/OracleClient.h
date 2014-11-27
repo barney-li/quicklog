@@ -95,15 +95,16 @@ namespace DatabaseUtilities
 			mActivedConn = 0;
 			mDestroyCommitThread = false;
 			mMaxCommitPeriod = 0;
-			mCommitThread = new boost::thread(boost::bind(&OracleClient::CommitTask, this));
+			//mCommitThread = new boost::thread(boost::bind(&OracleClient::CommitTask, this));
 			logger = new Log("./Log/", "OracleClientRunTimeLog.log", 1024, true, 100);
 
 		}
 		__declspec(dllexport) virtual ~OracleClient()
 		{
-			mDestroyCommitThread = true;
-			mCommitThread->join();
-			Disconnect();
+			//mDestroyCommitThread = true;
+			//mCommitThreadCV.notify_one();// make sure the commit thread pass the wait
+			//mCommitThread->join();// wait for the thread to finish
+			Disconnect();// OCCI will commit when terminating connection
 			if(mEnv != NULL)
 			{
 				Environment::terminateEnvironment(mEnv);
@@ -120,7 +121,7 @@ namespace DatabaseUtilities
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize=100000, unsigned long long aMaxCommitPeriod=10);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned long long aRequiredSize, list<PObject*>& aObj, size_t& aCount);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit();
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Commit();

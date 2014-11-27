@@ -172,7 +172,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		OracleClient* lClient = new OracleClient();
 		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
 		MarketDataTypeMap(lEnv);
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 100, 0) == TRANS_NO_ERROR)
+		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 1000, 0) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
@@ -200,11 +200,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		
 		double lLastPrice = 1000.1;
-		int lCount = 0;
+		long long lCount = 0;
 		MarketDataType* lMarketData = new MarketDataType();
 		oracle::occi::Timestamp lTimeStamp;
 		startTime = boost::posix_time::microsec_clock::local_time();
-		for(lCount=0; lCount<200; lCount++)
+		for(lCount=0; lCount<10000LL; lCount++)
 		{
 			lMarketData->setdata_type_version(1.0);
 			lTimeStamp.fromText("2014-11-26 15:58:59.789000", "yyyy-mm-dd hh24:mi:ss.ff", "", lEnv);
@@ -217,7 +217,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
-		cout<<"200 times insert takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		cout<<"10000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		lClient->Commit();
+		endTime = boost::posix_time::microsec_clock::local_time();
+		duration = endTime-startTime;
+		cout<<"10000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
 		delete lClient;
 	}
 	catch(SQLException ex)

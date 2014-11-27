@@ -658,5 +658,4 @@ void MarketDataType::writeSQL(oracle::occi::AnyData& streamOCCI_)
 
 MarketDataType::~MarketDataType()
 {
-  int i;
 }
