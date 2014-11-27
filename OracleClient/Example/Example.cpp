@@ -172,7 +172,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		OracleClient* lClient = new OracleClient();
 		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
 		MarketDataTypeMap(lEnv);
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 1000, 0) == TRANS_NO_ERROR)
+		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 1000) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
