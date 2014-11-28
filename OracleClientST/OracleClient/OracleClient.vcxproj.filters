@@ -33,6 +33,12 @@
     <ClInclude Include="include\OracleClient.h">
       <Filter>Header Files\include</Filter>
     </ClInclude>
+    <ClInclude Include="include\MarketDataType.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\MarketDataTypeMap.h">
+      <Filter>Header Files\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -42,6 +48,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\OracleClient.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MarketDataType.cpp">
+      <Filter>Source Files\src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MarketDataTypeMap.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
   </ItemGroup>
