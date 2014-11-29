@@ -27,11 +27,16 @@ namespace DatabaseUtilities
 	};
 	struct MarketData
 	{
-		//MarketData(string aTableName, MarketDataType* aPayload)
-		//{
-		//	mTableName = aTableName;
-		//	memcpy(&mPayload, aPayload, sizeof(mPayload));
-		//}
+		MarketData(string aTableName, MarketDataType* aPayload)
+		{
+			mTableName = aTableName;
+			//memcpy(&mPayload, aPayload, sizeof(mPayload));
+			mPayload = *aPayload;
+		}
+		MarketData()
+		{
+			;
+		}
 		string mTableName;
 		MarketDataType mPayload;
 	};
@@ -68,9 +73,14 @@ namespace DatabaseUtilities
 		string mPwd;
 		// database address
 		string mDb;
-
+		// initialize statue
+		TRANSACTION_RESULT_TYPE mInitStat;
+		// commit accomplish indicator
+		boost::atomic<bool> mCommitFinished;
 		// commit thread
 		__declspec(dllexport) void CommitTask();
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Init();
+		__declspec(dllexport) virtual void Release();
 
 	public:
 		__declspec(dllexport) OracleClient(string aUser, string aPwd, string aDb, unsigned long long aCacheSize=100000, unsigned long long aMaxCommitPeriod=10)
@@ -81,8 +91,9 @@ namespace DatabaseUtilities
 			mCacheSize = aCacheSize;
 			mMaxCommitPeriod = aMaxCommitPeriod;
 			mDestroyCommitThread = false;
-			mMaxCommitPeriod = 0;
+			mInitStat = UNKNOWN_EXCEPTION;
 			mCommitThread = new boost::thread(boost::bind(&OracleClient::CommitTask, this));
+			boost::this_thread::yield();
 		}
 		__declspec(dllexport) virtual ~OracleClient()
 		{
@@ -115,13 +126,12 @@ namespace DatabaseUtilities
 			}
 		}
 		__declspec(dllexport) virtual Environment* GetEnvironment() const;
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Init();
-		__declspec(dllexport) virtual void Release();
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(MarketData* aObj);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, MarketDataType* aObj);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit();
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Commit();
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE GetInitStatus();
 	};
 }

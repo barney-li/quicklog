@@ -167,19 +167,27 @@ int _tmain(int argc, _TCHAR* argv[])
 	logger->LogThisAdvance("oracle client example started", 
 							LOG_INFO, 
 							LOG_STDIO_FILESYSTEM);
-	OracleClient* lClient = new OracleClient();
+	OracleClient* lClient = new OracleClient("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 1000, 0);
 	try
 	{
-		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
-		MarketDataTypeMap(lEnv);
-		if(lClient->Init("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 10000) == TRANS_NO_ERROR)
+		
+		unsigned lRetryCount = 0;
+		while(lClient->GetInitStatus() != TRANS_NO_ERROR && lRetryCount<10)
+		{
+			lRetryCount++;
+			boost::this_thread::sleep(boost::posix_time::millisec(500));
+		}
+		if(lClient->GetInitStatus() == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
 		else
 		{
 			logger->LogThisAdvance("database not connected", LOG_INFO);
+			return -1;
 		}
+		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
+		MarketDataTypeMap(lEnv);
 		
 		if(CreateTypeTest(lClient) == TRANS_NO_ERROR)
 		{
@@ -212,12 +220,12 @@ int _tmain(int argc, _TCHAR* argv[])
 			lMarketData->settrading_day("20141126");
 			lMarketData->setlast_price(lLastPrice);
 			lLastPrice = lLastPrice+1.0;
+
 			lClient->InsertData("ag1412", lMarketData);
 		}
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
 		cout<<"10000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
-		lClient->Commit();
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
 		cout<<"10000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;

@@ -4,6 +4,10 @@
 #include <stdafx.h>
 #include <OracleClient.h>
 using namespace DatabaseUtilities;
+TRANSACTION_RESULT_TYPE OracleClient::GetInitStatus()
+{
+	return mInitStat;
+}
 void OracleClient::Release()
 {
 	if(mConn != NULL && mStat != NULL)
@@ -21,6 +25,7 @@ void OracleClient::Release()
 		Environment::terminateEnvironment(mEnv);
 		mEnv=NULL;
 	}
+	mInitStat = UNKNOWN_EXCEPTION;
 }
 Environment* OracleClient::GetEnvironment() const
 {
@@ -42,6 +47,7 @@ TRANSACTION_RESULT_TYPE OracleClient::Init()
 		mBuffer[1].reserve(mCacheSize);
 		logger->LogThisAdvance("oracle client connected", LOG_INFO);
 		mDestroyCommitThread = false;
+		mInitStat = TRANS_NO_ERROR;
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
@@ -122,22 +128,20 @@ TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement)
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::InsertData(MarketData* aObj)
+TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, MarketDataType* aObj)
 {
 	try
 	{
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
-		mBuffer[mActivedBuffer].push_back(*aObj);
-		if(mBuffer[mActivedBuffer].size()>=mCacheSize)
+		MarketData tempObj(aTableName, aObj);
+		mBuffer[mActivedBuffer].push_back(tempObj);
+		if(mBuffer[mActivedBuffer].size()>=mCacheSize && mCommitFinished == true)
 		{
 			mActivedBuffer ^= 1;
+			mCommitThreadCV.notify_one();
+			cout<<"notify commit task"<<endl;
 		}
-		mCommitThreadCV.notify_one();
-		/*boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
-		mStat->setSQL("INSERT INTO " + aTableName + " VALUES (:1)");
-		mStat->setObject(1, aObj);
-		mStat->executeUpdate();
-		mCacheUsed++;*/
+		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
 	{
@@ -157,7 +161,6 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(MarketData* aObj)
 		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
 		return UNKNOWN_EXCEPTION; 
 	}
-	return TryCommit();
 }
 TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount)
 {
@@ -204,9 +207,13 @@ TRANSACTION_RESULT_TYPE OracleClient::Commit()
 {
 	try
 	{
-		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
-		mActivedBuffer ^= 1;
-		mCommitThreadCV.notify_one();
+		if(mCommitFinished)
+		{
+			boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
+			mActivedBuffer ^= 1;
+			mCommitThreadCV.notify_one();
+		}
+		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
 	{
@@ -233,11 +240,11 @@ TRANSACTION_RESULT_TYPE OracleClient::TryCommit()
 	try
 	{
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
-		if(mBuffer[mActivedBuffer].size()>=mCacheSize)
+		if(mBuffer[mActivedBuffer].size()>=mCacheSize && mCommitFinished)
 		{
 			mActivedBuffer ^= 1;
+			mCommitThreadCV.notify_one();
 		}
-		mCommitThreadCV.notify_one();
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
@@ -268,17 +275,45 @@ void OracleClient::CommitTask()
 	{
 		try
 		{
+			mCommitFinished = true;
 			// wait for mMaxCommitPeriod seconds before time out and commit, or wait for waking up from external
-			if( 0 == mMaxCommitPeriod ) mCommitThreadCV.wait(lCommitTaskLock);
-			else mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(mMaxCommitPeriod));
-			lCommitBuf = mActivedBuffer^1;	
-			for(vector<MarketData>::iterator it = mBuffer[lCommitBuf].begin(); it!=mBuffer[lCommitBuf].end(); it++)
+			if( 0 == mMaxCommitPeriod ) 
 			{
-				mStat->setSQL("INSERT INTO " + it->mTableName + " VALUES (:1)");
-				mStat->setObject(1, &it->mPayload);
-				mStat->executeUpdate();	
+				mCommitThreadCV.wait(lCommitTaskLock);
 			}
-			mConn->commit();
+			else 
+			{
+				mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(mMaxCommitPeriod));
+			}
+			mCommitFinished = false;
+			lCommitBuf = mActivedBuffer^1;	
+			if(mBuffer[lCommitBuf].size()>0)
+			{
+				boost::posix_time::ptime startTime;
+				boost::posix_time::ptime endTime;
+				boost::posix_time::time_duration duration;
+				startTime = boost::posix_time::microsec_clock::local_time();
+				for(vector<MarketData>::iterator it = mBuffer[lCommitBuf].begin(); it!=mBuffer[lCommitBuf].end(); it++)
+				{
+					cout<<"exe"<<endl;
+					mStat->setSQL("INSERT INTO " + it->mTableName + " VALUES (:1)");
+					mStat->setObject(1, &it->mPayload);
+					mStat->executeUpdate();
+				}
+				//for(int i=0;i<mBuffer[lCommitBuf].size(); i++)
+				//{
+				//	cout<<i<<endl;
+				//	mStat->setSQL("INSERT INTO " + mBuffer[lCommitBuf][i].mTableName + " VALUES (:1)");
+				//	mStat->setObject(1, &mBuffer[lCommitBuf][i].mPayload);
+				//	mStat->executeUpdate();
+				//}
+				cout<<"commit"<<endl;
+				mConn->commit();
+				endTime = boost::posix_time::microsec_clock::local_time();
+				duration = endTime-startTime;
+				cout<<"10000 times execute update takes "<<duration.total_milliseconds()<<" ms"<<endl;
+				mBuffer[lCommitBuf].clear();
+			}
 		}
 		catch(SQLException ex)
 		{
