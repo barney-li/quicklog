@@ -55,6 +55,8 @@ namespace DatabaseUtilities
 		unsigned long long mSyncSize;
 		// double buffer
 		vector<MarketData> mBuffer[2];
+		vector<MarketData> mBufferNo1;
+		vector<MarketData> mBufferNo2;
 		// indicate the actived buffer index
 		boost::atomic<unsigned int> mActivedBuffer;
 		// commit thread

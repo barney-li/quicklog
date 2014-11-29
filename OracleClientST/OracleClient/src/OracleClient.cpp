@@ -42,9 +42,11 @@ TRANSACTION_RESULT_TYPE OracleClient::Init()
 		mStat = mConn->createStatement();
 		mCacheUsed = 0;
 		mSyncSize = mCacheSize>>1;
-		mActivedBuffer = 0;
+		mActivedBuffer = 1;
 		mBuffer[0].reserve(mCacheSize);
 		mBuffer[1].reserve(mCacheSize);
+		mBufferNo1.reserve(mCacheSize);
+		mBufferNo2.reserve(mCacheSize);
 		logger->LogThisAdvance("oracle client connected", LOG_INFO);
 		mDestroyCommitThread = false;
 		mInitStat = TRANS_NO_ERROR;
@@ -134,13 +136,36 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, MarketDataTy
 	{
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
 		MarketData tempObj(aTableName, aObj);
-		mBuffer[mActivedBuffer].push_back(tempObj);
-		if(mBuffer[mActivedBuffer].size()>=mCacheSize && mCommitFinished == true)
+		
+		if(mActivedBuffer == 1)
 		{
-			mActivedBuffer ^= 1;
-			mCommitThreadCV.notify_one();
-			cout<<"notify commit task"<<endl;
+			mBufferNo1.push_back(tempObj);
+			cout<<"buffer: "<<mActivedBuffer<<"; size: "<<mBufferNo1.size()<<endl;
+			if(mBufferNo1.size()>=mCacheSize && mCommitFinished)
+			{
+				mActivedBuffer = 2;
+				mCommitThreadCV.notify_one();
+				cout<<"notify commit task"<<endl;
+			}
 		}
+		else if(mActivedBuffer == 2)
+		{
+			mBufferNo2.push_back(tempObj);
+			cout<<"buffer: "<<mActivedBuffer<<"; size: "<<mBufferNo2.size()<<endl;
+			if(mBufferNo2.size()>=mCacheSize && mCommitFinished)
+			{
+				mActivedBuffer = 1;
+				mCommitThreadCV.notify_one();
+				cout<<"notify commit task"<<endl;
+			}
+		}
+		
+		//if(mBuffer[mActivedBuffer].size()>=mCacheSize && mCommitFinished)
+		//{
+		//	mActivedBuffer ^= 1;
+		//	mCommitThreadCV.notify_one();
+		//	cout<<"notify commit task"<<endl;
+		//}
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
@@ -270,7 +295,6 @@ void OracleClient::CommitTask()
 {
 	Init();
 	boost::unique_lock<boost::mutex> lCommitTaskLock(mCommitThreadMutex);
-	unsigned int lCommitBuf = 0;
 	while(mDestroyCommitThread == false)
 	{
 		try
@@ -286,34 +310,45 @@ void OracleClient::CommitTask()
 				mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(mMaxCommitPeriod));
 			}
 			mCommitFinished = false;
-			lCommitBuf = mActivedBuffer^1;	
-			if(mBuffer[lCommitBuf].size()>0)
+			if(mActivedBuffer == 2)
 			{
-				boost::posix_time::ptime startTime;
-				boost::posix_time::ptime endTime;
-				boost::posix_time::time_duration duration;
-				startTime = boost::posix_time::microsec_clock::local_time();
-				for(vector<MarketData>::iterator it = mBuffer[lCommitBuf].begin(); it!=mBuffer[lCommitBuf].end(); it++)
+				if(mBufferNo1.size()>0)
 				{
-					cout<<"exe"<<endl;
-					mStat->setSQL("INSERT INTO " + it->mTableName + " VALUES (:1)");
-					mStat->setObject(1, &it->mPayload);
-					mStat->executeUpdate();
+					cout<<"update buffer 1"<<endl;
+					cout<<"commit"<<endl;
+					mBufferNo1.clear();
 				}
-				//for(int i=0;i<mBuffer[lCommitBuf].size(); i++)
+			}
+			else if(mActivedBuffer == 1)
+			{
+				if(mBufferNo2.size()>0)
+				{
+					cout<<"update buffer 1"<<endl;
+					cout<<"commit"<<endl;
+					mBufferNo2.clear();
+				}
+			}
+			//if(mBuffer[lCommitBuf].size()>0)
+			//{
+				//boost::posix_time::ptime startTime;
+				//boost::posix_time::ptime endTime;
+				//boost::posix_time::time_duration duration;
+				//startTime = boost::posix_time::microsec_clock::local_time();
+				//for(vector<MarketData>::iterator it = mBuffer[lCommitBuf].begin(); it!=mBuffer[lCommitBuf].end(); it++)
 				//{
-				//	cout<<i<<endl;
-				//	mStat->setSQL("INSERT INTO " + mBuffer[lCommitBuf][i].mTableName + " VALUES (:1)");
-				//	mStat->setObject(1, &mBuffer[lCommitBuf][i].mPayload);
+				//	cout<<"update buffer"<<lCommitBuf<<endl;
+				//	mStat->setSQL("INSERT INTO " + it->mTableName + " VALUES (:1)");
+				//	mStat->setObject(1, &it->mPayload);
 				//	mStat->executeUpdate();
 				//}
-				cout<<"commit"<<endl;
-				mConn->commit();
-				endTime = boost::posix_time::microsec_clock::local_time();
-				duration = endTime-startTime;
-				cout<<"10000 times execute update takes "<<duration.total_milliseconds()<<" ms"<<endl;
-				mBuffer[lCommitBuf].clear();
-			}
+				//cout<<"update buffer "<<lCommitBuf<<endl;
+				//cout<<"commit"<<endl;
+				//mConn->commit();
+				//endTime = boost::posix_time::microsec_clock::local_time();
+				//duration = endTime-startTime;
+				//cout<<"10000 times execute update takes "<<duration.total_milliseconds()<<" ms"<<endl;
+				//mBuffer[lCommitBuf].clear();
+			//}
 		}
 		catch(SQLException ex)
 		{
