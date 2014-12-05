@@ -7,6 +7,7 @@
 #include "MarketDataType.h"
 #include "MarketDataTypeMap.h"
 #include <boost\date_time\posix_time\posix_time.hpp>
+#include "NonBlockDatabase.h"
 using namespace Utilities;
 using namespace DatabaseUtilities;
 TRANSACTION_RESULT_TYPE CreateTypeTest(OracleClient* aClient)
@@ -167,27 +168,19 @@ int _tmain(int argc, _TCHAR* argv[])
 	logger->LogThisAdvance("oracle client example started", 
 							LOG_INFO, 
 							LOG_STDIO_FILESYSTEM);
-	OracleClient* lClient = new OracleClient("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 1000, 0);
+	OracleClient* lClient = new OracleClient();
 	try
 	{
-		
-		unsigned lRetryCount = 0;
-		while(lClient->GetInitStatus() != TRANS_NO_ERROR && lRetryCount<10)
-		{
-			lRetryCount++;
-			boost::this_thread::sleep(boost::posix_time::millisec(500));
-		}
-		if(lClient->GetInitStatus() == TRANS_NO_ERROR)
+		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
+		MarketDataTypeMap(lEnv);
+		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 10000) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
 		else
 		{
 			logger->LogThisAdvance("database not connected", LOG_INFO);
-			return -1;
 		}
-		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
-		MarketDataTypeMap(lEnv);
 		
 		if(CreateTypeTest(lClient) == TRANS_NO_ERROR)
 		{
@@ -209,23 +202,45 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 		double lLastPrice = 1000.1;
 		long long lCount = 0;
-		MarketDataType* lMarketData = new MarketDataType();
+		//MarketDataType* lMarketData = new MarketDataType();
 		oracle::occi::Timestamp lTimeStamp;
-		startTime = boost::posix_time::microsec_clock::local_time();
-		for(lCount=0; lCount<10000LL; lCount++)
+		
+		NonBlockDatabase* lNonBlockClient = new NonBlockDatabase("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 10000, 1);
+		while(lNonBlockClient->InitFinished() == false)
 		{
-			lMarketData->setdata_type_version(1.0);
-			lTimeStamp.fromText("2014-11-26 15:58:59.789000", "yyyy-mm-dd hh24:mi:ss.ff", "", lEnv);
-			lMarketData->settime_stamp(lTimeStamp);
-			lMarketData->settrading_day("20141126");
-			lMarketData->setlast_price(lLastPrice);
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+		}
+		CThostFtdcDepthMarketDataField lMarketDataStruct;
+		string lErrMsg;
+		startTime = boost::posix_time::microsec_clock::local_time();
+		for(lCount=0; lCount<200000LL; lCount++)
+		{
+			strncpy(&lMarketDataStruct.InstrumentID, "ag1412", sizeof(TThostFtdcInstrumentIDType));
+			strncpy(&lMarketDataStruct.TradingDay, "20141204", sizeof(TThostFtdcDateType));
+			lMarketDataStruct.LastPrice = lLastPrice;
+			if(lNonBlockClient->InsertData("ag1412", &lMarketDataStruct, lErrMsg) == NonBlockDatabase::BUFFER_OVERFLOW)
+			{
+				cout<<lErrMsg<<endl;
+			}
+			if(lCount%1000 == 0)
+			{
+				cout<<lCount<<".";
+				boost::this_thread::sleep(boost::posix_time::seconds(1));
+			}
+			//lMarketData->setdata_type_version(1.0);
+			//lTimeStamp.fromText("2014-11-26 15:58:59.789000", "yyyy-mm-dd hh24:mi:ss.ff", "", lEnv);
+			//lMarketData->settime_stamp(lTimeStamp);
+			//lMarketData->settrading_day("20141126");
+			//lMarketData->setlast_price(lLastPrice);
 			lLastPrice = lLastPrice+1.0;
 
-			lClient->InsertData("ag1412", lMarketData);
+			//lClient->InsertData("ag1412", lMarketData);
 		}
+		delete lNonBlockClient;
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
 		cout<<"10000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		//lClient->Commit();
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
 		cout<<"10000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;

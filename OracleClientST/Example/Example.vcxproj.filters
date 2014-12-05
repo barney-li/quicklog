@@ -30,6 +30,15 @@
     <ClInclude Include="MarketDataTypeMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NonBlockDatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostFtdcUserApiDataType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThostFtdcUserApiStruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
