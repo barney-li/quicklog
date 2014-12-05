@@ -118,9 +118,9 @@ namespace DatabaseUtilities
 				logger = NULL;
 			}
 		}
-		__declspec(dllexport) virtual void Disconnect();
 		__declspec(dllexport) virtual Environment* GetEnvironment() const;
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize=100000, unsigned long long aMaxCommitPeriod=10);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Disconnect();
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount);

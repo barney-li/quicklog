@@ -4,27 +4,48 @@
 #include <stdafx.h>
 #include <OracleClient.h>
 using namespace DatabaseUtilities;
-void OracleClient::Disconnect()
+TRANSACTION_RESULT_TYPE OracleClient::Disconnect()
 {
-	if(mConnPkg[0].mStat != NULL)
+	try
 	{
-		mConnPkg[0].mConn->terminateStatement(mConnPkg[0].mStat);
-		mConnPkg[0].mStat=NULL;
+		if(mConnPkg[0].mStat != NULL)
+		{
+			mConnPkg[0].mConn->terminateStatement(mConnPkg[0].mStat);
+			mConnPkg[0].mStat=NULL;
+		}
+		if(mConnPkg[0].mConn != NULL)
+		{
+			mEnv->terminateConnection(mConnPkg[0].mConn);
+			mConnPkg[0].mConn=NULL;
+		}
+		if(mConnPkg[1].mStat != NULL)
+		{
+			mConnPkg[1].mConn->terminateStatement(mConnPkg[1].mStat);
+			mConnPkg[1].mStat=NULL;
+		}
+		if(mConnPkg[1].mConn != NULL)
+		{
+			mEnv->terminateConnection(mConnPkg[1].mConn);
+			mConnPkg[1].mConn=NULL;
+		}
 	}
-	if(mConnPkg[0].mConn != NULL)
+	catch(SQLException ex)
 	{
-		mEnv->terminateConnection(mConnPkg[0].mConn);
-		mConnPkg[0].mConn=NULL;
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in Disconnect(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
+		cout<<tempStream.str()<<endl;
+		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		return SQL_EXCEPTION;
 	}
-	if(mConnPkg[1].mStat != NULL)
+	catch(...)
 	{
-		mConnPkg[1].mConn->terminateStatement(mConnPkg[1].mStat);
-		mConnPkg[1].mStat=NULL;
-	}
-	if(mConnPkg[1].mConn != NULL)
-	{
-		mEnv->terminateConnection(mConnPkg[1].mConn);
-		mConnPkg[1].mConn=NULL;
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in Disconnect(), error message: unknown";
+		cout<<tempStream.str()<<endl;
+		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		return UNKNOWN_EXCEPTION; 
 	}
 }
 Environment* OracleClient::GetEnvironment() const
@@ -74,7 +95,7 @@ TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string 
 	{
 		std::stringstream tempStream;
 		tempStream.str("");	
-		tempStream<<"exception in CreateConnection(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
+		tempStream<<"exception in Connect(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
 		cout<<tempStream.str()<<endl;
 		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
 		return SQL_EXCEPTION;
@@ -83,7 +104,7 @@ TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string 
 	{
 		std::stringstream tempStream;
 		tempStream.str("");	
-		tempStream<<"exception in CreateConnection(), error message: unknown";
+		tempStream<<"exception in Connect(), error message: unknown";
 		cout<<tempStream.str()<<endl;
 		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
 		return UNKNOWN_EXCEPTION; 
@@ -180,7 +201,6 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aOb
 		return UNKNOWN_EXCEPTION; 
 	}
 	return TryCommit();
-	//return TRANS_NO_ERROR;
 }
 TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount)
 {
@@ -262,16 +282,16 @@ TRANSACTION_RESULT_TYPE OracleClient::TryCommit()
 	{
 		unsigned int lConnIndex = GetActConnIdx();
 		boost::lock_guard<boost::mutex> lLockGuard(mConnPkg[lConnIndex].mMutex);
-		if(mConnPkg[lConnIndex].mCacheUsed > mConnPkg[lConnIndex].mSyncSize)
+		if(mConnPkg[lConnIndex].mCacheUsed > mConnPkg[lConnIndex].mCacheSize)
 		{
 			/* signal the auto commit thread */
-			//mCommitThreadCV.notify_one();
+			mCommitThreadCV.notify_one();
 		}// if the used cache size is bigger than sync size, signal the auto commit thread
-		//if(mConnPkg[lConnIndex].mCacheUsed >= mConnPkg[lConnIndex].mCacheSize)
-		//{
-		//	mConnPkg[lConnIndex].mConn->commit();
-		//	mConnPkg[lConnIndex].mCacheUsed = 0;
-		//}// if the used cache size is no less than total cache size, commit no matter what
+		if(mConnPkg[lConnIndex].mCacheUsed >= mConnPkg[lConnIndex].mCacheSize)
+		{
+			//mConnPkg[lConnIndex].mConn->commit();
+			//mConnPkg[lConnIndex].mCacheUsed = 0;
+		}// if the used cache size is no less than total cache size, commit no matter what
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
@@ -302,11 +322,16 @@ void OracleClient::CommitTask()
 		try
 		{
 			// wait for mMaxCommitPeriod seconds before time out and commit, or wait for waking up from external
-			//if( 0 == mMaxCommitPeriod ) mCommitThreadCV.wait(lCommitTaskLock);
-			//else mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(mMaxCommitPeriod));
-			//test code
-			cout<<"commit"<<endl;
-			Commit();
+			if( 0 == mMaxCommitPeriod ) mCommitThreadCV.wait(lCommitTaskLock);
+			else mCommitThreadCV.wait_for(lCommitTaskLock, boost::chrono::seconds(mMaxCommitPeriod));
+			cout<<"commit"<<endl;//test code
+			//Commit();
+
+			SwitchActivedConnection();
+			unsigned int lConnIndex = GetDactConnIdx();
+			// no need to lock mutex because this connection is deactived
+			mConnPkg[lConnIndex].mConn->commit();
+			mConnPkg[lConnIndex].mCacheUsed = 0;
 			
 		}
 		catch(SQLException ex)
