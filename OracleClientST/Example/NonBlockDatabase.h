@@ -203,7 +203,6 @@ public:
 		}
 		mQueue.push_back(lData);
 		mStuffedBuffer = true;
-		//cout<<"queue size: "<<mQueue.size()<<" notify insert task "<<endl;
 		/* notify insert task here */
 		mInsertThreadCV.notify_one();
 		if(mMaxCacheUsage < mQueue.size())
@@ -247,13 +246,7 @@ public:
 				for(int i=0; i<lTempQueue.size(); i++)
 				{
 					/* insert lTempQueue into lClient */;
-					/*lMarketData->setdata_type_version(1.0);
-					lTimeStamp.fromText(lTempQueue[i].mTimeStamp, lTempQueue[i].mTimeStampFormat, "", lEnv);
-					lMarketData->settime_stamp(lTimeStamp);
-					lMarketData->settrading_day(lTempQueue[i].mData.TradingDay);
-					lMarketData->setlast_price(lTempQueue[i].mData.LastPrice);*/
 					FlushBufferToDatabase(lMarketData, lClient, lTimeStamp, &lTempQueue[i], lEnv);
-					//lClient->InsertData(lTempQueue[i].mTableName, lMarketData);
 				}
 				lTempQueue.clear();
 			}
