@@ -80,7 +80,110 @@ public:
 		mInsertThread->join();
 		delete mInsertThread;
 	}
+	void InsertBreakChar(CThostFtdcDepthMarketDataField* aData)
+	{
+		/////交易日
+		//TThostFtdcDateType	TradingDay;
+		const int lTradingDayBreak = sizeof(TThostFtdcDateType) - 1;
+		aData->TradingDay[lTradingDayBreak] = NULL;
+		/////合约代码
+		//TThostFtdcInstrumentIDType	InstrumentID;
+		const int lInstrumentIDBreak = sizeof(TThostFtdcInstrumentIDType) - 1;
+		aData->InstrumentID[lInstrumentIDBreak] = NULL;
+		/////交易所代码
+		//TThostFtdcExchangeIDType	ExchangeID;
+		const int lExchangeIDBreak = sizeof(TThostFtdcExchangeIDType) - 1;
+		aData->ExchangeID[lExchangeIDBreak] = NULL;
+		/////合约在交易所的代码
+		//TThostFtdcExchangeInstIDType	ExchangeInstID;
+		const int lExchangeInstIDBreak = sizeof(TThostFtdcExchangeInstIDType) - 1;
+		aData->ExchangeInstID[lExchangeIDBreak] = NULL;
+		/////最新价
+		//TThostFtdcPriceType	LastPrice;
+		/////上次结算价
+		//TThostFtdcPriceType	PreSettlementPrice;
+		/////昨收盘
+		//TThostFtdcPriceType	PreClosePrice;
+		/////昨持仓量
+		//TThostFtdcLargeVolumeType	PreOpenInterest;
+		/////今开盘
+		//TThostFtdcPriceType	OpenPrice;
+		/////最高价
+		//TThostFtdcPriceType	HighestPrice;
+		/////最低价
+		//TThostFtdcPriceType	LowestPrice;
+		/////数量
+		//TThostFtdcVolumeType	Volume;
+		/////成交金额
+		//TThostFtdcMoneyType	Turnover;
+		/////持仓量
+		//TThostFtdcLargeVolumeType	OpenInterest;
+		/////今收盘
+		//TThostFtdcPriceType	ClosePrice;
+		/////本次结算价
+		//TThostFtdcPriceType	SettlementPrice;
+		/////涨停板价
+		//TThostFtdcPriceType	UpperLimitPrice;
+		/////跌停板价
+		//TThostFtdcPriceType	LowerLimitPrice;
+		/////昨虚实度
+		//TThostFtdcRatioType	PreDelta;
+		/////今虚实度
+		//TThostFtdcRatioType	CurrDelta;
+		/////最后修改时间
+		//TThostFtdcTimeType	UpdateTime;
+		const int lUpdateTimeBreak = sizeof(TThostFtdcTimeType) - 1;
+		aData->UpdateTime[lUpdateTimeBreak] = NULL;
+		/////最后修改毫秒
+		//TThostFtdcMillisecType	UpdateMillisec;
+		/////申买价一
+		//TThostFtdcPriceType	BidPrice1;
+		/////申买量一
+		//TThostFtdcVolumeType	BidVolume1;
+		/////申卖价一
+		//TThostFtdcPriceType	AskPrice1;
+		/////申卖量一
+		//TThostFtdcVolumeType	AskVolume1;
+		/////申买价二
+		//TThostFtdcPriceType	BidPrice2;
+		/////申买量二
+		//TThostFtdcVolumeType	BidVolume2;
+		/////申卖价二
+		//TThostFtdcPriceType	AskPrice2;
+		/////申卖量二
+		//TThostFtdcVolumeType	AskVolume2;
+		/////申买价三
+		//TThostFtdcPriceType	BidPrice3;
+		/////申买量三
+		//TThostFtdcVolumeType	BidVolume3;
+		/////申卖价三
+		//TThostFtdcPriceType	AskPrice3;
+		/////申卖量三
+		//TThostFtdcVolumeType	AskVolume3;
+		/////申买价四
+		//TThostFtdcPriceType	BidPrice4;
+		/////申买量四
+		//TThostFtdcVolumeType	BidVolume4;
+		/////申卖价四
+		//TThostFtdcPriceType	AskPrice4;
+		/////申卖量四
+		//TThostFtdcVolumeType	AskVolume4;
+		/////申买价五
+		//TThostFtdcPriceType	BidPrice5;
+		/////申买量五
+		//TThostFtdcVolumeType	BidVolume5;
+		/////申卖价五
+		//TThostFtdcPriceType	AskPrice5;
+		/////申卖量五
+		//TThostFtdcVolumeType	AskVolume5;
+		/////当日均价
+		//TThostFtdcPriceType	AveragePrice;
+		/////业务日期
+		//TThostFtdcDateType	ActionDay;
+		const int lActionDayBreak = sizeof(TThostFtdcDateType) - 1;
+		aData->ActionDay[lActionDayBreak] = NULL;
 
+	}
 	NON_BLOCK_STATUS InsertData(string aTableName, CThostFtdcDepthMarketDataField* aData, string& aErrMsg)
 	{
 		NON_BLOCK_STATUS lReturn = NO_ERROR;	
@@ -89,6 +192,8 @@ public:
 		stringstream lTimeStamp;
 		lTimeStamp.str("");
 		lTimeStamp<<boost::gregorian::to_iso_extended_string(lLocalTime.date())<<" "<<lLocalTime.time_of_day();
+		/* insert the break char here */
+		InsertBreakChar(aData);
 		DataPkg lData(string(lTimeStamp.str()), "yyyy-mm-dd hh24:mi:ss.ff", aTableName, aData);
 		if(mQueue.size()>mCacheSize)
 		{
@@ -191,84 +296,124 @@ public:
 			aMarketData->setexchange_instrument_id(aData->mData.ExchangeInstID);
 			/////最新价
 			//TThostFtdcPriceType	LastPrice;
+			aMarketData->setlast_price(aData->mData.LastPrice);
 			/////上次结算价
 			//TThostFtdcPriceType	PreSettlementPrice;
+			aMarketData->setpre_settlement_price(aData->mData.PreSettlementPrice);
 			/////昨收盘
 			//TThostFtdcPriceType	PreClosePrice;
+			aMarketData->setpre_close_price(aData->mData.PreClosePrice);
 			/////昨持仓量
 			//TThostFtdcLargeVolumeType	PreOpenInterest;
+			aMarketData->setpre_open_interest(aData->mData.PreOpenInterest);
 			/////今开盘
 			//TThostFtdcPriceType	OpenPrice;
+			aMarketData->setopen_price(aData->mData.OpenPrice);
 			/////最高价
 			//TThostFtdcPriceType	HighestPrice;
+			aMarketData->sethighest_price(aData->mData.HighestPrice);
 			/////最低价
 			//TThostFtdcPriceType	LowestPrice;
+			aMarketData->setlowest_price(aData->mData.LowestPrice);
 			/////数量
 			//TThostFtdcVolumeType	Volume;
+			aMarketData->setvolume(aData->mData.Volume);
 			/////成交金额
 			//TThostFtdcMoneyType	Turnover;
+			aMarketData->setturnover(aData->mData.Turnover);
 			/////持仓量
 			//TThostFtdcLargeVolumeType	OpenInterest;
+			aMarketData->setopen_interest(aData->mData.OpenInterest);
 			/////今收盘
 			//TThostFtdcPriceType	ClosePrice;
+			aMarketData->setclose_price(aData->mData.ClosePrice);
 			/////本次结算价
 			//TThostFtdcPriceType	SettlementPrice;
+			aMarketData->setsettlement_price(aData->mData.SettlementPrice);
 			/////涨停板价
 			//TThostFtdcPriceType	UpperLimitPrice;
+			aMarketData->setupper_limit_price(aData->mData.UpperLimitPrice);
 			/////跌停板价
 			//TThostFtdcPriceType	LowerLimitPrice;
+			aMarketData->setlower_limit_price(aData->mData.LowerLimitPrice);
 			/////昨虚实度
 			//TThostFtdcRatioType	PreDelta;
+			aMarketData->setpre_delta(aData->mData.PreDelta);
 			/////今虚实度
 			//TThostFtdcRatioType	CurrDelta;
+			aMarketData->setcurr_delta(aData->mData.CurrDelta);
 			/////最后修改时间
 			//TThostFtdcTimeType	UpdateTime;
+			aMarketData->setupdate_time(aData->mData.UpdateTime);
 			/////最后修改毫秒
 			//TThostFtdcMillisecType	UpdateMillisec;
+			aMarketData->setupdate_millisec(aData->mData.UpdateMillisec);
 			/////申买价一
 			//TThostFtdcPriceType	BidPrice1;
+			aMarketData->setbid_price_1(aData->mData.BidPrice1);
 			/////申买量一
 			//TThostFtdcVolumeType	BidVolume1;
+			aMarketData->setbid_volume_1(aData->mData.BidVolume1);
 			/////申卖价一
 			//TThostFtdcPriceType	AskPrice1;
+			aMarketData->setask_price_1(aData->mData.AskPrice1);
 			/////申卖量一
 			//TThostFtdcVolumeType	AskVolume1;
+			aMarketData->setask_volume_1(aData->mData.AskVolume1);
 			/////申买价二
 			//TThostFtdcPriceType	BidPrice2;
+			aMarketData->setbid_price_2(aData->mData.BidPrice2);
 			/////申买量二
 			//TThostFtdcVolumeType	BidVolume2;
+			aMarketData->setbid_volume_2(aData->mData.BidVolume2);
 			/////申卖价二
 			//TThostFtdcPriceType	AskPrice2;
+			aMarketData->setask_price_2(aData->mData.AskPrice2);
 			/////申卖量二
 			//TThostFtdcVolumeType	AskVolume2;
+			aMarketData->setask_volume_2(aData->mData.AskVolume2);
 			/////申买价三
 			//TThostFtdcPriceType	BidPrice3;
+			aMarketData->setbid_price_3(aData->mData.BidPrice3);
 			/////申买量三
 			//TThostFtdcVolumeType	BidVolume3;
+			aMarketData->setbid_volume_3(aData->mData.BidVolume3);
 			/////申卖价三
 			//TThostFtdcPriceType	AskPrice3;
+			aMarketData->setask_price_3(aData->mData.AskPrice3);
 			/////申卖量三
 			//TThostFtdcVolumeType	AskVolume3;
+			aMarketData->setask_volume_3(aData->mData.AskVolume3);
 			/////申买价四
 			//TThostFtdcPriceType	BidPrice4;
+			aMarketData->setbid_price_4(aData->mData.BidPrice4);
 			/////申买量四
 			//TThostFtdcVolumeType	BidVolume4;
+			aMarketData->setbid_volume_4(aData->mData.BidVolume4);
 			/////申卖价四
 			//TThostFtdcPriceType	AskPrice4;
+			aMarketData->setask_price_4(aData->mData.AskPrice4);
 			/////申卖量四
 			//TThostFtdcVolumeType	AskVolume4;
+			aMarketData->setask_volume_4(aData->mData.AskVolume4);
 			/////申买价五
 			//TThostFtdcPriceType	BidPrice5;
+			aMarketData->setbid_price_5(aData->mData.BidPrice5);
 			/////申买量五
 			//TThostFtdcVolumeType	BidVolume5;
+			aMarketData->setbid_volume_5(aData->mData.BidVolume5);
 			/////申卖价五
 			//TThostFtdcPriceType	AskPrice5;
+			aMarketData->setask_price_5(aData->mData.AskPrice5);
 			/////申卖量五
 			//TThostFtdcVolumeType	AskVolume5;
+			aMarketData->setask_volume_5(aData->mData.AskVolume5);
 			/////当日均价
 			//TThostFtdcPriceType	AveragePrice;
+			aMarketData->setaverage_price(aData->mData.AveragePrice);
 			/////业务日期
 			//TThostFtdcDateType	ActionDay;
+			aMarketData->setaction_day(aData->mData.ActionDay);
 
 			aClient->InsertData(aData->mTableName, aMarketData);
 		}

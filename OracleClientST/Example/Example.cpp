@@ -205,7 +205,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		//MarketDataType* lMarketData = new MarketDataType();
 		oracle::occi::Timestamp lTimeStamp;
 		
-		NonBlockDatabase* lNonBlockClient = new NonBlockDatabase("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 10000, 1);
+		NonBlockDatabase* lNonBlockClient = new NonBlockDatabase("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 50000, 1);
 		while(lNonBlockClient->InitFinished() == false)
 		{
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -213,10 +213,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		CThostFtdcDepthMarketDataField lMarketDataStruct;
 		string lErrMsg;
 		startTime = boost::posix_time::microsec_clock::local_time();
-		for(lCount=0; lCount<200000LL; lCount++)
+		for(lCount=0; lCount<5000000LL; lCount++)
 		{
-			strncpy(&lMarketDataStruct.InstrumentID, "ag1412", sizeof(TThostFtdcInstrumentIDType));
-			strncpy(&lMarketDataStruct.TradingDay, "20141204", sizeof(TThostFtdcDateType));
+			memcpy(&lMarketDataStruct.InstrumentID, "ag1412", sizeof(TThostFtdcInstrumentIDType));
+			memcpy(&lMarketDataStruct.TradingDay, "20141204", sizeof(TThostFtdcDateType));
 			lMarketDataStruct.LastPrice = lLastPrice;
 			if(lNonBlockClient->InsertData("ag1412", &lMarketDataStruct, lErrMsg) == NonBlockDatabase::BUFFER_OVERFLOW)
 			{
