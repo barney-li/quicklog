@@ -222,7 +222,7 @@ public:
 		oracle::occi::Timestamp lTimeStamp;
 		MarketDataTypeMap(lEnv);
 		MarketDataType* lMarketData = new MarketDataType();
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", mCacheSize) == TRANS_NO_ERROR)
+		if(lClient->Connect(mUser, mPwd, mDb, mCacheSize) == TRANS_NO_ERROR)
 		{
 			mLogger->LogThisAdvance("nonblock client connected", Utilities::LOG_INFO);
 			mInsertTaskInitFinished = true;

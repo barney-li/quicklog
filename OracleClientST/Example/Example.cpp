@@ -172,8 +172,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	try
 	{
 		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
-		MarketDataTypeMap(lEnv);
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 10000) == TRANS_NO_ERROR)
+		
+		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.0.107:1521/barneydb", 10000) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
@@ -190,7 +190,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			logger->LogThisAdvance("create type failed", LOG_INFO);
 		}
-
+		MarketDataTypeMap(lEnv);
 		if(CreateTableTest(lClient) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("create table successed", LOG_INFO);
@@ -204,7 +204,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		long long lCount = 0;
 		oracle::occi::Timestamp lTimeStamp;
 		
-		NonBlockDatabase* lNonBlockClient = new NonBlockDatabase("c##barney", "Lml19870310", "//192.168.183.128:1521/barneydb", 50000, 1);
+		NonBlockDatabase* lNonBlockClient = new NonBlockDatabase("c##barney", "Lml19870310", "//192.168.0.107:1521/barneydb", 50000, 1);
 		while(lNonBlockClient->InitFinished() == false)
 		{
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
@@ -212,7 +212,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		CThostFtdcDepthMarketDataField lMarketDataStruct;
 		string lErrMsg;
 		startTime = boost::posix_time::microsec_clock::local_time();
-		for(lCount=0; lCount<100000LL; lCount++)
+		for(lCount=0; lCount<1000000LL; lCount++)
 		{
 			memcpy(&lMarketDataStruct.InstrumentID, "ag1412", sizeof(TThostFtdcInstrumentIDType));
 			memcpy(&lMarketDataStruct.TradingDay, "20141204", sizeof(TThostFtdcDateType));
@@ -231,10 +231,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		delete lNonBlockClient;
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
-		cout<<"10000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		cout<<"1000000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
-		cout<<"10000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		cout<<"1000000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
 	}
 	catch(SQLException ex)
 	{
