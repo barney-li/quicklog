@@ -1,6 +1,4 @@
-﻿// TradeAgentVS.cpp : 
-// 使用posix_time库的时候貌似要定义下边这玩意，要不然构造ptime时会有异常
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include <iostream>
 #include <MarketProcess.h>
 #include <TradeProcess.h>

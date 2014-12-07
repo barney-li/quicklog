@@ -4,7 +4,7 @@
 //
 
 #pragma once
-
+#define BOOST_ALL_DYN_LINK
 #include "targetver.h"
 
 #include <stdio.h>

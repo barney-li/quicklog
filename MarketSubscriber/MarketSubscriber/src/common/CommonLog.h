@@ -1,6 +1,7 @@
 #pragma once
-#include "Log.h"
+#include <Log.h>
 using namespace std;
+using namespace Utilities;
 class CommonLog : public Log
 {
 private:

@@ -1,7 +1,8 @@
 #pragma once
-#include "Log.h"
+#include <Log.h>
 #include <list>
 #include <boost/thread.hpp>
+using namespace Utilities;
 class InstrumentLog : public Log
 {
 private:

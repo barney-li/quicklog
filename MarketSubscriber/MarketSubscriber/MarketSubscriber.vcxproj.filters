@@ -27,9 +27,6 @@
     <ClCompile Include="src\common\InstrumentLog.cpp">
       <Filter>src\common</Filter>
     </ClCompile>
-    <ClCompile Include="src\common\Log.cpp">
-      <Filter>src\common</Filter>
-    </ClCompile>
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp">
       <Filter>src\MarketProcess</Filter>
     </ClCompile>
@@ -69,9 +66,6 @@
       <Filter>src\common</Filter>
     </ClInclude>
     <ClInclude Include="src\common\InstrumentLog.h">
-      <Filter>src\common</Filter>
-    </ClInclude>
-    <ClInclude Include="src\common\Log.h">
       <Filter>src\common</Filter>
     </ClInclude>
     <ClInclude Include="src\common\ParseTradeInfo.h">
