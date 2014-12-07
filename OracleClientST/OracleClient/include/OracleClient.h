@@ -9,6 +9,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
+#include <stdexcept>
 using namespace Utilities;
 using namespace oracle::occi;
 using namespace std;
@@ -25,10 +26,7 @@ namespace DatabaseUtilities
 	class OracleClient
 	{
 	private:
-		// OCCI environment
 		Environment* mEnv;
-		// logger
-		Log* logger;
 		Connection* mConn;
 		Statement* mStat;
 		boost::mutex mOpMutex;
@@ -43,13 +41,14 @@ namespace DatabaseUtilities
 		__declspec(dllexport) OracleClient()
 		{
 			mEnv = Environment::createEnvironment(Environment::OBJECT);
-			logger = new Log("./Log/", "OracleClientRunTimeLog.log", 1024, true, 100);
 		}
 		__declspec(dllexport) virtual ~OracleClient()
 		{
 			try
 			{
-				Commit();
+				int lErrCode = 0;
+				string lErrMsg;
+				Commit(lErrCode, lErrMsg);
 				Disconnect();
 				if(mEnv != NULL)
 				{
@@ -59,35 +58,22 @@ namespace DatabaseUtilities
 			}
 			catch(SQLException ex)
 			{
-				std::stringstream tempStream;
-				tempStream.str("");	
-				tempStream<<"exception in ~OracleClient(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-				cout<<tempStream.str()<<endl;
-				logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+				throw new SQLException(ex);
 			}
 			catch(...)
 			{
-				std::stringstream tempStream;
-				tempStream.str("");	
-				tempStream<<"exception in ~OracleClient(), error message: unknown";
-				cout<<tempStream.str()<<endl;
-				logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
-			}
-			if(logger != NULL)
-			{
-				delete logger;
-				logger = NULL;
+				throw new std::exception("unknown exception in ~OracleClient()");
 			}
 		}
 		__declspec(dllexport) virtual void Disconnect();
 		__declspec(dllexport) virtual Environment* GetEnvironment() const;
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize=100000);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit();
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Commit();
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit(int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Commit(int& aErrCode, string& aErrMsg);
 		//__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ConnectionStatus() = 0;
 		//__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Reconnect() = 0;
 	};

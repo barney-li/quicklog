@@ -10,7 +10,7 @@
 #include "NonBlockDatabase.h"
 using namespace Utilities;
 using namespace DatabaseUtilities;
-TRANSACTION_RESULT_TYPE CreateTypeTest(OracleClient* aClient)
+TRANSACTION_RESULT_TYPE CreateTypeTest(OracleClient* aClient, int& aErrCode, string& aErrMsg)
 {
 	string lSqlStatement = "CREATE TYPE market_data_type AS OBJECT(";
 
@@ -152,14 +152,16 @@ TRANSACTION_RESULT_TYPE CreateTypeTest(OracleClient* aClient)
 
 	lSqlStatement += ")";
 
-	return aClient->ExecuteSql(lSqlStatement);
+	return aClient->ExecuteSql(lSqlStatement, aErrCode, aErrMsg);
 }
-TRANSACTION_RESULT_TYPE CreateTableTest(OracleClient* aClient)
+TRANSACTION_RESULT_TYPE CreateTableTest(OracleClient* aClient, int& aErrCode, string& aErrMsg)
 {
-	return aClient->CreateTableFromType("ag1412", "market_data_type");
+	return aClient->CreateTableFromType("ag1412", "market_data_type", aErrCode, aErrMsg);
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
+	int lErrCode = 0;
+	string lErrMsg = "";
 	boost::posix_time::ptime startTime;
 	boost::posix_time::ptime endTime;
 	boost::posix_time::time_duration duration;
@@ -173,31 +175,39 @@ int _tmain(int argc, _TCHAR* argv[])
 	{
 		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
 		
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.0.107:1521/barneydb", 10000) == TRANS_NO_ERROR)
+		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.0.107:1521/barneydb", 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
 		else
 		{
-			logger->LogThisAdvance("database not connected", LOG_INFO);
+			logger->LogThisAdvance("database cannot be connected, error message: " + lErrMsg, LOG_INFO);
 		}
 		
-		if(CreateTypeTest(lClient) == TRANS_NO_ERROR)
+		if(CreateTypeTest(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
-			logger->LogThisAdvance("create type successed", LOG_INFO);
+			logger->LogThisAdvance("create type successed", LOG_INFO, LOG_STDIO);
+		}
+		else if(lErrCode == 955)
+		{
+			logger->LogThisAdvance("type has already been created before", LOG_INFO, LOG_STDIO);
 		}
 		else
 		{
-			logger->LogThisAdvance("create type failed", LOG_INFO);
+			logger->LogThisAdvance("create type failed, error message: "+lErrMsg, LOG_ERROR);
 		}
 		MarketDataTypeMap(lEnv);
-		if(CreateTableTest(lClient) == TRANS_NO_ERROR)
+		if(CreateTableTest(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
-			logger->LogThisAdvance("create table successed", LOG_INFO);
+			logger->LogThisAdvance("create table successed", LOG_INFO, LOG_STDIO);
+		}
+		else if(lErrCode == 955)
+		{
+			logger->LogThisAdvance("table has already been created before", LOG_INFO, LOG_STDIO);
 		}
 		else
 		{
-			logger->LogThisAdvance("create table failed", LOG_INFO);
+			logger->LogThisAdvance("create table failed, error message: "+lErrMsg, LOG_ERROR);
 		}
 		
 		double lLastPrice = 1000.1;
@@ -212,7 +222,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		CThostFtdcDepthMarketDataField lMarketDataStruct;
 		string lErrMsg;
 		startTime = boost::posix_time::microsec_clock::local_time();
-		for(lCount=0; lCount<1000000LL; lCount++)
+		for(lCount=0; lCount<100000LL; lCount++)
 		{
 			memcpy(&lMarketDataStruct.InstrumentID, "ag1412", sizeof(TThostFtdcInstrumentIDType));
 			memcpy(&lMarketDataStruct.TradingDay, "20141204", sizeof(TThostFtdcDateType));
@@ -231,10 +241,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		delete lNonBlockClient;
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
-		cout<<"1000000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		cout<<"5000000 times insert without commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
 		endTime = boost::posix_time::microsec_clock::local_time();
 		duration = endTime-startTime;
-		cout<<"1000000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
+		cout<<"5000000 times insert with commit takes "<<duration.total_milliseconds()<<" ms"<<endl;
 	}
 	catch(SQLException ex)
 	{

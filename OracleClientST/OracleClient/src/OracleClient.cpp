@@ -21,7 +21,7 @@ Environment* OracleClient::GetEnvironment() const
 {
 	return mEnv;
 }
-TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize)
+TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize, int& aErrCode, string& aErrMsg)
 {
 	try
 	{
@@ -29,30 +29,23 @@ TRANSACTION_RESULT_TYPE OracleClient::Connect(string aUser, string aPwd, string 
 		mStat = mConn->createStatement();
 		mCacheSize = aCacheSize;
 		mSyncSize = aCacheSize>>1;
-		logger->LogThisAdvance("oracle client connected", LOG_INFO);
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in CreateConnection(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in CreateConnection(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::CreateTableFromType(string aTableName, string aType)
+TRANSACTION_RESULT_TYPE OracleClient::CreateTableFromType(string aTableName, string aType, int& aErrCode, string& aErrMsg)
 {
 	try
 	{
@@ -63,25 +56,19 @@ TRANSACTION_RESULT_TYPE OracleClient::CreateTableFromType(string aTableName, str
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in CreateTableFromType(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in CreateTableFromType(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement)
+TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement, int& aErrCode, string& aErrMsg)
 {
 	try
 	{
@@ -92,25 +79,19 @@ TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement)
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in ExecuteSql(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in ExecuteSql(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aObj)
+TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aObj, int& aErrCode, string& aErrMsg)
 {
 	try
 	{
@@ -122,25 +103,19 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aOb
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in InsertData(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in InsertData(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
-	return TryCommit();
+	return TryCommit(aErrCode, aErrMsg);
 }
-TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount)
+TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount, int& aErrCode, string& aErrMsg)
 {
 	try
 	{
@@ -164,24 +139,18 @@ TRANSACTION_RESULT_TYPE OracleClient::QueryData(string aTableName, string aConst
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in QueryData(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in QueryData(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
 }
-TRANSACTION_RESULT_TYPE OracleClient::Commit()
+TRANSACTION_RESULT_TYPE OracleClient::Commit(int& aErrCode, string& aErrMsg)
 {
 	try
 	{
@@ -195,50 +164,38 @@ TRANSACTION_RESULT_TYPE OracleClient::Commit()
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in Commit(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in Commit(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::TryCommit()
+TRANSACTION_RESULT_TYPE OracleClient::TryCommit(int& aErrCode, string& aErrMsg)
 {
 	try
 	{
 		if(mCacheUsed > mSyncSize)
 		{
-			Commit();
+			Commit(aErrCode, aErrMsg);
 		}// if the used cache size is bigger than sync size, signal the auto commit thread
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in TryCommit(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = ex.getErrorCode();
+		aErrMsg = ex.getMessage();
 		return SQL_EXCEPTION;
 	}
 	catch(...)
 	{
-		std::stringstream tempStream;
-		tempStream.str("");	
-		tempStream<<"exception in TryCommit(), error message: unknown";
-		cout<<tempStream.str()<<endl;
-		logger->LogThisAdvance(tempStream.str(), LOG_ERROR);
+		aErrCode = -1;
+		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
 }

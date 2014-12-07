@@ -18,7 +18,8 @@ public:
 	enum NON_BLOCK_STATUS
 	{
 		NO_ERROR,
-		BUFFER_OVERFLOW
+		BUFFER_OVERFLOW,
+		UNKNOWN_EXCEPTION
 	};
 private:
 	struct DataPkg
@@ -71,7 +72,7 @@ public:
 		mStuffedBuffer = false;
 		mMaxCacheUsage = 0;
 		mInsertThread = new boost::thread(&NonBlockDatabase::InsertTask, this);
-		mLogger = new Utilities::Log("./Log/", "NonBlockClient.log", 128, true, 10);
+		mLogger = new Utilities::Log("./log/", "NonBlockClient.log", 1024, true, 10);
 	}
 	~NonBlockDatabase()
 	{
@@ -79,6 +80,7 @@ public:
 		mDestroyTask = true;
 		mInsertThread->join();
 		delete mInsertThread;
+		delete mLogger;
 	}
 	void InsertBreakChar(CThostFtdcDepthMarketDataField* aData)
 	{
@@ -216,20 +218,22 @@ public:
 	{
 		boost::unique_lock<boost::mutex> lInsertTaskLock(mInsertThreadMutex);
 		vector<DataPkg> lTempQueue;
+		int lErrCode = 0;
+		string lErrMsg = "";
 		/* initialize oracle client here */
 		OracleClient* lClient = new OracleClient();
 		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
 		oracle::occi::Timestamp lTimeStamp;
 		MarketDataTypeMap(lEnv);
 		MarketDataType* lMarketData = new MarketDataType();
-		if(lClient->Connect(mUser, mPwd, mDb, mCacheSize) == TRANS_NO_ERROR)
+		if(lClient->Connect(mUser, mPwd, mDb, mCacheSize, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
 			mLogger->LogThisAdvance("nonblock client connected", Utilities::LOG_INFO);
 			mInsertTaskInitFinished = true;
 		}
 		else
 		{
-			mLogger->LogThisAdvance("nonblock client can't connect to database", Utilities::LOG_ERROR);
+			mLogger->LogThisAdvance("nonblock client can't connect to database, error message: "+lErrMsg, Utilities::LOG_ERROR);
 		}
 		while(mDestroyTask == false || mStuffedBuffer)
 		{
@@ -246,7 +250,7 @@ public:
 				for(int i=0; i<lTempQueue.size(); i++)
 				{
 					/* insert lTempQueue into lClient */;
-					FlushBufferToDatabase(lMarketData, lClient, lTimeStamp, &lTempQueue[i], lEnv);
+					FlushBufferToDatabase(lMarketData, lClient, lTimeStamp, &lTempQueue[i], lEnv, lErrCode, lErrMsg);
 				}
 				lTempQueue.clear();
 			}
@@ -268,7 +272,7 @@ public:
 		delete lMarketData;
 		delete lClient;
 	}
-	void FlushBufferToDatabase(MarketDataType* const aMarketData, OracleClient* const aClient, oracle::occi::Timestamp aTimeStamp, DataPkg* const aData, oracle::occi::Environment* const aEnv)
+	TRANSACTION_RESULT_TYPE FlushBufferToDatabase(MarketDataType* const aMarketData, OracleClient* const aClient, oracle::occi::Timestamp aTimeStamp, DataPkg* const aData, oracle::occi::Environment* const aEnv, int& aErrCode, string& aErrMsg)
 	{
 		try
 		{
@@ -408,7 +412,7 @@ public:
 			//TThostFtdcDateType	ActionDay;
 			aMarketData->setaction_day(aData->mData.ActionDay);
 
-			aClient->InsertData(aData->mTableName, aMarketData);
+			return aClient->InsertData(aData->mTableName, aMarketData, aErrCode, aErrMsg);
 		}
 		catch(SQLException ex)
 		{
@@ -416,6 +420,9 @@ public:
 			tempStream.str("");	
 			tempStream<<"exception in FlushBufferToDatabase(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
 			mLogger->LogThisAdvance(tempStream.str(), Utilities::LOG_ERROR);
+			aErrCode = ex.getErrorCode();
+			aErrMsg = ex.getMessage();
+			return DatabaseUtilities::SQL_EXCEPTION;
 		}
 		catch(...)
 		{
@@ -423,6 +430,9 @@ public:
 			tempStream.str("");	
 			tempStream<<"exception in FlushBufferToDatabase(), error message: unknown";
 			mLogger->LogThisAdvance(tempStream.str(), Utilities::LOG_ERROR);
+			aErrCode = -1;
+			aErrMsg = "unknown exception in FlushBufferToDatabase()";
+			return DatabaseUtilities::UNKNOWN_EXCEPTION;
 		}
 	}
 };

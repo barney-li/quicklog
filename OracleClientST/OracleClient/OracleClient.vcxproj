@@ -75,6 +75,7 @@
     <SourcePath>$(ProjecrDir)src;$(SourcePath)</SourcePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>C:\sqldev\instantclient_12_1\sdk\lib\msvc;C:\sqldev\instantclient_12_1\sdk\lib\msvc\vc10;C:\sqldev\instantclient_12_1\vc10;C:\sqldev\instantclient_12_1;C:\mydll;C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -89,6 +90,7 @@
     <SourcePath>$(ProjecrDir)src;$(SourcePath)</SourcePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>C:\sqldev\instantclient_12_1\sdk\lib\msvc;C:\sqldev\instantclient_12_1\sdk\lib\msvc\vc10;C:\sqldev\instantclient_12_1\vc10;C:\sqldev\instantclient_12_1;C:\mydll;C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
+    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
