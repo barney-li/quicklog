@@ -64,8 +64,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Log\include;C:\boost_1_57_0\VC10\include\boost-1_57;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Log\include;C:\boost_1_57_0_32\VC10\include\boost-1_57;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost_1_57_0_32\VC10\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -74,8 +74,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Log\include;C:\boost_1_57_0\VC10\include\boost-1_57;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Log\include;C:\boost_1_57_0_32\VC10\include\boost-1_57;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost_1_57_0_32\VC10\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -110,6 +110,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,6 +144,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <GenerateMapFile>true</GenerateMapFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
