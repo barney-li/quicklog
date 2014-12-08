@@ -61,20 +61,14 @@
     <ProjectName>MarketSubscriber</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -83,30 +77,28 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
-    <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
-    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib</LibraryPath>
-    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_57_0\VC10\include\boost-1_57;C:\mydll\include</IncludePath>
@@ -115,12 +107,12 @@
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_57_0\VC10\lib;</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_54_0\VC10\include\boost-1_54</IncludePath>
-    <ExecutablePath>$(SolutionDir)MarketSubscriber\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include</IncludePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
-    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_54_0\VC10\lib;$(SolutionDir)\MarketSubscriber\src\CTPAPI</LibraryPath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_57_0_32\VC10\lib;$(SolutionDir)\MarketSubscriber\src\CTPAPI</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,21 +123,14 @@
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_57_0\VC10\lib;$(SolutionDir)\MarketSubscriber\src\CTPAPI</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level1</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>Async</ExceptionHandling>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <StackReserveSize>0x800000</StackReserveSize>
-      <StackCommitSize>0x400000</StackCommitSize>
-    </Link>
-  </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\CTPAPI;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\Stratergy;$(IncludePath);C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include</IncludePath>
+    <ExecutablePath>$(ExecutablePath)</ExecutablePath>
+    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_57_0_32\VC10\lib;$(SolutionDir)\MarketSubscriber\src\CTPAPI</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)MarketSubscriber\src;$(SolutionDir)MarketSubscriber\src\MarketProcess;$(SolutionDir)MarketSubscriber\src\TradeProcess;$(SolutionDir)MarketSubscriber\src\common;$(SolutionDir)MarketSubscriber\src\Stratergy;$(SolutionDir)MarketSubscriber\src\CTPAPI</SourcePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -163,28 +148,21 @@
       <AdditionalDependencies>Log-dg.lib;OracleClient-Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
-      <CallingConvention>Cdecl</CallingConvention>
-      <DisableSpecificWarnings>
-      </DisableSpecificWarnings>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;BOOST_ALL_DYN_LINK;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
       <StackReserveSize>0x800000</StackReserveSize>
       <StackCommitSize>0x400000</StackCommitSize>
+      <AdditionalLibraryDirectories>C:\mydll32;C:\sqldev32\instantclient_12_1\sdk\lib\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Log-dg.lib;OracleClient-Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -210,6 +188,32 @@
       <StackReserveSize>0x800000</StackReserveSize>
       <StackCommitSize>0x400000</StackCommitSize>
       <AdditionalLibraryDirectories>C:\mydll;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Log.lib;OracleClient-Release.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;BOOST_ALL_DYN_LINK;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <CallingConvention>Cdecl</CallingConvention>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
+      <ExceptionHandling>Async</ExceptionHandling>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <StackReserveSize>0x800000</StackReserveSize>
+      <StackCommitSize>0x400000</StackCommitSize>
+      <AdditionalLibraryDirectories>C:\mydll32;C:\sqldev32\instantclient_12_1\sdk\lib\msvc;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Log.lib;OracleClient-Release.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
