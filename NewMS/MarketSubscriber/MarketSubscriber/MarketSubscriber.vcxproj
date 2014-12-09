@@ -69,7 +69,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\Database;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\boost_1_57_0_32\VC10\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -79,7 +79,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\Database;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\boost_1_57_0_32\VC10\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -156,6 +156,8 @@
   <ItemGroup>
     <ClCompile Include="src\common\CommonLog.cpp" />
     <ClCompile Include="src\common\InstrumentLog.cpp" />
+    <ClCompile Include="src\Database\MarketDataType.cpp" />
+    <ClCompile Include="src\Database\MarketDataTypeMap.cpp" />
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
     <ClCompile Include="src\MarketSubscriber.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
@@ -176,14 +178,13 @@
     <ClInclude Include="src\CTPAPI\ThostFtdcTraderApi.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiDataType.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h" />
+    <ClInclude Include="src\Database\MarketDataType.h" />
+    <ClInclude Include="src\Database\MarketDataTypeMap.h" />
+    <ClInclude Include="src\Database\NonBlockDatabase.h" />
     <ClInclude Include="src\MarketProcess\MarketProcess.h" />
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\TradeProcess\TradeProcess.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="src\CTPAPI\thostmduserapi.lib" />
-    <Library Include="src\CTPAPI\thosttraderapi.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
