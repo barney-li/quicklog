@@ -8,3 +8,7 @@ BrokerID=8070;
 InvestorID=885822;
 Password=072413;
 SaveMarketData=1;
+DatabaseUser=c##barney;
+DatabasePwd=Lml19870310;
+DatabaseAddress=//192.168.183.128:1521/barneydb;
+NonBlockBufferSize=50000;

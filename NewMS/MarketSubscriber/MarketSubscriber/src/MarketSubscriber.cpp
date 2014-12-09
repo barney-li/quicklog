@@ -18,6 +18,10 @@ using namespace boost::gregorian;
 using namespace boost::posix_time;
 using namespace std;
 using namespace DatabaseUtilities;
+
+NonBlockDatabase* lNonBlockClient;
+CommonLog logger;
+
 TRANSACTION_RESULT_TYPE CreateType(OracleClient* aClient, int& aErrCode, string& aErrMsg)
 {
 	string lSqlStatement = "CREATE TYPE market_data_type AS OBJECT(";
@@ -168,132 +172,221 @@ TRANSACTION_RESULT_TYPE CreateTable(OracleClient* aClient, string aTableName, in
 }
 void MarketDataCallback(CThostFtdcDepthMarketDataField* marketData)
 {
-	cout<<" ["<<marketData->InstrumentID<<"-"<<marketData->LastPrice<<"] ";//no endl at the end to increase the efficiency
+	static string lErrMsg;
+	if(lNonBlockClient->InsertData((string)marketData->InstrumentID, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
+	{
+		logger.LogThisAdvance(lErrMsg, LOG_ERROR);
+	}
+	else
+	{
+		cout<<'.'<<endl;
+	}
+	//cout<<" ["<<marketData->InstrumentID<<"-"<<marketData->LastPrice<<"] ";//no endl at the end to increase the efficiency
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	boost::progress_display progressDisp(100);
-	for(int i=0;i<100;i++)
-	{
-		boost::this_thread::sleep(boost::posix_time::milliseconds(1));
-		progressDisp+=1;
-	}
-
-	CommonLog logger;
-	logger.LogThisFast("[INFO]: market subscriber started...");
+	ConfigReader config;
+	string lId;
+	string lPwd;
+	string lDb;
+	int lNonBlockBuffer = 0;
+	logger.LogThisAdvance("market subscriber started...", LOG_INFO);
 	logger.Sync();
 
-	TradeProcess* tradeObj = null;
-	MarketProcess marketObj;
-	ConfigReader config;
-
-	marketObj.SetDataPushHook(MarketDataCallback);
-	char* brokerIdConfig = new char[20];
-	char* investorIdConfig = new char[20];
-	char* passwordConfig = new char[20];
-
-	config.ReadList(&brokerIdConfig, "BrokerID", ";");
-	config.ReadList(&investorIdConfig, "InvestorID", ";");
-	config.ReadList(&passwordConfig, "Password", ";");
-
-	bool lInstrumentListReady = false;
-	int lExceptionCount = 0;
-	/* initialize trade agent */
-	do
+	int lErrCode = 0;
+	string lErrMsg = "";
+	OracleClient* lClient = new OracleClient();
+	try
 	{
-		try
+		config.ReadString(lId, "DatabaseUser");
+		config.ReadString(lPwd, "DatabasePwd");
+		config.ReadString(lDb, "DatabaseAddress");
+		config.ReadInteger(lNonBlockBuffer, "NonBlockBufferSize");
+
+		logger.LogThisAdvance("******************************************", LOG_INFO);
+		logger.LogThisAdvance("* Database Client initialization started *", LOG_INFO);
+		logger.LogThisAdvance("******************************************", LOG_INFO);
+
+		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
+		
+		if(lClient->Connect(lId, lPwd, lDb, 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
-			if(tradeObj)
+			logger.LogThisAdvance("database connected", LOG_INFO);
+		}
+		else
+		{
+			logger.LogThisAdvance("database cannot be connected, error message: " + lErrMsg, LOG_INFO);
+		}
+		
+		if(CreateType(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		{
+			logger.LogThisAdvance("create type successed", LOG_INFO, LOG_STDIO);
+		}
+		else if(lErrCode == 955)
+		{
+			logger.LogThisAdvance("type has already been created before", LOG_INFO, LOG_STDIO);
+		}
+		else
+		{
+			logger.LogThisAdvance("create type failed, error message: "+lErrMsg, LOG_ERROR);
+		}
+		MarketDataTypeMap(lEnv);
+
+		lNonBlockClient = new NonBlockDatabase(lId, lPwd, lDb, lNonBlockBuffer, 1);
+		while(lNonBlockClient->InitFinished() == false)
+		{
+			boost::this_thread::sleep(boost::posix_time::seconds(1));
+		}
+
+		logger.LogThisAdvance("*******************************************", LOG_INFO);
+		logger.LogThisAdvance("* Database Client initialization finished *", LOG_INFO);
+		logger.LogThisAdvance("*******************************************", LOG_INFO);
+	
+		boost::progress_display progressDisp(100);
+		for(int i=0;i<100;i++)
+		{
+			boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+			progressDisp+=1;
+		}
+		TradeProcess* tradeObj = null;
+		MarketProcess marketObj;
+		
+
+		marketObj.SetDataPushHook(MarketDataCallback);
+		char* brokerIdConfig = new char[20];
+		char* investorIdConfig = new char[20];
+		char* passwordConfig = new char[20];
+
+		config.ReadList(&brokerIdConfig, "BrokerID", ";");
+		config.ReadList(&investorIdConfig, "InvestorID", ";");
+		config.ReadList(&passwordConfig, "Password", ";");
+
+		bool lInstrumentListReady = false;
+		int lExceptionCount = 0;
+		/* initialize trade agent */
+		do
+		{
+			try
 			{
-				delete tradeObj;
-			}
-			tradeObj = new TradeProcess();
-			strcpy(tradeObj->basicTradeProcessData.brokerId, brokerIdConfig);
-			strcpy(tradeObj->basicTradeProcessData.investorId, investorIdConfig);
-			strcpy(tradeObj->basicTradeProcessData.investorPassword, passwordConfig);
-			tradeObj->basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj->basicTradeProcessData.frontAddress);
-			tradeObj->InitializeProcess();
-			int lTryInitCount = 0;
-			while( lTryInitCount<100 )
-			{
-				lTryInitCount++;
-				boost::this_thread::sleep(boost::posix_time::seconds(1));
-				if(tradeObj->InitializeFinished())
+				if(tradeObj)
 				{
-					logger.LogThisFast("[INFO]: trade process initialization finished");
-					break;
+					delete tradeObj;
 				}
-			}
-			if(tradeObj->InitializeFinished())
-			{
-				tradeObj->ReqQryInstrument();
-				int lTryQryListCount = 0;
-				while(lTryQryListCount<10)
+				tradeObj = new TradeProcess();
+				strcpy(tradeObj->basicTradeProcessData.brokerId, brokerIdConfig);
+				strcpy(tradeObj->basicTradeProcessData.investorId, investorIdConfig);
+				strcpy(tradeObj->basicTradeProcessData.investorPassword, passwordConfig);
+				tradeObj->basicTradeProcessData.numFrontAddress = config.ReadTradeFrontAddr(tradeObj->basicTradeProcessData.frontAddress);
+				tradeObj->InitializeProcess();
+				int lTryInitCount = 0;
+				while( lTryInitCount<100 )
 				{
-					lTryQryListCount++;
-					boost::this_thread::sleep(boost::posix_time::seconds(10));
-					if(tradeObj->InstrumentListReady())
+					lTryInitCount++;
+					boost::this_thread::sleep(boost::posix_time::seconds(1));
+					if(tradeObj->InitializeFinished())
 					{
-						logger.LogThisFast("[INFO]: instrument list ready");
-						lInstrumentListReady = true;
+						logger.LogThisAdvance("trade process initialization finished", LOG_INFO);
 						break;
 					}
 				}
+				if(tradeObj->InitializeFinished())
+				{
+					tradeObj->ReqQryInstrument();
+					int lTryQryListCount = 0;
+					while(lTryQryListCount<10)
+					{
+						lTryQryListCount++;
+						boost::this_thread::sleep(boost::posix_time::seconds(10));
+						if(tradeObj->InstrumentListReady())
+						{
+							logger.LogThisAdvance("instrument list ready", LOG_INFO);
+							lInstrumentListReady = true;
+							break;
+						}
+					}
+				}
+			}
+			catch(std::exception ex)
+			{
+				lExceptionCount++;
+				stringstream tempStream;
+				tempStream.str("");
+				tempStream<<"exception in main(), error message: "<<ex.what();
+				logger.LogThisAdvance(tempStream.str(), LOG_ERROR);
+				logger.Sync();
+				if(lExceptionCount>10000)
+				{
+					logger.LogThisAdvance((string)"too many exceptions, system halt", LOG_ERROR);
+					logger.Sync();
+					return -1;
+				}
+			}
+			catch(...)
+			{
+				lExceptionCount++;
+				stringstream tempStream;
+				tempStream.str("");
+				tempStream<<"exception in main(), error message: unknown";
+				logger.LogThisAdvance(tempStream.str(), LOG_ERROR);
+				logger.Sync();
+				if(lExceptionCount>10000)
+				{
+					logger.LogThisAdvance((string)"too many exceptions, system halt", LOG_ERROR);
+					logger.Sync();
+					return -1;
+				}
 			}
 		}
-		catch(std::exception ex)
+		while(lInstrumentListReady == false);
+		
+		/* try to create all the tables from instrument list in database */
+		for(list<string>::iterator it = tradeObj->GetInstrumentList().begin(); it != tradeObj->GetInstrumentList().end(); it++)
 		{
-			lExceptionCount++;
-			stringstream tempStream;
-			tempStream.str("");
-			tempStream<<"[EXCEPTION]: exception in main(), error message: "<<ex.what();
-			cout<<tempStream.str()<<endl;
-			logger.LogThisFast(tempStream.str());
-			logger.Sync();
-			if(lExceptionCount>10000)
+			if(CreateTable(lClient,(string)&*it->c_str(), lErrCode, lErrMsg) == TRANS_NO_ERROR)
 			{
-				cout<<"[ERROR]: too many exceptions, system halt"<<endl;
-				logger.LogThisFast((string)"[EXCEPTION]: too many exceptions, system halt");
-				logger.Sync();
-				return -1;
+				logger.LogThisAdvance("create table " + (string)&*it->c_str() + " successed", LOG_INFO, LOG_STDIO);
 			}
+			else if(lErrCode == 955)
+			{
+				logger.LogThisAdvance("table " + (string)&*it->c_str() + " has already been created before", LOG_INFO, LOG_STDIO);
+			}
+			else
+			{
+				logger.LogThisAdvance("create table " + (string)&*it->c_str() + " failed, error message: "+lErrMsg, LOG_ERROR);
+			};
 		}
-		catch(...)
+
+		/* initialize market agent */
+		strcpy(marketObj.broker, brokerIdConfig);
+		strcpy(marketObj.investor, investorIdConfig);
+		strcpy(marketObj.pwd, passwordConfig);
+		marketObj.numFrontAddress = config.ReadMarketFrontAddr(marketObj.frontAddress);
+		marketObj.SetInstrumentList(tradeObj->GetInstrumentList());
+		marketObj.StartMarketProcess();
+
+		delete brokerIdConfig;
+		delete investorIdConfig;
+		delete passwordConfig;
+		for(;;)
 		{
-			lExceptionCount++;
-			stringstream tempStream;
-			tempStream.str("");
-			tempStream<<"[EXCEPTION]: exception in main(), error message: unknown";
-			cout<<tempStream.str()<<endl;
-			logger.LogThisFast(tempStream.str());
-			logger.Sync();
-			if(lExceptionCount>10000)
-			{
-				cout<<"[ERROR]: too many exceptions, system halt"<<endl;
-				logger.LogThisFast((string)"[EXCEPTION]: too many exceptions, system halt");
-				logger.Sync();
-				return -1;
-			}
+			boost::this_thread::sleep(boost::posix_time::milliseconds(100));
 		}
 	}
-	while(lInstrumentListReady == false);
-
-	/* initialize market agent */
-	strcpy(marketObj.broker, brokerIdConfig);
-	strcpy(marketObj.investor, investorIdConfig);
-	strcpy(marketObj.pwd, passwordConfig);
-	marketObj.numFrontAddress = config.ReadMarketFrontAddr(marketObj.frontAddress);
-	marketObj.SetInstrumentList(tradeObj->GetInstrumentList());
-	marketObj.StartMarketProcess();
-
-	delete brokerIdConfig;
-	delete investorIdConfig;
-	delete passwordConfig;
-	for(;;)
+	catch(SQLException ex)
 	{
-		boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+		std::stringstream tempStream;
+		tempStream.str("");	
+		tempStream<<"exception in main(), error message: "<<ex.getMessage()<<" error code: "<<ex.getErrorCode();
+		cout<<tempStream.str()<<endl;
+		return SQL_EXCEPTION;
 	}
+	catch (...)
+	{
+		std::cout<<"exception in main()"<<std::endl;
+	}
+	delete lNonBlockClient;
+	delete lClient;
 	return 0;
 }
 
