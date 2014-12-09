@@ -17,9 +17,9 @@ class NonBlockDatabase
 public:
 	enum NON_BLOCK_STATUS
 	{
-		NO_ERROR,
-		BUFFER_OVERFLOW,
-		UNKNOWN_EXCEPTION
+		NONBLOCK_NO_ERROR,
+		NONBLOCK_BUFFER_OVERFLOW,
+		NONBLOCK_UNKNOWN_EXCEPTION
 	};
 private:
 	struct DataPkg
@@ -188,7 +188,7 @@ public:
 	}
 	NON_BLOCK_STATUS InsertData(string aTableName, CThostFtdcDepthMarketDataField* aData, string& aErrMsg)
 	{
-		NON_BLOCK_STATUS lReturn = NO_ERROR;	
+		NON_BLOCK_STATUS lReturn = NONBLOCK_NO_ERROR;	
 		boost::lock_guard<boost::mutex> lQueueLock(mQueueMutex);
 		boost::posix_time::ptime lLocalTime = boost::posix_time::microsec_clock::local_time();
 		stringstream lTimeStamp;
@@ -200,7 +200,7 @@ public:
 		if(mQueue.size()>mCacheSize)
 		{
 			mQueue.pop_back();
-			lReturn = BUFFER_OVERFLOW;
+			lReturn = NONBLOCK_BUFFER_OVERFLOW;
 			aErrMsg += "[ERROR]: buffer over flowed in InsertData(string, CThostFtdcDepthMarketDataField, string&)\r\n";
 		}
 		mQueue.push_back(lData);
