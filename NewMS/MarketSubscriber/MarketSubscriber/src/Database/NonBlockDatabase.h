@@ -72,7 +72,7 @@ public:
 		mStuffedBuffer = false;
 		mMaxCacheUsage = 0;
 		mInsertThread = new boost::thread(&NonBlockDatabase::InsertTask, this);
-		mLogger = new Utilities::Log("./log/", "NonBlockClient.log", 1024, true, 10);
+		mLogger = new Utilities::Log("./data/Log/", "NonBlockClient.log", 1024, true, 10);
 	}
 	~NonBlockDatabase()
 	{
@@ -284,6 +284,11 @@ public:
 					/* insert lTempQueue into lClient */;
 					FlushBufferToDatabase(lMarketData, lClient, lTimeStamp, &lTempQueue[i], lEnv, lErrCode, lErrMsg);
 				}
+				if(lClient->Commit(lErrCode, lErrMsg) != TRANS_NO_ERROR)
+				{
+					mLogger->LogThisAdvance(lErrMsg, Utilities::LOG_WARNING);
+				}
+				cout<<'*';
 				lTempQueue.clear();
 			}
 			catch(SQLException ex)
