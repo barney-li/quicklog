@@ -345,21 +345,24 @@ int _tmain(int argc, _TCHAR* argv[])
 		list<string>::iterator lIt = lTempList.begin();
 		char lTempName[10];
 		strncpy(lTempName, &*lIt->c_str(), 8);*/
-		for(list<string>::iterator it = tradeObj->GetInstrumentList().begin(); it != tradeObj->GetInstrumentList().end(); it++)
+		vector<string> lInstList = tradeObj->GetInstrumentList();
+		for(int i=0; i<lInstList.size(); i++)
 		{
-			const char* lTableName = &*it->c_str(); 
-			if(CreateTable(lClient,(string)&*it->c_str(), lErrCode, lErrMsg) == TRANS_NO_ERROR)
+			if(lInstList[i].size()>0 && lInstList[i].size()<9)
 			{
-				logger.LogThisAdvance("create table " + (string)&*it->c_str() + " successed", LOG_INFO, LOG_STDIO);
-			}
-			else if(lErrCode == 955)
-			{
-				logger.LogThisAdvance("table " + (string)&*it->c_str() + " has already been created before", LOG_INFO, LOG_STDIO);
-			}
-			else
-			{
-				logger.LogThisAdvance("create table " + (string)&*it->c_str() + " failed, error message: "+lErrMsg, LOG_ERROR);
-			};
+				if(CreateTable(lClient,lInstList[i], lErrCode, lErrMsg) == TRANS_NO_ERROR)
+				{
+					logger.LogThisAdvance("create table " + lInstList[i] + " successed", LOG_INFO, LOG_STDIO);
+				}
+				else if(lErrCode == 955)
+				{
+					logger.LogThisAdvance("table " + lInstList[i] + " has already been created before", LOG_INFO, LOG_STDIO);
+				}
+				else
+				{
+					logger.LogThisAdvance("create table " + lInstList[i] + " failed, error message: "+lErrMsg, LOG_ERROR);
+				};
+			}//only create tables for non arbitrage instruments
 		}
 
 		/* initialize market agent */

@@ -90,10 +90,10 @@ public:
 	{
 		dataPushHook = NULL;
 	}
-	void SetInstrumentList(list<string> aInstrumentList)
+	void SetInstrumentList(vector<string> aInstrumentList)
 	{
 		numInstrument = 0;
-		if(aInstrumentList == (list<string>)NULL)
+		if(aInstrumentList == (vector<string>)NULL)
 		{
 			logger.LogThisFast("[ERROR]: null instrument list");
 			return;
@@ -103,7 +103,7 @@ public:
 			logger.LogThisFast("[ERROR]: empty instrument list");
 			return;
 		}
-		list<string>::iterator lListIterator = aInstrumentList.begin();
+		vector<string>::iterator lListIterator = aInstrumentList.begin();
 		for(lListIterator = aInstrumentList.begin(); lListIterator != aInstrumentList.end(); lListIterator++)
 		{
 #ifndef ARBITRAGE_INSTRUMENT

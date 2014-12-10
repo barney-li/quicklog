@@ -1,18 +1,18 @@
 #pragma once
 #include <Log.h>
-#include <list>
+#include <vector>
 #include <boost/thread.hpp>
 using namespace Utilities;
 class InstrumentLog : public Log
 {
 private:
-	static list<InstrumentLog*> mLoggerList;
+	static vector<InstrumentLog*> mLoggerList;
 	static boost::thread* mAutoSyncThread;
 	static bool mDestroyAutoSyncThread;
 public:
 	static void AutoSync(int aPeriod)
 	{
-		list<InstrumentLog*>::iterator lObjIter;
+		vector<InstrumentLog*>::iterator lObjIter;
 		while(!mDestroyAutoSyncThread)
 		{
 			for(lObjIter = mLoggerList.begin(); lObjIter!=mLoggerList.end(); lObjIter++)
@@ -25,7 +25,7 @@ public:
 public:
 	InstrumentLog(string aInstrumentName):Log("./data/MarketData/", aInstrumentName+".dat", 32)
 	{
-		mLoggerList.push_front(this);
+		mLoggerList.push_back(this);
 		const int lAutoSyncPeriod = 10;
 		if(mAutoSyncThread == NULL)
 		{

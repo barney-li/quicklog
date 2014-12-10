@@ -5,13 +5,13 @@ using namespace Utilities;
 class CommonLog : public Log
 {
 private:
-	static list<CommonLog*> CommonLog::mLoggerList;
+	static vector<CommonLog*> CommonLog::mLoggerList;
 	static boost::thread* CommonLog::mAutoSyncThread;
 	static bool CommonLog::mDestroyAutoSyncThread;
 public:
 	static void AutoSync(int aPeriod)
 	{
-		list<CommonLog*>::iterator lObjIter;
+		vector<CommonLog*>::iterator lObjIter;
 		while(!mDestroyAutoSyncThread)
 		{
 			for(lObjIter = mLoggerList.begin(); lObjIter!=mLoggerList.end(); lObjIter++)
@@ -23,7 +23,7 @@ public:
 	}
 	CommonLog(string aLogName = "log.log"):Log("data/Log/", aLogName, 32)
 	{
-		mLoggerList.push_front(this);
+		mLoggerList.push_back(this);
 		const int lAutoSyncPeriod = 60;
 		if(mAutoSyncThread == NULL)
 		{
