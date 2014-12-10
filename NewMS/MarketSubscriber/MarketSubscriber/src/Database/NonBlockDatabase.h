@@ -84,8 +84,8 @@ public:
 	}
 	void ValidateData(CThostFtdcDepthMarketDataField* aData)
 	{
-		const double lUpLmt = 1000000000;
-		const double lInvalidValue = -3.1415926;
+		const double lUpLmt = 1000000000000;
+		const double lInvalidValue = 0;
 		/////½»Ò×ÈÕ
 		//TThostFtdcDateType	TradingDay;
 		const int lTradingDayBreak = sizeof(TThostFtdcDateType) - 1;
