@@ -82,8 +82,10 @@ public:
 		delete mInsertThread;
 		delete mLogger;
 	}
-	void InsertBreakChar(CThostFtdcDepthMarketDataField* aData)
+	void ValidateData(CThostFtdcDepthMarketDataField* aData)
 	{
+		const double lUpLmt = 1000000000;
+		const double lInvalidValue = -3.1415926;
 		/////交易日
 		//TThostFtdcDateType	TradingDay;
 		const int lTradingDayBreak = sizeof(TThostFtdcDateType) - 1;
@@ -102,36 +104,51 @@ public:
 		aData->ExchangeInstID[lExchangeIDBreak] = NULL;
 		/////最新价
 		//TThostFtdcPriceType	LastPrice;
+		aData->LastPrice = (aData->LastPrice>lUpLmt)?lInvalidValue:aData->LastPrice;
 		/////上次结算价
 		//TThostFtdcPriceType	PreSettlementPrice;
+		aData->PreSettlementPrice = (aData->PreSettlementPrice>lUpLmt)?lInvalidValue:aData->PreSettlementPrice; 
 		/////昨收盘
 		//TThostFtdcPriceType	PreClosePrice;
+		aData->PreClosePrice = (aData->PreClosePrice>lUpLmt)?lInvalidValue:aData->PreClosePrice;
 		/////昨持仓量
 		//TThostFtdcLargeVolumeType	PreOpenInterest;
+		aData->PreOpenInterest = (aData->PreOpenInterest>lUpLmt)?lInvalidValue:aData->PreOpenInterest;
 		/////今开盘
 		//TThostFtdcPriceType	OpenPrice;
+		aData->OpenPrice = (aData->OpenPrice>lUpLmt)?lInvalidValue:aData->OpenPrice;
 		/////最高价
 		//TThostFtdcPriceType	HighestPrice;
+		aData->HighestPrice = (aData->HighestPrice>lUpLmt)?lInvalidValue:aData->HighestPrice;
 		/////最低价
 		//TThostFtdcPriceType	LowestPrice;
+		aData->LowestPrice = (aData->LowestPrice>lUpLmt)?lInvalidValue:aData->LowestPrice;
 		/////数量
 		//TThostFtdcVolumeType	Volume;
 		/////成交金额
 		//TThostFtdcMoneyType	Turnover;
+		aData->Turnover = (aData->Turnover>lUpLmt)?lInvalidValue:aData->Turnover;
 		/////持仓量
 		//TThostFtdcLargeVolumeType	OpenInterest;
+		aData->OpenInterest = (aData->OpenInterest>lUpLmt)?lInvalidValue:aData->OpenInterest;
 		/////今收盘
 		//TThostFtdcPriceType	ClosePrice;
+		aData->ClosePrice = (aData->ClosePrice>lUpLmt)?lInvalidValue:aData->ClosePrice;
 		/////本次结算价
 		//TThostFtdcPriceType	SettlementPrice;
+		aData->SettlementPrice = (aData->SettlementPrice>lUpLmt)?lInvalidValue:aData->SettlementPrice;
 		/////涨停板价
 		//TThostFtdcPriceType	UpperLimitPrice;
+		aData->UpperLimitPrice = (aData->UpperLimitPrice>lUpLmt)?lInvalidValue:aData->UpperLimitPrice;
 		/////跌停板价
 		//TThostFtdcPriceType	LowerLimitPrice;
+		aData->LowerLimitPrice = (aData->LowerLimitPrice>lUpLmt)?lInvalidValue:aData->LowerLimitPrice;
 		/////昨虚实度
 		//TThostFtdcRatioType	PreDelta;
+		aData->PreDelta = (aData->PreDelta>lUpLmt)?lInvalidValue:aData->PreDelta;
 		/////今虚实度
 		//TThostFtdcRatioType	CurrDelta;
+		aData->CurrDelta = (aData->CurrDelta>lUpLmt)?lInvalidValue:aData->CurrDelta;
 		/////最后修改时间
 		//TThostFtdcTimeType	UpdateTime;
 		const int lUpdateTimeBreak = sizeof(TThostFtdcTimeType) - 1;
@@ -140,46 +157,57 @@ public:
 		//TThostFtdcMillisecType	UpdateMillisec;
 		/////申买价一
 		//TThostFtdcPriceType	BidPrice1;
+		aData->BidPrice1 = (aData->BidPrice1>lUpLmt)?lInvalidValue:aData->BidPrice1;
 		/////申买量一
 		//TThostFtdcVolumeType	BidVolume1;
 		/////申卖价一
 		//TThostFtdcPriceType	AskPrice1;
+		aData->AskPrice1 = (aData->AskPrice1>lUpLmt)?lInvalidValue:aData->AskPrice1;
 		/////申卖量一
 		//TThostFtdcVolumeType	AskVolume1;
 		/////申买价二
 		//TThostFtdcPriceType	BidPrice2;
+		aData->BidPrice2 = (aData->BidPrice2>lUpLmt)?lInvalidValue:aData->BidPrice2;
 		/////申买量二
 		//TThostFtdcVolumeType	BidVolume2;
 		/////申卖价二
 		//TThostFtdcPriceType	AskPrice2;
+		aData->AskPrice2 = (aData->AskPrice2>lUpLmt)?lInvalidValue:aData->AskPrice2;
 		/////申卖量二
 		//TThostFtdcVolumeType	AskVolume2;
 		/////申买价三
 		//TThostFtdcPriceType	BidPrice3;
+		aData->BidPrice3 = (aData->BidPrice3>lUpLmt)?lInvalidValue:aData->BidPrice3;
 		/////申买量三
 		//TThostFtdcVolumeType	BidVolume3;
 		/////申卖价三
 		//TThostFtdcPriceType	AskPrice3;
+		aData->AskPrice3 = (aData->AskPrice3>lUpLmt)?lInvalidValue:aData->AskPrice3;
 		/////申卖量三
 		//TThostFtdcVolumeType	AskVolume3;
 		/////申买价四
 		//TThostFtdcPriceType	BidPrice4;
+		aData->BidPrice4 = (aData->BidPrice4>lUpLmt)?lInvalidValue:aData->BidPrice4;
 		/////申买量四
 		//TThostFtdcVolumeType	BidVolume4;
 		/////申卖价四
 		//TThostFtdcPriceType	AskPrice4;
+		aData->AskPrice4 = (aData->AskPrice4>lUpLmt)?lInvalidValue:aData->AskPrice4;
 		/////申卖量四
 		//TThostFtdcVolumeType	AskVolume4;
 		/////申买价五
 		//TThostFtdcPriceType	BidPrice5;
+		aData->BidPrice5 = (aData->BidPrice5>lUpLmt)?lInvalidValue:aData->BidPrice5;
 		/////申买量五
 		//TThostFtdcVolumeType	BidVolume5;
 		/////申卖价五
 		//TThostFtdcPriceType	AskPrice5;
+		aData->AskPrice5 = (aData->AskPrice5>lUpLmt)?lInvalidValue:aData->AskPrice5;
 		/////申卖量五
 		//TThostFtdcVolumeType	AskVolume5;
 		/////当日均价
 		//TThostFtdcPriceType	AveragePrice;
+		aData->AveragePrice = (aData->AveragePrice>lUpLmt)?lInvalidValue:aData->AveragePrice;
 		/////业务日期
 		//TThostFtdcDateType	ActionDay;
 		const int lActionDayBreak = sizeof(TThostFtdcDateType) - 1;
@@ -194,16 +222,20 @@ public:
 		stringstream lTimeStamp;
 		lTimeStamp.str("");
 		lTimeStamp<<boost::gregorian::to_iso_extended_string(lLocalTime.date())<<" "<<lLocalTime.time_of_day();
-		/* insert the break char here */
-		InsertBreakChar(aData);
+		/* valid the input data here */
+		ValidateData(aData);
 		DataPkg lData(string(lTimeStamp.str()), "yyyy-mm-dd hh24:mi:ss.ff", aTableName, aData);
-		if(mQueue.size()>mCacheSize)
+		if(mQueue.size()<=mCacheSize)
 		{
-			mQueue.pop_back();
-			lReturn = NONBLOCK_BUFFER_OVERFLOW;
-			aErrMsg += "[ERROR]: buffer over flowed in InsertData(string, CThostFtdcDepthMarketDataField, string&)\r\n";
+			mQueue.push_back(lData);
 		}
-		mQueue.push_back(lData);
+		else
+		{
+			//mQueue.pop_back();
+			/* serialize and store the data here */
+			lReturn = NONBLOCK_BUFFER_OVERFLOW;
+			aErrMsg += "[WARNING]: buffer over flowed in InsertData(string, CThostFtdcDepthMarketDataField, string&)\r\n";
+		}
 		mStuffedBuffer = true;
 		/* notify insert task here */
 		mInsertThreadCV.notify_one();

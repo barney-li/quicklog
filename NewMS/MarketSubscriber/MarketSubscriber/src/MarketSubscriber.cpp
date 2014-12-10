@@ -173,13 +173,23 @@ TRANSACTION_RESULT_TYPE CreateTable(OracleClient* aClient, string aTableName, in
 void MarketDataCallback(CThostFtdcDepthMarketDataField* marketData)
 {
 	static string lErrMsg;
-	if(lNonBlockClient->InsertData((string)marketData->InstrumentID, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
+	try
 	{
-		logger.LogThisAdvance(lErrMsg, LOG_ERROR);
+		if(lNonBlockClient->InsertData((string)marketData->InstrumentID, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
+		{
+			logger.LogThisAdvance(lErrMsg, LOG_ERROR);
+		}
+		else
+		{
+			cout<<'.';
+		}
 	}
-	else
+	catch(...)
 	{
-		cout<<'.'<<endl;
+		stringstream tempStream;
+		tempStream.str("");
+		tempStream<<"exception in MarketDataCallback(), error message: unknown";
+		logger.LogThisAdvance(tempStream.str(), LOG_ERROR);
 	}
 	//cout<<" ["<<marketData->InstrumentID<<"-"<<marketData->LastPrice<<"] ";//no endl at the end to increase the efficiency
 }
