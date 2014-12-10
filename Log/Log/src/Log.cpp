@@ -3,6 +3,33 @@
 #include <direct.h>
 #include <boost\date_time\posix_time\posix_time.hpp>
 using namespace Utilities;
+Log::Log(string aLogDir, string aLogName, int aSyncSize, bool aCreateAutoSyncThread, int aAutoSyncPeriod)
+{
+	logDir = aLogDir;
+	logName = aLogName;
+	syncSize = aSyncSize;
+	autoSyncPeriod = aAutoSyncPeriod;
+	Init(aCreateAutoSyncThread);
+}
+Log::~Log(void)
+{
+	// end auto sync thread by setting the loop condition
+	endAutoSyncThread = true;
+	// sync all the buffered data
+	Sync();
+	CloseLogFile();
+}
+void Log::Init(bool aCreateAutoSyncThread)
+{
+	bufferNo1.reserve(syncSize*2);
+	bufferNo2.reserve(syncSize*2);
+	bufferIndex = 1;
+	if(aCreateAutoSyncThread)
+	{
+		endAutoSyncThread = false;
+		autoSyncThread = new boost::thread(AutoSync, this);
+	}
+}
 LOG_OPS_STATUS Log::LogThis(string message, bool enter)
 {
 	try

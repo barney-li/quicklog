@@ -42,22 +42,10 @@ namespace Utilities
 		boost::thread* autoSyncThread;
 		bool endAutoSyncThread;
 	public:
-		__declspec(dllexport) Log(string aLogDir, string aLogName, int aSyncSize, bool aCreateAutoSyncThread=false, int aAutoSyncPeriod=10)
-		{
-			logDir = aLogDir;
-			logName = aLogName;
-			syncSize = aSyncSize;
-			autoSyncPeriod = aAutoSyncPeriod;
-			Init();
-		}
-		__declspec(dllexport) virtual ~Log(void)
-		{
-			// end auto sync thread by setting the loop condition
-			endAutoSyncThread = true;
-			// sync all the buffered data
-			Sync();
-			CloseLogFile();
-		}
+		__declspec(dllexport) Log(string aLogDir, string aLogName, int aSyncSize, bool aCreateAutoSyncThread=false, int aAutoSyncPeriod=10);
+		
+		__declspec(dllexport) virtual ~Log(void);
+
 		// write message into file immediately
 		__declspec(dllexport) LOG_OPS_STATUS LogThis(string message, bool enter = true);
 		// write message into file immediately without a time stamp
@@ -82,16 +70,6 @@ namespace Utilities
 		__declspec(dllexport) LOG_OPS_STATUS CloseLogFile(void);
 		// monitor the buffer in the background, if there are any data need to be synced, it will sync them.
 		static __declspec(dllexport) void AutoSync(Log* logger);
-		__declspec(dllexport) void Init(bool aCreateAutoSyncThread=false)
-		{
-			bufferNo1.reserve(syncSize*2);
-			bufferNo2.reserve(syncSize*2);
-			bufferIndex = 1;
-			if(aCreateAutoSyncThread)
-			{
-				endAutoSyncThread = false;
-				autoSyncThread = new boost::thread(AutoSync, this);
-			}
-		}
+		__declspec(dllexport) void Init(bool aCreateAutoSyncThread=false);
 	};
 }
