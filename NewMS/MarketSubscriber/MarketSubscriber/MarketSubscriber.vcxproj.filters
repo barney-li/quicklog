@@ -113,5 +113,8 @@
     <ClInclude Include="src\Database\NonBlockDatabase.h">
       <Filter>src\Database</Filter>
     </ClInclude>
+    <ClInclude Include="src\MarketSubscriber.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

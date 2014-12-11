@@ -182,6 +182,7 @@
     <ClInclude Include="src\Database\MarketDataTypeMap.h" />
     <ClInclude Include="src\Database\NonBlockDatabase.h" />
     <ClInclude Include="src\MarketProcess\MarketProcess.h" />
+    <ClInclude Include="src\MarketSubscriber.h" />
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\TradeProcess\TradeProcess.h" />
