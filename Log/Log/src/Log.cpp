@@ -39,10 +39,12 @@ LOG_OPS_STATUS Log::LogThis(string message, bool enter)
 			boost::posix_time::ptime localTime = boost::posix_time::microsec_clock::local_time();
 			if(enter)
 			{
+				boost::lock_guard<boost::mutex> lLock(fileMutex);
 				logFileHandler<<boost::gregorian::to_iso_extended_string(localTime.date())<<" "<<localTime.time_of_day()<<"	"<<message.c_str()<<"\n";
 			}
 			else
 			{
+				boost::lock_guard<boost::mutex> lLock(fileMutex);
 				logFileHandler<<boost::gregorian::to_iso_extended_string(localTime.date())<<" "<<localTime.time_of_day()<<"	"<<message.c_str();
 			}
 
@@ -77,10 +79,12 @@ LOG_OPS_STATUS Log::LogThisNoTimeStamp(string message, bool enter)
 				// this is a tricky one, you must not append "\r\n" as it supposed to, because 
 				// it seems that library will automatically added a "\r" prior "\n", so if '\r'
 				// is added manually, then the end of every line will looks like "\r\r\n".
+				boost::lock_guard<boost::mutex> lLock(fileMutex);
 				logFileHandler<<message.c_str()<<"\n";
 			}
 			else
 			{
+				boost::lock_guard<boost::mutex> lLock(fileMutex);
 				logFileHandler<<message.c_str();
 			}
 			if(CloseLogFile() == LOG_NO_ERROR)
@@ -201,8 +205,11 @@ LOG_OPS_STATUS Log::Sync(void)
 				if(OpenLogFile() == LOG_NO_ERROR)
 				{
 					bufferIndex = 2;
-					logFileHandler<<bufferNo1;
-					logFileHandler.flush();
+					{
+						boost::lock_guard<boost::mutex> lLock(fileMutex);
+						logFileHandler<<bufferNo1;
+						logFileHandler.flush();
+					}
 					bufferNo1.clear();			
 					CloseLogFile();
 				}
@@ -220,8 +227,11 @@ LOG_OPS_STATUS Log::Sync(void)
 				if(OpenLogFile() == LOG_NO_ERROR)
 				{
 					bufferIndex = 1;
-					logFileHandler<<bufferNo2;
-					logFileHandler.flush();
+					{
+						boost::lock_guard<boost::mutex> lLock(fileMutex);
+						logFileHandler<<bufferNo2;
+						logFileHandler.flush();
+					}
 					bufferNo2.clear();
 					CloseLogFile();
 				}
@@ -275,6 +285,7 @@ LOG_OPS_STATUS Log::OpenLogFile()
 {
 	try
 	{
+		boost::lock_guard<boost::mutex> lLock(fileMutex);
 		if(logFileHandler.is_open() == false)
 		{
 			logFileHandler.open(logDir+logName, ios::in|ios::out|ios::app);
@@ -314,6 +325,7 @@ LOG_OPS_STATUS Log::CloseLogFile()
 {
 	try
 	{
+		boost::lock_guard<boost::mutex> lLock(fileMutex);
 		if(logFileHandler.is_open() == true)
 		{
 			logFileHandler.close();

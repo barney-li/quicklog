@@ -32,6 +32,7 @@ namespace Utilities
 	{
 	private:
 		fstream logFileHandler;
+		boost::mutex fileMutex;
 		string logDir;
 		string logName;
 		unsigned int syncSize;
