@@ -19,7 +19,16 @@ using namespace DatabaseUtilities;
 //class MarketSubscriber
 NonBlockDatabase* lNonBlockClient;
 CommonLog logger;
-
+string gTableName;
+#define TableSpaceCount 5
+string tableSpaceMap[TableSpaceCount][4]=\
+{
+	{"testmarketdata201301","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201301.dbf'","part201301","'2013-02-01'"},
+	{"testmarketdata201302","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201302.dbf'","part201302","'2013-03-01'"},
+	{"testmarketdata201303","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201303.dbf'","part201303","'2013-04-01'"},
+	{"testmarketdata201304","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201304.dbf'","part201304","'2013-05-01'"},
+	{"testmarketdata201305","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201305.dbf'","part201305","'2013-06-01'"}
+};
 TRANSACTION_RESULT_TYPE CreateType(OracleClient* aClient, int& aErrCode, string& aErrMsg)
 {
 	string lSqlStatement = "CREATE TYPE market_data_type AS OBJECT(";
@@ -161,19 +170,37 @@ TRANSACTION_RESULT_TYPE CreateType(OracleClient* aClient, int& aErrCode, string&
 	lSqlStatement += " action_day varchar2(9)";
 
 	lSqlStatement += ")";
-
+	aErrMsg = "";
 	return aClient->ExecuteSql(lSqlStatement, aErrCode, aErrMsg);
+}
+TRANSACTION_RESULT_TYPE CreateTableSpaces(OracleClient* aClient, int& aErrCode, string& aErrMsg)
+{
+	TRANSACTION_RESULT_TYPE lReturnCode = TRANS_NO_ERROR;
+	string lTotalErrMsg = "";
+	string lSqlStatement = "";
+	for(int i=0;i<TableSpaceCount;i++)
+	{
+		lSqlStatement = "create tablespace "+tableSpaceMap[i][0]+" datafile "+tableSpaceMap[i][1]+" size 128M autoextend on next 128M";
+		lReturnCode = aClient->ExecuteSql(lSqlStatement, aErrCode, aErrMsg);
+		lTotalErrMsg += aErrMsg;
+	}
+	aErrMsg = lTotalErrMsg;
+	return lReturnCode;
 }
 TRANSACTION_RESULT_TYPE CreateTable(OracleClient* aClient, string aTableName, int& aErrCode, string& aErrMsg)
 {
-	return aClient->CreateTableFromType(aTableName, "market_data_type", aErrCode, aErrMsg);
+	string lSqlStatement = "create table " + aTableName + " of market_data_type partition by range(time_stamp)\
+		(partition part201301 values less than (to_timestamp('2013-02-01','YYYY-MM-DD')) tablespace testmarketdata201301 storage(initial 128M next 128M minextents 1 maxextents unlimited),\
+		partition part201302 values less than (to_timestamp('2013-03-01','YYYY-MM-DD')) tablespace testmarketdata201302 storage(initial 128M next 128M minextents 1 maxextents unlimited),\
+		partition part201303 values less than (to_timestamp('2013-04-01','YYYY-MM-DD')) tablespace testmarketdata201303 storage(initial 128M next 128M minextents 1 maxextents unlimited))";
+	return aClient->ExecuteSql(lSqlStatement, aErrCode, aErrMsg);
 }
 void MarketDataCallback(CThostFtdcDepthMarketDataField* marketData)
 {
 	static string lErrMsg;
 	try
 	{
-		if(lNonBlockClient->InsertData((string)marketData->InstrumentID, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
+		if(lNonBlockClient->InsertData(gTableName, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
 		{
 			logger.LogThisAdvance(lErrMsg, LOG_ERROR);
 		}
@@ -210,6 +237,7 @@ int StartMarketSubscriber()
 		config.ReadString(lPwd, "DatabasePwd");
 		config.ReadString(lDb, "DatabaseAddress");
 		config.ReadInteger(lNonBlockBuffer, "NonBlockBufferSize");
+		config.ReadString(gTableName, "TableName");
 
 		logger.LogThisAdvance("******************************************", LOG_INFO);
 		logger.LogThisAdvance("* Database Client initialization started *", LOG_INFO);
@@ -239,6 +267,35 @@ int StartMarketSubscriber()
 			logger.LogThisAdvance("create type failed, error message: "+lErrMsg, LOG_ERROR);
 		}
 		MarketDataTypeMap(lEnv);
+
+		if(CreateTableSpaces(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		{
+			logger.LogThisAdvance("create table spaces successed", LOG_INFO, LOG_STDIO);
+		}
+		else if(lErrCode == 955)
+		{
+			logger.LogThisAdvance("table spaces have already been created before", LOG_INFO, LOG_STDIO);
+		}
+		else
+		{
+			logger.LogThisAdvance("create table spaces failed, error message: "+lErrMsg, LOG_ERROR);
+		};
+
+		if(gTableName.length()>0)
+		{
+			if(CreateTable(lClient,gTableName, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+			{
+				logger.LogThisAdvance("create table " + gTableName + " successed", LOG_INFO, LOG_STDIO);
+			}
+			else if(lErrCode == 955)
+			{
+				logger.LogThisAdvance("table " + gTableName + " has already been created before", LOG_INFO, LOG_STDIO);
+			}
+			else
+			{
+				logger.LogThisAdvance("create table " + gTableName + " failed, error message: "+lErrMsg, LOG_ERROR);
+			};
+		}
 
 		lNonBlockClient = new NonBlockDatabase(lId, lPwd, lDb, lNonBlockBuffer, 1);
 		while(lNonBlockClient->InitFinished() == false)
@@ -347,27 +404,6 @@ int StartMarketSubscriber()
 		}
 		while(lInstrumentListReady == false);
 		
-		/* try to create all the tables from instrument list in database */
-		vector<string> lInstList = tradeObj->GetInstrumentList();
-		for(int i=0; i<lInstList.size(); i++)
-		{
-			if(lInstList[i].size()>0 && lInstList[i].size()<9)
-			{
-				if(CreateTable(lClient,lInstList[i], lErrCode, lErrMsg) == TRANS_NO_ERROR)
-				{
-					logger.LogThisAdvance("create table " + lInstList[i] + " successed", LOG_INFO, LOG_STDIO);
-				}
-				else if(lErrCode == 955)
-				{
-					logger.LogThisAdvance("table " + lInstList[i] + " has already been created before", LOG_INFO, LOG_STDIO);
-				}
-				else
-				{
-					logger.LogThisAdvance("create table " + lInstList[i] + " failed, error message: "+lErrMsg, LOG_ERROR);
-				};
-			}//only create tables for non arbitrage instruments
-		}
-
 		/* initialize market agent */
 		strcpy(marketObj.broker, brokerIdConfig);
 		strcpy(marketObj.investor, investorIdConfig);
