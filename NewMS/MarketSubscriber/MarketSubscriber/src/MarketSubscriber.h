@@ -12,6 +12,8 @@
 #include <MarketDataTypeMap.h>
 #include <NonBlockDatabase.h>
 #include <boost/bind.hpp>
+#include <map>
+#include <cmath>
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 using namespace std;
@@ -20,15 +22,77 @@ using namespace DatabaseUtilities;
 NonBlockDatabase* lNonBlockClient;
 CommonLog logger;
 string gTableName;
-#define TableSpaceCount 5
+#define TableSpaceCount 15
 string tableSpaceMap[TableSpaceCount][4]=\
 {
-	{"testmarketdata201301","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201301.dbf'","part201301","'2013-02-01'"},
-	{"testmarketdata201302","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201302.dbf'","part201302","'2013-03-01'"},
-	{"testmarketdata201303","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201303.dbf'","part201303","'2013-04-01'"},
-	{"testmarketdata201304","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201304.dbf'","part201304","'2013-05-01'"},
-	{"testmarketdata201305","'C:\\app\\dbadmin\\oradata\\barneydb\\testmarketdata201305.dbf'","part201305","'2013-06-01'"}
+	{"marketdata2012","'C:\\tablespace\\marketdata2012.dbf'","part2012","'2013-01-01'"},
+	{"marketdata2013","'C:\\tablespace\\marketdata2013.dbf'","part2013","'2014-01-01'"},
+	{"marketdata2014","'C:\\tablespace\\marketdata2014.dbf'","part2014","'2015-01-01'"},
+	{"marketdata201501","'C:\\tablespace\\marketdata201501.dbf'","part201501","'2015-02-01'"},
+	{"marketdata201502","'C:\\tablespace\\marketdata201502.dbf'","part201502","'2015-03-01'"},
+	{"marketdata201503","'C:\\tablespace\\marketdata201503.dbf'","part201503","'2015-04-01'"},
+	{"marketdata201504","'C:\\tablespace\\marketdata201504.dbf'","part201504","'2015-05-01'"},
+	{"marketdata201505","'C:\\tablespace\\marketdata201505.dbf'","part201505","'2015-06-01'"},
+	{"marketdata201506","'C:\\tablespace\\marketdata201506.dbf'","part201506","'2015-07-01'"},
+	{"marketdata201507","'C:\\tablespace\\marketdata201507.dbf'","part201507","'2015-08-01'"},
+	{"marketdata201508","'C:\\tablespace\\marketdata201508.dbf'","part201508","'2015-09-01'"},
+	{"marketdata201509","'C:\\tablespace\\marketdata201509.dbf'","part201509","'2015-10-01'"},
+	{"marketdata201510","'C:\\tablespace\\marketdata201510.dbf'","part201510","'2015-11-01'"},
+	{"marketdata201511","'C:\\tablespace\\marketdata201511.dbf'","part201511","'2015-12-01'"},
+	{"marketdata201512","'C:\\tablespace\\marketdata201512.dbf'","part201512","'2016-01-01'"}
 };
+struct DataFeature
+{
+	DataFeature()
+	{
+		mUpdateTime = "";
+		mUpdateMS = 0;
+		mLastAskVol = 0;
+		mLastBidVol = 0;
+		mVolume = 0;
+		mLastAskPrice = 0;
+		mLastBidPrice = 0;
+		mOpenInterest = 0;
+	}
+	DataFeature(string aUpdateTime,int aUpdateMS, int aLastAskVol, int aLastBidVol, int aVolume, double aLastAskPrice, double aLastBidPrice, double aOpenInterest)
+	{
+		mUpdateTime = aUpdateTime;
+		mUpdateMS = aUpdateMS;
+		mLastAskVol = aLastAskVol;
+		mLastBidVol = aLastBidVol;
+		mVolume = aVolume;
+		mLastAskPrice = aLastAskPrice;
+		mLastBidPrice = aLastBidPrice;
+		mOpenInterest = aOpenInterest;
+	}
+	bool operator == (const DataFeature other) const
+	{
+		if(mUpdateTime == other.mUpdateTime &&\
+			mUpdateMS == other.mUpdateMS &&\
+			mLastAskVol == other.mLastAskVol &&\
+			mLastBidVol == other.mLastBidVol &&\
+			mVolume == other.mVolume &&\
+			(abs(mLastAskPrice - other.mLastAskPrice)<0.0000001) &&\
+			(abs(mLastBidPrice - other.mLastBidPrice)<0.0000001) &&\
+			(abs(mOpenInterest - other.mOpenInterest)<0.0000001))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	string mUpdateTime;
+	int mUpdateMS;
+	int mLastAskVol;
+	int mLastBidVol;
+	int mVolume;
+	double mLastAskPrice;
+	double mLastBidPrice;
+	double mOpenInterest;
+};
+map<string,DataFeature> gLastData;
 TRANSACTION_RESULT_TYPE CreateType(OracleClient* aClient, int& aErrCode, string& aErrMsg)
 {
 	string lSqlStatement = "CREATE TYPE market_data_type AS OBJECT(";
@@ -189,24 +253,43 @@ TRANSACTION_RESULT_TYPE CreateTableSpaces(OracleClient* aClient, int& aErrCode, 
 }
 TRANSACTION_RESULT_TYPE CreateTable(OracleClient* aClient, string aTableName, int& aErrCode, string& aErrMsg)
 {
-	string lSqlStatement = "create table " + aTableName + " of market_data_type partition by range(time_stamp)\
-		(partition part201301 values less than (to_timestamp('2013-02-01','YYYY-MM-DD')) tablespace testmarketdata201301 storage(initial 128M next 128M minextents 1 maxextents unlimited),\
-		partition part201302 values less than (to_timestamp('2013-03-01','YYYY-MM-DD')) tablespace testmarketdata201302 storage(initial 128M next 128M minextents 1 maxextents unlimited),\
-		partition part201303 values less than (to_timestamp('2013-04-01','YYYY-MM-DD')) tablespace testmarketdata201303 storage(initial 128M next 128M minextents 1 maxextents unlimited))";
+	string lSqlStatement = "create table " + aTableName + " of market_data_type partition by range(time_stamp)\n (\n";
+	string lTotalErrMsg = "";
+	for(int i=0;i<TableSpaceCount-1;i++)
+	{
+		lSqlStatement += "partition "+tableSpaceMap[i][2]+" values less than (to_timestamp("+tableSpaceMap[i][3]+",'YYYY-MM-DD')) tablespace "+tableSpaceMap[i][0]+" storage(initial 128M next 128M minextents 1 maxextents unlimited),\n";
+	}
+	lSqlStatement += "partition "+tableSpaceMap[TableSpaceCount-1][2]+" values less than (to_timestamp("+tableSpaceMap[TableSpaceCount-1][3]+",'YYYY-MM-DD')) tablespace "+tableSpaceMap[TableSpaceCount-1][0]+" storage(initial 128M next 128M minextents 1 maxextents unlimited)\n)";
 	return aClient->ExecuteSql(lSqlStatement, aErrCode, aErrMsg);
+}
+bool IsRedundent(CThostFtdcDepthMarketDataField* marketData)
+{
+	DataFeature lData = DataFeature((string)marketData->UpdateTime, marketData->UpdateMillisec, marketData->AskVolume1, marketData->BidVolume1, marketData->Volume, marketData->AskPrice1, marketData->BidPrice1, marketData->OpenInterest);
+	if(gLastData[(string)marketData->InstrumentID] == lData)
+	{
+		return true;
+	}//redundent
+	else
+	{
+		gLastData[(string)marketData->InstrumentID] = lData;
+		return false;
+	}//not redundent
 }
 void MarketDataCallback(CThostFtdcDepthMarketDataField* marketData)
 {
 	static string lErrMsg;
 	try
 	{
-		if(lNonBlockClient->InsertData(gTableName, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
+		if(IsRedundent(marketData) == false)
 		{
-			logger.LogThisAdvance(lErrMsg, LOG_ERROR);
-		}
-		else
-		{
-			cout<<'.';
+			if(lNonBlockClient->InsertData(gTableName, marketData, lErrMsg) != NonBlockDatabase::NONBLOCK_NO_ERROR)
+			{
+				logger.LogThisAdvance(lErrMsg, LOG_ERROR);
+			}
+			else
+			{
+				cout<<'.';
+			}
 		}
 	}
 	catch(...)
@@ -220,6 +303,35 @@ void MarketDataCallback(CThostFtdcDepthMarketDataField* marketData)
 }
 int StartMarketSubscriber()
 {
+	/////////////////////////////////////////////
+	CThostFtdcDepthMarketDataField marketData;
+	strcpy((char*)&marketData.InstrumentID, "ag1412");
+	strcpy((char*)&marketData.UpdateTime,"10:00:00");
+	marketData.UpdateMillisec = 500;
+	marketData.AskPrice1 = 1000;
+	marketData.AskVolume1 = 100;
+	marketData.BidPrice1 = 900;
+	marketData.BidVolume1 = 90;
+	marketData.Volume = 20000;
+	marketData.OpenInterest = 300000;
+	cout<<"ag1412: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	marketData.Volume = 20001;
+	cout<<"chagne volume: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	marketData.OpenInterest = 300001;
+	cout<<"chagne OI: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	strcpy((char*)&marketData.InstrumentID, "jd1501");
+	cout<<"jd1501: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
+	/////////////////////////////////////////////
 	ConfigReader config;
 	string lId;
 	string lPwd;
