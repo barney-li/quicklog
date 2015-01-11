@@ -10,6 +10,7 @@
 #include <boost/thread.hpp>
 #include <boost/atomic.hpp>
 #include <stdexcept>
+#include <ThostFtdcUserApiStruct.h>
 using namespace Utilities;
 using namespace oracle::occi;
 using namespace std;
@@ -38,9 +39,16 @@ namespace DatabaseUtilities
 		//string mDb;
 
 	public:
-		__declspec(dllexport) OracleClient()
+		__declspec(dllexport) OracleClient(bool aObject=true)
 		{
-			mEnv = Environment::createEnvironment(Environment::OBJECT);
+			if(aObject)
+			{
+				mEnv = Environment::createEnvironment(Environment::OBJECT);
+			}
+			else
+			{
+				mEnv = Environment::createEnvironment(Environment::THREADED_MUTEXED);
+			}
 		}
 		__declspec(dllexport) virtual ~OracleClient()
 		{
@@ -69,7 +77,9 @@ namespace DatabaseUtilities
 		__declspec(dllexport) virtual Environment* GetEnvironment() const;
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE Connect(string aUser, string aPwd, string aDb, unsigned long long aCacheSize, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateMarketDataTable(string aTableName, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertMarketData(string aTableName, CThostFtdcDepthMarketDataField* aData, oracle::occi::Timestamp aTimeStamp, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit(int& aErrCode, string& aErrMsg);
