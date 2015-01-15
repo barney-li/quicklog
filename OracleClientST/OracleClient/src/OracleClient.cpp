@@ -237,7 +237,7 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertMarketData(string aTableName, CThost
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
 		int lDataIndex = 0;
 		oracle::occi::Timestamp lTimeStamp;
-		mStat->setSQL("INSERT INTO " + aTableName + " VALUES (:1)");
+		mStat->setSQL("INSERT /*+ APPEND */ INTO " + aTableName + " VALUES (:1)");
 
 		mStat->setNumber(++lDataIndex,1.0);
 
@@ -247,133 +247,134 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertMarketData(string aTableName, CThost
 		mStat->setString(++lDataIndex,(string)aData->TradingDay);
 				
 		///合约代码				TThostFtdcInstrumentIDType	InstrumentID;
-		lSqlStatement += " instrument_id varchar2(11),";
+		mStat->setString(++lDataIndex,(string)aData->InstrumentID);
 
 		///交易所代码			TThostFtdcExchangeIDType	ExchangeID;
-		lSqlStatement += " exchange_id varchar2(9),";
+		mStat->setString(++lDataIndex,(string)aData->ExchangeID);
 
 		///合约在交易所的代码	TThostFtdcExchangeInstIDType	ExchangeInstID;
-		lSqlStatement += " exchange_instrument_id varchar2(31),";
+		mStat->setString(++lDataIndex,(string)aData->ExchangeInstID);
 
 		///最新价				TThostFtdcPriceType	LastPrice;
-		lSqlStatement += " last_price number,";				
+		mStat->setDouble(++lDataIndex, aData->LastPrice);
 
 		///上次结算价			TThostFtdcPriceType	PreSettlementPrice;
-		lSqlStatement += " pre_settlement_price number,";
+		mStat->setDouble(++lDataIndex, aData->PreSettlementPrice);
 
 		///昨收盘				TThostFtdcPriceType	PreClosePrice;
-		lSqlStatement += " pre_close_price number,";
+		mStat->setDouble(++lDataIndex, aData->PreClosePrice);
 
 		///昨持仓量				TThostFtdcLargeVolumeType	PreOpenInterest;
-		lSqlStatement += " pre_open_interest number,";
+		mStat->setDouble(++lDataIndex, aData->PreOpenInterest);
 
 		///今开盘				TThostFtdcPriceType	OpenPrice;
-		lSqlStatement += " open_price number,";
+		mStat->setDouble(++lDataIndex, aData->OpenPrice);
 
 		///最高价				TThostFtdcPriceType	HighestPrice;
-		lSqlStatement += " highest_price number,";
+		mStat->setDouble(++lDataIndex, aData->HighestPrice);
 
 		///最低价				TThostFtdcPriceType	LowestPrice;
-		lSqlStatement += " lowest_price number,";
+		mStat->setDouble(++lDataIndex, aData->LowestPrice);
 
 		///数量					TThostFtdcVolumeType	Volume;
-		lSqlStatement += " volume number,";
+		mStat->setInt(++lDataIndex, aData->Volume);
 
 		///成交金额				TThostFtdcMoneyType	Turnover;
-		lSqlStatement += " turnover number,";
+		mStat->setDouble(++lDataIndex, aData->Turnover);
 
 		///持仓量				TThostFtdcLargeVolumeType	OpenInterest;
-		lSqlStatement += " open_interest number,";
+		mStat->setDouble(++lDataIndex, aData->OpenInterest);
 
 		///今收盘				TThostFtdcPriceType	ClosePrice;
-		lSqlStatement += " close_price number,";
+		mStat->setDouble(++lDataIndex, aData->ClosePrice);
 
 		///本次结算价			TThostFtdcPriceType	SettlementPrice;
-		lSqlStatement += " settlement_price number,";
+		mStat->setDouble(++lDataIndex, aData->SettlementPrice);
 
 		///涨停板价				TThostFtdcPriceType	UpperLimitPrice;
-		lSqlStatement += " upper_limit_price number,";
+		mStat->setDouble(++lDataIndex, aData->UpperLimitPrice);
 
 		///跌停板价				TThostFtdcPriceType	LowerLimitPrice;
-		lSqlStatement += " lower_limit_price number,";
+		mStat->setDouble(++lDataIndex, aData->LowerLimitPrice);
 
 		///昨虚实度				TThostFtdcRatioType	PreDelta;
-		lSqlStatement += " pre_delta number,";
+		mStat->setDouble(++lDataIndex, aData->PreDelta);
 
 		///今虚实度				TThostFtdcRatioType	CurrDelta;
-		lSqlStatement += " curr_delta number,";
+		mStat->setDouble(++lDataIndex, aData->CurrDelta);
 
 		///最后修改时间			TThostFtdcTimeType	UpdateTime;
-		lSqlStatement += " update_time varchar2(9),";
+		mStat->setString(++lDataIndex, (string)aData->UpdateTime);
 
 		///最后修改毫秒			TThostFtdcMillisecType	UpdateMillisec;
-		lSqlStatement += " update_millisec number,";
+		mStat->setInt(++lDataIndex, aData->UpdateMillisec);
 
 		///申买价一				TThostFtdcPriceType	BidPrice1;
-		lSqlStatement += " bid_price_1 number,";
+		mStat->setDouble(++lDataIndex, aData->BidPrice1);
 
 		///申买量一				TThostFtdcVolumeType	BidVolume1;
-		lSqlStatement += " bid_volume_1 number,";
+		mStat->setInt(++lDataIndex, aData->BidVolume1);
 
 		///申卖价一				TThostFtdcPriceType	AskPrice1;
-		lSqlStatement += " ask_price_1 number,";
+		mStat->setDouble(++lDataIndex, aData->AskPrice1);
 
 		///申卖量一				TThostFtdcVolumeType	AskVolume1;
-		lSqlStatement += " ask_volume_1 number,";
+		mStat->setInt(++lDataIndex, aData->AskVolume1);
 
 		///申买价二				TThostFtdcPriceType	BidPrice2;
-		lSqlStatement += " bid_price_2 number,";
+		mStat->setDouble(++lDataIndex, aData->BidPrice2);
 
 		///申买量二				TThostFtdcVolumeType	BidVolume2;
-		lSqlStatement += " bid_volume_2 number,";
+		mStat->setInt(++lDataIndex, aData->BidVolume2);
 
 		///申卖价二				TThostFtdcPriceType	AskPrice2;
-		lSqlStatement += " ask_price_2 number,";
+		mStat->setDouble(++lDataIndex, aData->AskPrice2);
 
 		///申卖量二				TThostFtdcVolumeType	AskVolume2;
-		lSqlStatement += " ask_volume_2 number,";
+		mStat->setInt(++lDataIndex, aData->AskVolume2);
 
 		///申买价三				TThostFtdcPriceType	BidPrice3;
-		lSqlStatement += " bid_price_3 number,";
+		mStat->setDouble(++lDataIndex, aData->BidPrice3);
 
 		///申买量三				TThostFtdcVolumeType	BidVolume3;
-		lSqlStatement += " bid_volume_3 number,";
+		mStat->setInt(++lDataIndex, aData->BidVolume3);
 
 		///申卖价三				TThostFtdcPriceType	AskPrice3;
-		lSqlStatement += " ask_price_3 number,";
+		mStat->setDouble(++lDataIndex, aData->AskPrice3);
 
 		///申卖量三				TThostFtdcVolumeType	AskVolume3;
-		lSqlStatement += " ask_volume_3 number,";
+		mStat->setInt(++lDataIndex, aData->AskVolume3);
 
 		///申买价四				TThostFtdcPriceType	BidPrice4;
-		lSqlStatement += " bid_price_4 number,";
+		mStat->setDouble(++lDataIndex, aData->BidPrice4);
 
 		///申买量四				TThostFtdcVolumeType	BidVolume4;
-		lSqlStatement += " bid_volume_4 number,";
+		mStat->setInt(++lDataIndex, aData->BidVolume4);
 
 		///申卖价四				TThostFtdcPriceType	AskPrice4;
-		lSqlStatement += " ask_price_4 number,";
+		mStat->setDouble(++lDataIndex, aData->AskPrice4);
 
 		///申卖量四				TThostFtdcVolumeType	AskVolume4;
-		lSqlStatement += " ask_volume_4 number,";
+		mStat->setInt(++lDataIndex, aData->AskVolume4);
 
 		///申买价五				TThostFtdcPriceType	BidPrice5;
-		lSqlStatement += " bid_price_5 number,";
+		mStat->setDouble(++lDataIndex, aData->BidPrice5);
 
 		///申买量五				TThostFtdcVolumeType	BidVolume5;
-		lSqlStatement += " bid_volume_5 number,";
+		mStat->setInt(++lDataIndex, aData->BidVolume5);
 
 		///申卖价五				TThostFtdcPriceType	AskPrice5;
-		lSqlStatement += " ask_price_5 number,";
+		mStat->setDouble(++lDataIndex, aData->AskPrice5);
 
 		///申卖量五				TThostFtdcVolumeType	AskVolume5;
-		lSqlStatement += " ask_volume_5 number,";
+		mStat->setInt(++lDataIndex, aData->AskVolume5);
 
 		///当日均价				TThostFtdcPriceType	AveragePrice;
-		lSqlStatement += " average_price number,";
+		mStat->setDouble(++lDataIndex, aData->AveragePrice);
 
 		///业务日期				TThostFtdcDateType	ActionDay;
-		lSqlStatement += " action_day varchar2(9)";
+		mStat->setString(++lDataIndex, (string)aData->ActionDay);
+
 		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
