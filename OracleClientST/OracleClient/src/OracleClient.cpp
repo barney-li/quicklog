@@ -211,7 +211,7 @@ TRANSACTION_RESULT_TYPE OracleClient::CreateMarketDataTable(string aTableName, i
 		///业务日期				TThostFtdcDateType	ActionDay;
 		lSqlStatement += " action_day varchar2(9)";
 
-		lSqlStatement += ")";
+		lSqlStatement += ") nologging";
 		mStat->executeUpdate(lSqlStatement);
 		mCacheUsed++;
 		return TRANS_NO_ERROR;
@@ -230,152 +230,154 @@ TRANSACTION_RESULT_TYPE OracleClient::CreateMarketDataTable(string aTableName, i
 	}
 }
 
-TRANSACTION_RESULT_TYPE OracleClient::InsertMarketData(string aTableName, CThostFtdcDepthMarketDataField* aData, oracle::occi::Timestamp aTimeStamp, int& aErrCode, string& aErrMsg)
+TRANSACTION_RESULT_TYPE OracleClient::InsertMarketData(string& aTableName, CThostFtdcDepthMarketDataField& aData, string& aTimeStamp, string& aTimeFormat, int& aErrCode, string& aErrMsg)
 {
 	try
 	{
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
 		int lDataIndex = 0;
 		oracle::occi::Timestamp lTimeStamp;
-		mStat->setSQL("INSERT /*+ APPEND */ INTO " + aTableName + " VALUES (:1)");
+		mStat->setSQL("INSERT /*+ APPEND */ INTO " + aTableName + " VALUES (:1,:2,:3,:4,:5,:6,:7,:8,:9,:10,:11,:12,:13,:14,:15,:16,:17,:18,:19,:20,:21,:22,:23,:24,:25,:26,:27,:28,:29,:30,:31,:32,:33,:34,:35,:36,:37,:38,:39,:40,:41,:42,:43,:44,:45,:46)");
 
 		mStat->setNumber(++lDataIndex,1.0);
-
-		mStat->setTimestamp(++lDataIndex,aTimeStamp);
+		
+		mTimeStamp->fromText(aTimeStamp, aTimeFormat, "", mEnv);
+		mStat->setTimestamp(++lDataIndex, *mTimeStamp);
 
 		///交易日				TThostFtdcDateType	TradingDay;
-		mStat->setString(++lDataIndex,(string)aData->TradingDay);
+		mStat->setString(++lDataIndex,(string)aData.TradingDay);
 				
 		///合约代码				TThostFtdcInstrumentIDType	InstrumentID;
-		mStat->setString(++lDataIndex,(string)aData->InstrumentID);
+		mStat->setString(++lDataIndex,(string)aData.InstrumentID);
 
 		///交易所代码			TThostFtdcExchangeIDType	ExchangeID;
-		mStat->setString(++lDataIndex,(string)aData->ExchangeID);
+		mStat->setString(++lDataIndex,(string)aData.ExchangeID);
 
 		///合约在交易所的代码	TThostFtdcExchangeInstIDType	ExchangeInstID;
-		mStat->setString(++lDataIndex,(string)aData->ExchangeInstID);
+		mStat->setString(++lDataIndex,(string)aData.ExchangeInstID);
 
 		///最新价				TThostFtdcPriceType	LastPrice;
-		mStat->setDouble(++lDataIndex, aData->LastPrice);
+		mStat->setDouble(++lDataIndex, aData.LastPrice);
 
 		///上次结算价			TThostFtdcPriceType	PreSettlementPrice;
-		mStat->setDouble(++lDataIndex, aData->PreSettlementPrice);
+		mStat->setDouble(++lDataIndex, aData.PreSettlementPrice);
 
 		///昨收盘				TThostFtdcPriceType	PreClosePrice;
-		mStat->setDouble(++lDataIndex, aData->PreClosePrice);
+		mStat->setDouble(++lDataIndex, aData.PreClosePrice);
 
 		///昨持仓量				TThostFtdcLargeVolumeType	PreOpenInterest;
-		mStat->setDouble(++lDataIndex, aData->PreOpenInterest);
+		mStat->setDouble(++lDataIndex, aData.PreOpenInterest);
 
 		///今开盘				TThostFtdcPriceType	OpenPrice;
-		mStat->setDouble(++lDataIndex, aData->OpenPrice);
+		mStat->setDouble(++lDataIndex, aData.OpenPrice);
 
 		///最高价				TThostFtdcPriceType	HighestPrice;
-		mStat->setDouble(++lDataIndex, aData->HighestPrice);
+		mStat->setDouble(++lDataIndex, aData.HighestPrice);
 
 		///最低价				TThostFtdcPriceType	LowestPrice;
-		mStat->setDouble(++lDataIndex, aData->LowestPrice);
+		mStat->setDouble(++lDataIndex, aData.LowestPrice);
 
 		///数量					TThostFtdcVolumeType	Volume;
-		mStat->setInt(++lDataIndex, aData->Volume);
+		mStat->setInt(++lDataIndex, aData.Volume);
 
 		///成交金额				TThostFtdcMoneyType	Turnover;
-		mStat->setDouble(++lDataIndex, aData->Turnover);
+		mStat->setDouble(++lDataIndex, aData.Turnover);
 
 		///持仓量				TThostFtdcLargeVolumeType	OpenInterest;
-		mStat->setDouble(++lDataIndex, aData->OpenInterest);
+		mStat->setDouble(++lDataIndex, aData.OpenInterest);
 
 		///今收盘				TThostFtdcPriceType	ClosePrice;
-		mStat->setDouble(++lDataIndex, aData->ClosePrice);
+		mStat->setDouble(++lDataIndex, aData.ClosePrice);
 
 		///本次结算价			TThostFtdcPriceType	SettlementPrice;
-		mStat->setDouble(++lDataIndex, aData->SettlementPrice);
+		mStat->setDouble(++lDataIndex, aData.SettlementPrice);
 
 		///涨停板价				TThostFtdcPriceType	UpperLimitPrice;
-		mStat->setDouble(++lDataIndex, aData->UpperLimitPrice);
+		mStat->setDouble(++lDataIndex, aData.UpperLimitPrice);
 
 		///跌停板价				TThostFtdcPriceType	LowerLimitPrice;
-		mStat->setDouble(++lDataIndex, aData->LowerLimitPrice);
+		mStat->setDouble(++lDataIndex, aData.LowerLimitPrice);
 
 		///昨虚实度				TThostFtdcRatioType	PreDelta;
-		mStat->setDouble(++lDataIndex, aData->PreDelta);
+		mStat->setDouble(++lDataIndex, aData.PreDelta);
 
 		///今虚实度				TThostFtdcRatioType	CurrDelta;
-		mStat->setDouble(++lDataIndex, aData->CurrDelta);
+		mStat->setDouble(++lDataIndex, aData.CurrDelta);
 
 		///最后修改时间			TThostFtdcTimeType	UpdateTime;
-		mStat->setString(++lDataIndex, (string)aData->UpdateTime);
+		mStat->setString(++lDataIndex, (string)aData.UpdateTime);
 
 		///最后修改毫秒			TThostFtdcMillisecType	UpdateMillisec;
-		mStat->setInt(++lDataIndex, aData->UpdateMillisec);
+		mStat->setInt(++lDataIndex, aData.UpdateMillisec);
 
 		///申买价一				TThostFtdcPriceType	BidPrice1;
-		mStat->setDouble(++lDataIndex, aData->BidPrice1);
+		mStat->setDouble(++lDataIndex, aData.BidPrice1);
 
 		///申买量一				TThostFtdcVolumeType	BidVolume1;
-		mStat->setInt(++lDataIndex, aData->BidVolume1);
+		mStat->setInt(++lDataIndex, aData.BidVolume1);
 
 		///申卖价一				TThostFtdcPriceType	AskPrice1;
-		mStat->setDouble(++lDataIndex, aData->AskPrice1);
+		mStat->setDouble(++lDataIndex, aData.AskPrice1);
 
 		///申卖量一				TThostFtdcVolumeType	AskVolume1;
-		mStat->setInt(++lDataIndex, aData->AskVolume1);
+		mStat->setInt(++lDataIndex, aData.AskVolume1);
 
 		///申买价二				TThostFtdcPriceType	BidPrice2;
-		mStat->setDouble(++lDataIndex, aData->BidPrice2);
+		mStat->setDouble(++lDataIndex, aData.BidPrice2);
 
 		///申买量二				TThostFtdcVolumeType	BidVolume2;
-		mStat->setInt(++lDataIndex, aData->BidVolume2);
+		mStat->setInt(++lDataIndex, aData.BidVolume2);
 
 		///申卖价二				TThostFtdcPriceType	AskPrice2;
-		mStat->setDouble(++lDataIndex, aData->AskPrice2);
+		mStat->setDouble(++lDataIndex, aData.AskPrice2);
 
 		///申卖量二				TThostFtdcVolumeType	AskVolume2;
-		mStat->setInt(++lDataIndex, aData->AskVolume2);
+		mStat->setInt(++lDataIndex, aData.AskVolume2);
 
 		///申买价三				TThostFtdcPriceType	BidPrice3;
-		mStat->setDouble(++lDataIndex, aData->BidPrice3);
+		mStat->setDouble(++lDataIndex, aData.BidPrice3);
 
 		///申买量三				TThostFtdcVolumeType	BidVolume3;
-		mStat->setInt(++lDataIndex, aData->BidVolume3);
+		mStat->setInt(++lDataIndex, aData.BidVolume3);
 
 		///申卖价三				TThostFtdcPriceType	AskPrice3;
-		mStat->setDouble(++lDataIndex, aData->AskPrice3);
+		mStat->setDouble(++lDataIndex, aData.AskPrice3);
 
 		///申卖量三				TThostFtdcVolumeType	AskVolume3;
-		mStat->setInt(++lDataIndex, aData->AskVolume3);
+		mStat->setInt(++lDataIndex, aData.AskVolume3);
 
 		///申买价四				TThostFtdcPriceType	BidPrice4;
-		mStat->setDouble(++lDataIndex, aData->BidPrice4);
+		mStat->setDouble(++lDataIndex, aData.BidPrice4);
 
 		///申买量四				TThostFtdcVolumeType	BidVolume4;
-		mStat->setInt(++lDataIndex, aData->BidVolume4);
+		mStat->setInt(++lDataIndex, aData.BidVolume4);
 
 		///申卖价四				TThostFtdcPriceType	AskPrice4;
-		mStat->setDouble(++lDataIndex, aData->AskPrice4);
+		mStat->setDouble(++lDataIndex, aData.AskPrice4);
 
 		///申卖量四				TThostFtdcVolumeType	AskVolume4;
-		mStat->setInt(++lDataIndex, aData->AskVolume4);
+		mStat->setInt(++lDataIndex, aData.AskVolume4);
 
 		///申买价五				TThostFtdcPriceType	BidPrice5;
-		mStat->setDouble(++lDataIndex, aData->BidPrice5);
+		mStat->setDouble(++lDataIndex, aData.BidPrice5);
 
 		///申买量五				TThostFtdcVolumeType	BidVolume5;
-		mStat->setInt(++lDataIndex, aData->BidVolume5);
+		mStat->setInt(++lDataIndex, aData.BidVolume5);
 
 		///申卖价五				TThostFtdcPriceType	AskPrice5;
-		mStat->setDouble(++lDataIndex, aData->AskPrice5);
+		mStat->setDouble(++lDataIndex, aData.AskPrice5);
 
 		///申卖量五				TThostFtdcVolumeType	AskVolume5;
-		mStat->setInt(++lDataIndex, aData->AskVolume5);
+		mStat->setInt(++lDataIndex, aData.AskVolume5);
 
 		///当日均价				TThostFtdcPriceType	AveragePrice;
-		mStat->setDouble(++lDataIndex, aData->AveragePrice);
+		mStat->setDouble(++lDataIndex, aData.AveragePrice);
 
 		///业务日期				TThostFtdcDateType	ActionDay;
-		mStat->setString(++lDataIndex, (string)aData->ActionDay);
+		mStat->setString(++lDataIndex, (string)aData.ActionDay);
 
-		return TRANS_NO_ERROR;
+		mStat->executeUpdate();
+		mCacheUsed++;
 	}
 	catch(SQLException ex)
 	{
@@ -389,6 +391,7 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertMarketData(string aTableName, CThost
 		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
+	return TryCommit(aErrCode, aErrMsg);
 }
 
 TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement, int& aErrCode, string& aErrMsg)
@@ -398,7 +401,6 @@ TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement, int& aErr
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
 		mStat->execute(aSqlStatement);
 		mCacheUsed++;
-		return TRANS_NO_ERROR;
 	}
 	catch(SQLException ex)
 	{
@@ -412,6 +414,7 @@ TRANSACTION_RESULT_TYPE OracleClient::ExecuteSql(string aSqlStatement, int& aErr
 		aErrMsg = "unknown exception";
 		return UNKNOWN_EXCEPTION; 
 	}
+	return TryCommit(aErrCode, aErrMsg);
 }
 
 TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aObj, int& aErrCode, string& aErrMsg)
@@ -419,7 +422,7 @@ TRANSACTION_RESULT_TYPE OracleClient::InsertData(string aTableName, PObject* aOb
 	try
 	{
 		boost::lock_guard<boost::mutex> lLockGuard(mOpMutex);
-		mStat->setSQL("INSERT INTO " + aTableName + " VALUES (:1)");
+		mStat->setSQL("INSERT /*+ APPEND */ INTO " + aTableName + " VALUES (:1)");
 		mStat->setObject(1, aObj);
 		mStat->executeUpdate();
 		mCacheUsed++;

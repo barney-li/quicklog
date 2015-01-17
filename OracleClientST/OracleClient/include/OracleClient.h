@@ -34,6 +34,7 @@ namespace DatabaseUtilities
 		boost::atomic<unsigned long long> mCacheUsed;
 		unsigned long long mCacheSize;
 		unsigned long long mSyncSize;
+		oracle::occi::Timestamp *mTimeStamp;
 		//string mUser;
 		//string mPwd;
 		//string mDb;
@@ -48,6 +49,7 @@ namespace DatabaseUtilities
 			else
 			{
 				mEnv = Environment::createEnvironment(Environment::THREADED_MUTEXED);
+				mTimeStamp = new oracle::occi::Timestamp();
 			}
 		}
 		__declspec(dllexport) virtual ~OracleClient()
@@ -55,6 +57,7 @@ namespace DatabaseUtilities
 			try
 			{
 				int lErrCode = 0;
+				if(mTimeStamp != NULL) mTimeStamp;
 				string lErrMsg;
 				Commit(lErrCode, lErrMsg);
 				Disconnect();
@@ -79,7 +82,7 @@ namespace DatabaseUtilities
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateTableFromType(string aTableName, string aType, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE CreateMarketDataTable(string aTableName, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertData(string aTableName, PObject* aObj, int& aErrCode, string& aErrMsg);
-		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertMarketData(string aTableName, CThostFtdcDepthMarketDataField* aData, oracle::occi::Timestamp aTimeStamp, int& aErrCode, string& aErrMsg);
+		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE InsertMarketData(string& aTableName, CThostFtdcDepthMarketDataField& aData, string& aTimeStamp, string& aTimeFormat, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE QueryData(string aTableName, string aConstrain, unsigned int aRequiredSize, list<PObject*>& aObj, size_t& aCount, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE ExecuteSql(string aSqlStatement, int& aErrCode, string& aErrMsg);
 		__declspec(dllexport) virtual TRANSACTION_RESULT_TYPE TryCommit(int& aErrCode, string& aErrMsg);
