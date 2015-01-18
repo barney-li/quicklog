@@ -172,19 +172,19 @@ int _tmain(int argc, _TCHAR* argv[])
 	logger->LogThisAdvance("oracle client example started", 
 							LOG_INFO, 
 							LOG_STDIO_FILESYSTEM);
-	OracleClient* lClient = new OracleClient(false);
+	//OracleClient* lClient = new OracleClient(false);
 	try
 	{
 		//oracle::occi::Environment* lEnv = lClient->GetEnvironment();
 		
-		if(lClient->Connect("c##barney", "Lml19870310", "//192.168.0.107:1521/barneydb", 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		/*if(lClient->Connect("c##barney", "Lml19870310", "//192.168.0.107:1521/barneydb", 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("database connected", LOG_INFO);
 		}
 		else
 		{
 			logger->LogThisAdvance("database cannot be connected, error message: " + lErrMsg, LOG_INFO);
-		}
+		}*/
 		
 		/*if(CreateTypeTest(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
@@ -199,7 +199,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			logger->LogThisAdvance("create type failed, error message: "+lErrMsg, LOG_ERROR);
 		}
 		MarketDataTypeMap(lEnv);*/
-		if(CreateTableTest(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		/*if(CreateTableTest(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
 			logger->LogThisAdvance("create table successed", LOG_INFO, LOG_STDIO);
 		}
@@ -210,7 +210,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		else
 		{
 			logger->LogThisAdvance("create table failed, error message: "+lErrMsg, LOG_ERROR);
-		}
+		}*/
 		
 		double lLastPrice = 1000.1;
 		long long lCount = 0;
@@ -230,7 +230,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			memcpy(&lMarketDataStruct.InstrumentID, "ag1412", sizeof(TThostFtdcInstrumentIDType));
 			memcpy(&lMarketDataStruct.TradingDay, "20141204", sizeof(TThostFtdcDateType));
 			lMarketDataStruct.LastPrice = lLastPrice;
-			if(lNonBlockClient->InsertData("testtable", &lMarketDataStruct, lErrMsg) == NonBlockDatabase::BUFFER_OVERFLOW)
+			if(lNonBlockClient->InsertData("market_data_table", &lMarketDataStruct, lErrMsg) == NonBlockDatabase::BUFFER_OVERFLOW)
 			{
 				cout<<lErrMsg<<endl;
 			}
@@ -262,7 +262,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::cout<<"exception in main()"<<std::endl;
 	}
 	
-	delete lClient;
+	//delete lClient;
 	delete logger;
 	return 0;
 }
