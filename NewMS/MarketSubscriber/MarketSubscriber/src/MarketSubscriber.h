@@ -303,35 +303,6 @@ void MarketDataCallback(CThostFtdcDepthMarketDataField* marketData)
 }
 int StartMarketSubscriber()
 {
-	/////////////////////////////////////////////
-	CThostFtdcDepthMarketDataField marketData;
-	strcpy((char*)&marketData.InstrumentID, "ag1412");
-	strcpy((char*)&marketData.UpdateTime,"10:00:00");
-	marketData.UpdateMillisec = 500;
-	marketData.AskPrice1 = 1000;
-	marketData.AskVolume1 = 100;
-	marketData.BidPrice1 = 900;
-	marketData.BidVolume1 = 90;
-	marketData.Volume = 20000;
-	marketData.OpenInterest = 300000;
-	cout<<"ag1412: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	marketData.Volume = 20001;
-	cout<<"chagne volume: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	marketData.OpenInterest = 300001;
-	cout<<"chagne OI: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	strcpy((char*)&marketData.InstrumentID, "jd1501");
-	cout<<"jd1501: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	cout<<"redundent: "<<IsRedundent(&marketData)<<endl;
-	/////////////////////////////////////////////
 	ConfigReader config;
 	string lId;
 	string lPwd;
@@ -342,7 +313,7 @@ int StartMarketSubscriber()
 
 	int lErrCode = 0;
 	string lErrMsg = "";
-	OracleClient* lClient = new OracleClient();
+	//OracleClient* lClient = new OracleClient();
 	try
 	{
 		config.ReadString(lId, "DatabaseUser");
@@ -354,60 +325,57 @@ int StartMarketSubscriber()
 		logger.LogThisAdvance("******************************************", LOG_INFO);
 		logger.LogThisAdvance("* Database Client initialization started *", LOG_INFO);
 		logger.LogThisAdvance("******************************************", LOG_INFO);
-
-		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
 		
-		if(lClient->Connect(lId, lPwd, lDb, 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
-		{
-			logger.LogThisAdvance("database connected", LOG_INFO);
-		}
-		else
-		{
-			logger.LogThisAdvance("database cannot be connected, error message: " + lErrMsg, LOG_INFO);
-		}
-		
-		if(CreateType(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
-		{
-			logger.LogThisAdvance("create type successed", LOG_INFO, LOG_STDIO);
-		}
-		else if(lErrCode == 955)
-		{
-			logger.LogThisAdvance("type has already been created before", LOG_INFO, LOG_STDIO);
-		}
-		else
-		{
-			logger.LogThisAdvance("create type failed, error message: "+lErrMsg, LOG_ERROR);
-		}
-		MarketDataTypeMap(lEnv);
+		//if(lClient->Connect(lId, lPwd, lDb, 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		//{
+		//	logger.LogThisAdvance("database connected", LOG_INFO);
+		//}
+		//else
+		//{
+		//	logger.LogThisAdvance("database cannot be connected, error message: " + lErrMsg, LOG_INFO);
+		//}
+		//
+		//if(CreateType(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		//{
+		//	logger.LogThisAdvance("create type successed", LOG_INFO, LOG_STDIO);
+		//}
+		//else if(lErrCode == 955)
+		//{
+		//	logger.LogThisAdvance("type has already been created before", LOG_INFO, LOG_STDIO);
+		//}
+		//else
+		//{
+		//	logger.LogThisAdvance("create type failed, error message: "+lErrMsg, LOG_ERROR);
+		//}
 
-		if(CreateTableSpaces(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
-		{
-			logger.LogThisAdvance("create table spaces successed", LOG_INFO, LOG_STDIO);
-		}
-		else if(lErrCode == 955)
-		{
-			logger.LogThisAdvance("table spaces have already been created before", LOG_INFO, LOG_STDIO);
-		}
-		else
-		{
-			logger.LogThisAdvance("create table spaces failed, error message: "+lErrMsg, LOG_ERROR);
-		};
+		//if(CreateTableSpaces(lClient, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		//{
+		//	logger.LogThisAdvance("create table spaces successed", LOG_INFO, LOG_STDIO);
+		//}
+		//else if(lErrCode == 955)
+		//{
+		//	logger.LogThisAdvance("table spaces have already been created before", LOG_INFO, LOG_STDIO);
+		//}
+		//else
+		//{
+		//	logger.LogThisAdvance("create table spaces failed, error message: "+lErrMsg, LOG_ERROR);
+		//};
 
-		if(gTableName.length()>0)
-		{
-			if(CreateTable(lClient,gTableName, lErrCode, lErrMsg) == TRANS_NO_ERROR)
-			{
-				logger.LogThisAdvance("create table " + gTableName + " successed", LOG_INFO, LOG_STDIO);
-			}
-			else if(lErrCode == 955)
-			{
-				logger.LogThisAdvance("table " + gTableName + " has already been created before", LOG_INFO, LOG_STDIO);
-			}
-			else
-			{
-				logger.LogThisAdvance("create table " + gTableName + " failed, error message: "+lErrMsg, LOG_ERROR);
-			};
-		}
+		//if(gTableName.length()>0)
+		//{
+		//	if(CreateTable(lClient,gTableName, lErrCode, lErrMsg) == TRANS_NO_ERROR)
+		//	{
+		//		logger.LogThisAdvance("create table " + gTableName + " successed", LOG_INFO, LOG_STDIO);
+		//	}
+		//	else if(lErrCode == 955)
+		//	{
+		//		logger.LogThisAdvance("table " + gTableName + " has already been created before", LOG_INFO, LOG_STDIO);
+		//	}
+		//	else
+		//	{
+		//		logger.LogThisAdvance("create table " + gTableName + " failed, error message: "+lErrMsg, LOG_ERROR);
+		//	};
+		//}
 
 		lNonBlockClient = new NonBlockDatabase(lId, lPwd, lDb, lNonBlockBuffer, 1);
 		while(lNonBlockClient->InitFinished() == false)
@@ -545,6 +513,6 @@ int StartMarketSubscriber()
 		std::cout<<"exception in main()"<<std::endl;
 	}
 	delete lNonBlockClient;
-	delete lClient;
+	//delete lClient;
 	return 0;
 }

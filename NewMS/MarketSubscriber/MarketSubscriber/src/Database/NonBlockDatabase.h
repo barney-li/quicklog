@@ -253,11 +253,10 @@ public:
 		int lErrCode = 0;
 		string lErrMsg = "";
 		/* initialize oracle client here */
-		OracleClient* lClient = new OracleClient();
-		oracle::occi::Environment* lEnv = lClient->GetEnvironment();
-		oracle::occi::Timestamp lTimeStamp;
-		MarketDataTypeMap(lEnv);
-		MarketDataType* lMarketData = new MarketDataType();
+		OracleClient* lClient = new OracleClient(false);
+		//oracle::occi::Environment* lEnv = lClient->GetEnvironment();
+		//oracle::occi::Timestamp lTimeStamp;
+		//MarketDataType* lMarketData = new MarketDataType();
 		if(lClient->Connect(mUser, mPwd, mDb, mCacheSize, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		{
 			mLogger->LogThisAdvance("nonblock client connected", Utilities::LOG_INFO);
@@ -282,7 +281,11 @@ public:
 				for(int i=0; i<lTempQueue.size(); i++)
 				{
 					/* insert lTempQueue into lClient */;
-					FlushBufferToDatabase(lMarketData, lClient, lTimeStamp, &lTempQueue[i], lEnv, lErrCode, lErrMsg);
+					//FlushBufferToDatabase(lMarketData, lClient, lTimeStamp, &lTempQueue[i], lEnv, lErrCode, lErrMsg);
+					if(lClient->InsertMarketData(lTempQueue[i].mTableName, lTempQueue[i].mData, lTempQueue[i].mTimeStamp, lTempQueue[i].mTimeStampFormat, lErrCode, lErrMsg) != TRANS_NO_ERROR)
+					{
+						mLogger->LogThisAdvance(lErrMsg, Utilities::LOG_WARNING);
+					}
 				}
 				if(lClient->Commit(lErrCode, lErrMsg) != TRANS_NO_ERROR)
 				{
@@ -306,7 +309,7 @@ public:
 				mLogger->LogThisAdvance(tempStream.str(), Utilities::LOG_ERROR);
 			}
 		}
-		delete lMarketData;
+		//delete lMarketData;
 		delete lClient;
 	}
 	TRANSACTION_RESULT_TYPE FlushBufferToDatabase(MarketDataType* const aMarketData, OracleClient* const aClient, oracle::occi::Timestamp aTimeStamp, DataPkg* const aData, oracle::occi::Environment* const aEnv, int& aErrCode, string& aErrMsg)
