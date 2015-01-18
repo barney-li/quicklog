@@ -326,6 +326,11 @@ int StartMarketSubscriber()
 		logger.LogThisAdvance("* Database Client initialization started *", LOG_INFO);
 		logger.LogThisAdvance("******************************************", LOG_INFO);
 		
+		cout<<"ID: "<<lId<<endl;
+		cout<<"Password: "<<lPwd<<endl;
+		cout<<"Database: "<<lDb<<endl;
+		cout<<"Cache Size: "<<lNonBlockBuffer<<endl;
+		cout<<"Table Name: "<<gTableName<<endl;
 		//if(lClient->Connect(lId, lPwd, lDb, 10000, lErrCode, lErrMsg) == TRANS_NO_ERROR)
 		//{
 		//	logger.LogThisAdvance("database connected", LOG_INFO);
