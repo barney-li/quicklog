@@ -3,34 +3,237 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using System.IO;
 using WAPIWrapperCSharp;
 using MathNet.Numerics.Statistics;
-namespace ConsoleApplication1
+namespace MarketDataUtilities
 {
     class DataFetch
     {
-        // for profiling
-
-
         private WindAPI wAPI = new WindAPI();
-
+        const string tickerCSI300 = "000300.SH";
         public DataFetch()
         {
             Connect();
         }
+
         public bool Connect()
         {
-            int returnCode = wAPI.start();
-            if (returnCode == 0)
+            if (wAPI == null)
             {
-                Console.WriteLine("Wind API connected");
+                wAPI = new WindAPI();
+            }
+
+            if (wAPI.isconnected())
+            {
+                Console.WriteLine("Wind API already connected");
                 return true;
             }
             else
             {
-                Console.WriteLine("Wind API cannot connected");
-                return false;
+                int returnCode = wAPI.start();
+                if (returnCode == 0)
+                {
+                    Console.WriteLine("Wind API connected");
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Wind API cannot connected");
+                    return false;
+                }
             }
+        }
+
+		public List<double> GetInflowRatio(List<string> inputTicker, string date)
+		{
+			List<double> inflowRatio = new List<double>();
+			try
+			{
+				string ticker = "";
+				foreach(string oneTicker in inputTicker)
+				{
+					ticker += oneTicker + ",";
+				}
+				WindData wsdResult = wAPI.wsd(ticker, "mf_vol_ratio", date, date, "Fill=Previous;PriceAdj=F");
+				if (wsdResult.data is object[])
+				{
+					return inflowRatio;
+				}
+				else
+				{
+					double[] wsdData = (double[])wsdResult.data;
+					foreach (double s in wsdData)
+					{
+						inflowRatio.Add(Math.Round(s, 6));
+					}
+					return inflowRatio;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return inflowRatio;
+		}
+
+        public List<string> ScreenOutNewIPO(List<string> stockList, string date, int withinDays)
+        {
+            List<string> afterScreenList = new List<string>();
+            try
+            {
+                DateTime toDate = Convert.ToDateTime(date);
+                DateTime fromDate = toDate.AddDays(-1 * withinDays);
+                List<string> tradingDayList = GetTradingDays(tickerCSI300, string.Format("{0:yyyy-MM-dd}", fromDate), string.Format("{0:yyyy-MM-dd}", toDate));
+                string screenNewIPODate = tradingDayList[0];
+                string inputStockList = "";
+                foreach (string stock in stockList)
+                {
+                    inputStockList += stock + ",";
+                }
+                List<double> closePriceList = GetClosePrices(inputStockList, screenNewIPODate, screenNewIPODate);
+                for (int i = 0; i < closePriceList.Count; i++)
+                {
+                    if (!double.IsNaN(closePriceList[i]))
+                    {
+                        afterScreenList.Add(stockList[i]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("new IPO: " + stockList[i]);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+            }
+            return afterScreenList;
+        }
+
+		public List<string> GetStockTickersWithoutNewIPO(string date, string sector)
+		{
+			List<string> stockTickerList = new List<string>();
+			try
+			{
+				stockTickerList = GetStockTickers(date, sector);
+				if (stockTickerList.Count > 0)
+				{
+					stockTickerList = ScreenOutNewIPO(stockTickerList, date, 30);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return stockTickerList;
+		}
+
+        public string GetLastValidTradingDay(string date)
+        {
+            string lastTradingDay = "";
+            try
+            {
+                List<string> lastTradingDayList = GetLastTradingDaySet(tickerCSI300, date);
+                lastTradingDay = lastTradingDayList[0];
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+            }
+            return lastTradingDay;
+        }
+
+        public List<string> GetLimitedStocksInSector(string sector, string date, bool upLmt)
+        {
+            List<string> limitedStocks = new List<string>();
+            try
+            {
+                List<string> lastTradingDayList = GetLastTradingDaySet(tickerCSI300, date);
+                string lastTradingDay = lastTradingDayList[0];
+                List<string> stockList = GetStockTickers(date, sector);
+                limitedStocks = GetLimitedStocks(stockList, lastTradingDay, upLmt);
+                if (limitedStocks.Count > 0)
+                {
+                    limitedStocks = ScreenOutNewIPO(limitedStocks, date, 30);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+            }
+            return limitedStocks;
+        }
+
+        public List<string> GetLimitedStocks(List<string> stockList, string lastTradingDay, bool upLmt)
+        {
+            List<string> limitedStocks = new List<string>();
+            try
+            {
+                List<double> lastPctChg = new List<double>();
+                string inputStockList = "";
+                foreach (string stock in stockList)
+                {
+                    inputStockList += stock + ",";
+                }
+                List<double> closeChanges = GetCloseChanges(inputStockList, lastTradingDay, lastTradingDay);
+                if (closeChanges.Count != stockList.Count)
+                {
+                    Console.WriteLine("output close price count and input stock list doesn't match");
+                    return limitedStocks;
+                }
+                else
+                {
+                    for (int i = 0; i < closeChanges.Count; i++ )
+                    {
+                        if (closeChanges[i] > 9.95 && upLmt)
+                        {
+                            limitedStocks.Add(stockList[i]);
+                        }
+                        else if (closeChanges[i] < -9.95 && !upLmt)
+                        {
+                            limitedStocks.Add(stockList[i]);
+                        }
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+            }
+            return limitedStocks;
+        }
+
+        public List<string> GetSectorList(string sectorConfig)
+        {
+            List<string> sectorList = new List<string>();
+            try
+            {
+                StreamReader readConfig = new StreamReader(sectorConfig);
+                while (!readConfig.EndOfStream)
+                {
+                    sectorList.Add(readConfig.ReadLine());
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+            }
+            return sectorList;
         }
 
         public List<string> GetStockTickers(string date, string sector)
@@ -50,7 +253,6 @@ namespace ConsoleApplication1
                 }
                 counter++;
             }
-            Console.WriteLine("ok");
 
             return stockTickers;
         }
@@ -59,30 +261,56 @@ namespace ConsoleApplication1
         {
             List<string> tradingDays = new List<string>();
 
-            WindData wsdResult = wAPI.wsd(ticker, "close", from, to, "Fill=Previous;PriceAdj=F");
-            List<string> wsdData = new List<string>();
-            foreach (DateTime dt in wsdResult.timeList)
+            WindData wsdResult = wAPI.wsd(ticker, "volume", from, to, "Fill=Previous;PriceAdj=F");
+            if (wsdResult.data is object[])
             {
-                wsdData.Add(string.Format("{0:yyyy-MM-dd}", dt));
-                //Console.WriteLine(string.Format("{0:yyyy-MM-dd}",dt));
+                return tradingDays;
             }
-            foreach (string s in wsdData)
+            else
             {
-                tradingDays.Add(s);
+                double[] wsdData = (double[])wsdResult.data;
+                int len = wsdData.Count();
+                for (int i = 0; i <= len - 1; i++)
+                {
+                    if (wsdData[i] > 0)
+                    {
+                        DateTime dt = wsdResult.timeList[i];
+                        tradingDays.Add(string.Format("{0:yyyy-MM-dd}", dt));
+                    }
+                }
+                return tradingDays;
             }
-            return tradingDays;
         }
 
         public List<string> GetLastTradingDaySet(string ticker, string day)
         {
             List<string> lastTradingDays = new List<string>();
-            WindData wsdResult = wAPI.wsd(ticker, "last_trade_day", day, day, "");
-            object[] wsdData = (object[])wsdResult.data;
-            foreach (object s in wsdData)
-            {
-                lastTradingDays.Add(string.Format("{0:yyyy-MM-dd}", (DateTime)s));
-            }
 
+            DateTime tillDay = Convert.ToDateTime(day);
+            string[] tickers = ticker.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+            for (int i = 0; i <= tickers.Count() - 1; i++)
+            {
+                string t = tickers[i];
+                for (int m = 0; m <= 100; m++)
+                {
+                    DateTime dtTo = tillDay.AddMonths(-1 * m);
+                    DateTime dtFrom = tillDay.AddMonths(-1 * m - 1);
+                    string strTo = string.Format("{0:yyyy-MM-dd}", dtTo);
+                    string strFrom = string.Format("{0:yyyy-MM-dd}", dtFrom);
+                    List<string> tTradingDays = GetTradingDays(t, strFrom, strTo);
+                    if (tTradingDays.Count > 0)
+                    {
+                        string tLastTradingDay = tTradingDays[tTradingDays.Count - 1];
+                        lastTradingDays.Add(tLastTradingDay);
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+            }
             return lastTradingDays;
         }
 
@@ -91,16 +319,19 @@ namespace ConsoleApplication1
             List<double> closePrices = new List<double>();
 
             WindData wsdResult = wAPI.wsd(ticker, "close", from, to, "Fill=Previous;PriceAdj=F");
-            double[] wsdData = (double[])wsdResult.data;
-            foreach (double s in wsdData)
+            if (wsdResult.data is object[])
             {
-                if (!double.IsNaN(s))
+                return closePrices;
+            }
+            else
+            {
+                double[] wsdData = (double[])wsdResult.data;
+                foreach (double s in wsdData)
                 {
                     closePrices.Add(Math.Round(s, 2));
                 }
+                return closePrices;
             }
-            Console.WriteLine("ok");
-            return closePrices;
         }
 
         public List<double> GetHighPrices(string ticker, string from, string to)
@@ -111,10 +342,7 @@ namespace ConsoleApplication1
             double[] wsdData = (double[])wsdResult.data;
             foreach (double s in wsdData)
             {
-                if (!double.IsNaN(s))
-                {
-                    highPrices.Add(Math.Round(s, 2));
-                }
+                highPrices.Add(Math.Round(s, 2));
             }
             return highPrices;
         }
@@ -127,11 +355,9 @@ namespace ConsoleApplication1
             double[] wsdData = (double[])wsdResult.data;
             foreach (double s in wsdData)
             {
-                if (!double.IsNaN(s))
-                {
-                    lowPrices.Add(Math.Round(s, 2));
-                }
+                lowPrices.Add(Math.Round(s, 2));
             }
+
             return lowPrices;
         }
 
