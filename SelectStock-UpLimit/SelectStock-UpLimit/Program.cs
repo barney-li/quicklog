@@ -9,15 +9,14 @@ namespace SelectStock_UpLimit
 {
     class Program
     {
+		static DataFetch data = new DataFetch();
         static void Main(string[] args)
         {
-			StreamWriter areaWriter = new StreamWriter("./report/area.txt");
-			StreamWriter conceptWriter = new StreamWriter("./report/concept.txt");
-			StreamWriter industryWriter = new StreamWriter("./report/industry.txt");
+			StreamWriter areaWriter = new StreamWriter("./area.csv", false, Encoding.UTF8);
+			StreamWriter conceptWriter = new StreamWriter("./concept.csv", false, Encoding.UTF8);
+			StreamWriter industryWriter = new StreamWriter("./industry.csv", false, Encoding.UTF8);
             try
             {
-                DataFetch data = new DataFetch();
-
                 //get last trading day
                 //string lastTradingDay = data.GetLastValidTradingDay(string.Format("{0:yyyy-MM-dd}", DateTime.Today));
 				string lastTradingDay = "2015-03-20";
@@ -30,7 +29,7 @@ namespace SelectStock_UpLimit
                 List<SectorInfo> sectorInfoList = new List<SectorInfo>();
 
                 //stocks divided by area
-                List<string> areaList = data.GetSectorList("./config/area.txt");
+                List<string> areaList = data.GetSectorList("./area.txt");
 				int upLmtInAllArea = 0;
 				data.GetInflowRatio(areaList, lastTradingDay);
                 foreach (string sector in areaList)
@@ -53,14 +52,14 @@ namespace SelectStock_UpLimit
 				foreach (SectorInfo sector in sectorInfoList)
 				{
 					areaWriter.WriteLine(sector.SectorName + "," + sector.SectorUpLimitCount + "," + sector.SectorCount + ","
-										+ (double)sector.SectorUpLimitCount/(double)sector.SectorCount+"," 
-										+ (double)sector.SectorUpLimitCount/(double)upLmtInAllArea+","
-										+ sector.AverageInflowRatio + "," + sectorA.SectorCount);
+										+ Math.Round(100*(double)sector.SectorUpLimitCount/(double)sector.SectorCount,2)+"%," 
+										+ Math.Round(100*(double)sector.SectorUpLimitCount/(double)upLmtInAllArea,2)+"%,"
+										+ Math.Round(100*sector.AverageInflowRatio,2) + "%," + sectorA.SectorCount);
 				}
 
 				//clear sector info list
 				sectorInfoList = new List<SectorInfo>();
-				List<string> conceptList = data.GetSectorList("./config/concept.txt");
+				List<string> conceptList = data.GetSectorList("./concept.txt");
 				int upLmtInAllConcept = 0;
 				foreach (string sector in conceptList)
 				{
@@ -82,14 +81,14 @@ namespace SelectStock_UpLimit
 				foreach (SectorInfo sector in sectorInfoList)
 				{
 					conceptWriter.WriteLine(sector.SectorName + "," + sector.SectorUpLimitCount + "," + sector.SectorCount + ","
-										+ (double)sector.SectorUpLimitCount / (double)sector.SectorCount + ","
-										+ (double)sector.SectorUpLimitCount / (double)upLmtInAllArea + ","
-										+ sector.AverageInflowRatio + "," + sectorA.SectorCount);
+										+ Math.Round(100 * (double)sector.SectorUpLimitCount / (double)sector.SectorCount, 2) + "%,"
+										+ Math.Round(100 * (double)sector.SectorUpLimitCount / (double)upLmtInAllArea, 2) + "%,"
+										+ Math.Round(100 * sector.AverageInflowRatio, 2) + "%," + sectorA.SectorCount);
 				}
 
 				//clear sector info list
 				sectorInfoList = new List<SectorInfo>();
-				List<string> industryList = data.GetSectorList("./config/industry.txt");
+				List<string> industryList = data.GetSectorList("./industry.txt");
 				int upLmtInAllIndustry = 0;
 				foreach (string sector in industryList)
 				{
@@ -111,9 +110,9 @@ namespace SelectStock_UpLimit
 				foreach (SectorInfo sector in sectorInfoList)
 				{
 					industryWriter.WriteLine(sector.SectorName + "," + sector.SectorUpLimitCount + "," + sector.SectorCount + ","
-										+ (double)sector.SectorUpLimitCount / (double)sector.SectorCount + ","
-										+ (double)sector.SectorUpLimitCount / (double)upLmtInAllArea + ","
-										+ sector.AverageInflowRatio + "," + sectorA.SectorCount);
+										+ Math.Round(100 * (double)sector.SectorUpLimitCount / (double)sector.SectorCount, 2) + "%,"
+										+ Math.Round(100 * (double)sector.SectorUpLimitCount / (double)upLmtInAllArea, 2) + "%,"
+										+ Math.Round(100 * sector.AverageInflowRatio, 2) + "%," + sectorA.SectorCount);
 				}
             }
             catch (Exception e)
@@ -132,9 +131,11 @@ namespace SelectStock_UpLimit
 				industryWriter.Close();
             }
             DateTime today = DateTime.Today;
-
-            
-
         }
+
+		static void GetSectorInfo(string sectorName)
+		{
+ 
+		}
     }
 }
