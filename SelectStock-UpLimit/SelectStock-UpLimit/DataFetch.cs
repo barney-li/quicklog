@@ -12,6 +12,7 @@ namespace MarketDataUtilities
     {
         private WindAPI wAPI = new WindAPI();
         const string tickerCSI300 = "000300.SH";
+		const int daysAfterIPO = 30;
         public DataFetch()
         {
             Connect();
@@ -44,6 +45,40 @@ namespace MarketDataUtilities
                 }
             }
         }
+
+		public List<double> GetFreeFloatShares(List<string> inputTicker, string date)
+		{
+			List<double> freeFloatShares = new List<double>();
+			try
+			{
+				string ticker = "";
+				foreach (string oneTicker in inputTicker)
+				{
+					ticker += oneTicker + ",";
+				}
+				WindData wsdResult = wAPI.wsd(ticker, "free_float_shares", date, date, "Fill=Previous;PriceAdj=F");
+				if (wsdResult.data is object[])
+				{
+					return freeFloatShares;
+				}
+				else
+				{
+					double[] wsdData = (double[])wsdResult.data;
+					foreach (double s in wsdData)
+					{
+						freeFloatShares.Add(Math.Round(s, 6));
+					}
+					return freeFloatShares;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return freeFloatShares;
+		}
 
 		public List<double> GetInflowRatio(List<string> inputTicker, string date)
 		{
@@ -94,6 +129,7 @@ namespace MarketDataUtilities
                     inputStockList += stock + ",";
                 }
                 List<double> closePriceList = GetClosePrices(inputStockList, screenNewIPODate, screenNewIPODate);
+
                 for (int i = 0; i < closePriceList.Count; i++)
                 {
                     if (!double.IsNaN(closePriceList[i]))
@@ -102,7 +138,7 @@ namespace MarketDataUtilities
                     }
                     else
                     {
-                        Console.WriteLine("new IPO: " + stockList[i]);
+                        //Console.WriteLine("new IPO: " + stockList[i]);
                     }
                 }
             }
@@ -123,7 +159,7 @@ namespace MarketDataUtilities
 				stockTickerList = GetStockTickers(date, sector);
 				if (stockTickerList.Count > 0)
 				{
-					stockTickerList = ScreenOutNewIPO(stockTickerList, date, 30);
+					stockTickerList = ScreenOutNewIPO(stockTickerList, date, daysAfterIPO);
 				}
 			}
 			catch (Exception e)
@@ -159,11 +195,11 @@ namespace MarketDataUtilities
             {
                 List<string> lastTradingDayList = GetLastTradingDaySet(tickerCSI300, date);
                 string lastTradingDay = lastTradingDayList[0];
-                List<string> stockList = GetStockTickers(date, sector);
+				List<string> stockList = GetStockTickers(lastTradingDay, sector);
                 limitedStocks = GetLimitedStocks(stockList, lastTradingDay, upLmt);
                 if (limitedStocks.Count > 0)
                 {
-                    limitedStocks = ScreenOutNewIPO(limitedStocks, date, 30);
+					limitedStocks = ScreenOutNewIPO(limitedStocks, lastTradingDay, daysAfterIPO);
                 }
             }
             catch (Exception e)
@@ -313,6 +349,26 @@ namespace MarketDataUtilities
             }
             return lastTradingDays;
         }
+
+		public List<double> GetClosePrices(List<string> tickerList, string from, string to)
+		{
+			string longTicker = "";
+			try
+			{
+				foreach (string singleTicker in tickerList)
+				{
+					longTicker += singleTicker+",";
+				}
+				
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return GetClosePrices(longTicker, from, to);
+		}
 
         public List<double> GetClosePrices(string ticker, string from, string to)
         {
