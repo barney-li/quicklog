@@ -366,12 +366,19 @@ namespace MarketDataUtilities
             List<double> closeChanges = new List<double>();
 
             WindData wsdResult = wAPI.wsd(ticker, "pct_chg", from, to, "Fill=Previous;PriceAdj=F");
-            double[] wsdData = (double[])wsdResult.data;
-            foreach (double s in wsdData)
-            {
-                closeChanges.Add(s);
-            }
-            return closeChanges;
+			if (wsdResult.data is object[])
+			{
+				return closeChanges;
+			}
+			else
+			{
+				double[] wsdData = (double[])wsdResult.data;
+				foreach (double s in wsdData)
+				{
+					closeChanges.Add(s);
+				}
+				return closeChanges;
+			}
         }
 
         public List<double> GetMAPrices(string ticker, string from, string to, int ma)

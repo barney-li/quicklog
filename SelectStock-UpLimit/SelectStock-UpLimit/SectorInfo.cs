@@ -11,7 +11,6 @@ namespace SelectStock_UpLimit
         {
             SectorName = "";
             SectorACount = 0;
-			AverageInflowRatio = 0;
 			inflowRatio = new List<double>();
             stocksUpLmt = new List<string>();
             stocks = new List<string>();
@@ -23,7 +22,6 @@ namespace SelectStock_UpLimit
             stocksUpLmt = aStocksUpLmt;
             stocks = aStocks;
 			inflowRatio = aInflowRatio;
-			AverageInflowRatio = 0;
         }
         public string SectorName { get; set; }
         public int SectorCount
@@ -46,6 +44,20 @@ namespace SelectStock_UpLimit
 		public List<double> inflowRatio;
 		public double AverageInflowRatio
 		{
+			get
+			{
+				double total = 0;
+				int count = 0;
+				foreach(double fr in inflowRatio)
+				{
+					if (!double.IsNaN(fr))
+					{
+						count++;
+						total += fr;
+					}					
+				}
+				return total / count;
+			}
  			//complete this tomorrow;
 		}
     }
