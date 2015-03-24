@@ -11,8 +11,17 @@ namespace MarketDataUtilities
     class DataFetch
     {
         private WindAPI wAPI = new WindAPI();
-        const string tickerCSI300 = "000300.SH";
+        public const string tickerCSI300 = "000300.SH";
 		const int daysAfterIPO = 30;
+		public const string ClosePriceType = "close";
+		public const string OpenPriceType = "open";
+		public const string HighPriceType = "high";
+		public const string LowPriceType = "low";
+		public const string CloseChangeType = "pct_chg";
+		public const string VolumeType = "volume";
+		public const string FreeFloatSharesType = "free_float_shares";
+		public const string InflowRatioType = "mf_vol_ratio";
+
         public DataFetch()
         {
             Connect();
@@ -45,6 +54,76 @@ namespace MarketDataUtilities
                 }
             }
         }
+
+		public List<List<double>> GetDecimalMatrix(List<string> tickerList, string dataType, string from, string to)
+		{
+			List<List<double>> dataMatrix = new List<List<double>>();
+			try
+			{
+				string ticker = "";
+				foreach (string oneTicker in tickerList)
+				{
+					ticker += oneTicker + ",";
+				}
+				WindData wsdResult = wAPI.wsd(ticker, dataType, from, to, "Fill=Previous;PriceAdj=F");
+				if (wsdResult.data is double[])
+				{
+					int tickerCount = tickerList.Count;
+					for (int i = 0; i < tickerCount; i++)
+					{
+						dataMatrix.Add(new List<double>());
+					}
+					int index = 0;
+					foreach (double data in (double[])wsdResult.data)
+					{
+						dataMatrix[index % tickerCount].Add(data);
+						index++;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return dataMatrix;
+		}
+
+		public List<List<string>> GetStringMatrix(List<string> tickerList, string dataType, string from, string to)
+		{
+			List<List<string>> dataMatrix = new List<List<string>>();
+			try
+			{
+				string ticker = "";
+				foreach (string oneTicker in tickerList)
+				{
+					ticker += oneTicker + ",";
+				}
+				WindData wsdResult = wAPI.wsd(ticker, dataType, from, to, "Fill=Previous;PriceAdj=F");
+				if (wsdResult.data is string[])
+				{
+					int tickerCount = tickerList.Count;
+					for (int i = 0; i < tickerCount; i++)
+					{
+						dataMatrix.Add(new List<string>());
+					}
+					int index = 0;
+					foreach (string data in (string[])wsdResult.data)
+					{
+						dataMatrix[index % tickerCount].Add(data);
+						index++;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return dataMatrix;
+		}
 
 		public List<double> GetFreeFloatShares(List<string> inputTicker, string date)
 		{

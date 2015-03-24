@@ -15,25 +15,41 @@ namespace SelectStock_UpLimit
         {
             try
             {
+				
                 //get last trading day
 				Console.WriteLine("请输入计算日期，格式为YYYY-MM-DD，计算当天数据请直接按回车键");
-				string lastTradingDay = Console.ReadLine();
-				if (lastTradingDay == "")
+				string toDate = Console.ReadLine();
+				if (toDate == "")
 				{
-					lastTradingDay = data.GetLastValidTradingDay(string.Format("{0:yyyy-MM-dd}", DateTime.Today));
-					Console.WriteLine(lastTradingDay);
+					toDate = string.Format("{0:yyyy-MM-dd}",DateTime.Today);
 				}
-				
+				string fromDate = string.Format("{0:yyyy-MM-dd}", Convert.ToDateTime(toDate).AddDays(-30));
+				List<string> dateList = data.GetTradingDays(DataFetch.tickerCSI300, fromDate, toDate);
+				//get trading day list
+				string lastTradingDay = dateList[dateList.Count-1];
+				Console.WriteLine(lastTradingDay);			
+	
+				// test super fetch
+				List<string> tickerList = new List<string>();
+				tickerList.Add("600000.sh");
+				tickerList.Add("600004.sh");
+				tickerList.Add("600030.sh");
+				tickerList.Add("600567.sh");
+				List<List<string>> freeFloatSharesMatrix = data.GetStringMatrix(tickerList, "sec_name", fromDate, toDate);
+				List<List<double>> closePriceMatrix = data.GetDecimalMatrix(tickerList, "close", fromDate, toDate);
+
+
                 //get sector A info first
                 List<string> sectorAStocks = data.GetStockTickers(lastTradingDay, "全部A股");
 				List<double> sectorAInflowRatio = data.GetInflowRatio(sectorAStocks, lastTradingDay);
 				List<double> sectorAFreeFloatShares = data.GetFreeFloatShares(sectorAStocks, lastTradingDay);
 				List<double> sectorAClosePrices = data.GetClosePrices(sectorAStocks, lastTradingDay, lastTradingDay);
 				sectorA = new SectorInfo("全部A股", sectorAStocks.Count, sectorAStocks, sectorAStocks, sectorAInflowRatio, sectorAFreeFloatShares, sectorAClosePrices);
-				
-				GetSectorInfo("area", lastTradingDay);
-				GetSectorInfo("concept", lastTradingDay);
-				GetSectorInfo("industry", lastTradingDay);
+
+				GetSectorInfo("test", lastTradingDay);
+				//GetSectorInfo("area", lastTradingDay);
+				//GetSectorInfo("concept", lastTradingDay);
+				//GetSectorInfo("industry", lastTradingDay);
             }
             catch (Exception e)
             {
