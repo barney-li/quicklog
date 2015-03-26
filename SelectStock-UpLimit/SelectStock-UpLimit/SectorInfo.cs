@@ -15,9 +15,9 @@ namespace SelectStock_UpLimit
             stocksUpLmt = new List<string>();
             stocks = new List<string>();
 			freeFloatShares = new List<double>();
-			closePrice = new List<double>();
+			closePriceMatrix = new List<List<double>>();
         }
-        public SectorInfo(string aSectorName, int aSectorACount, List<string> aStocksUpLmt, List<string> aStocks, List<double> aInflowRatio, List<double> aFreeFloatShares, List<double> aClosePrice)
+        public SectorInfo(string aSectorName, int aSectorACount, List<string> aStocksUpLmt, List<string> aStocks, List<double> aInflowRatio, List<double> aFreeFloatShares, List<List<double>> aClosePrice)
         {
             SectorName = aSectorName;
             SectorACount = aSectorACount;
@@ -25,7 +25,7 @@ namespace SelectStock_UpLimit
             stocks = aStocks;
 			inflowRatio = aInflowRatio;
 			freeFloatShares = aFreeFloatShares;
-			closePrice = aClosePrice;
+			closePriceMatrix = aClosePrice;
         }
         public string SectorName { get; set; }
         public int SectorCount
@@ -47,7 +47,7 @@ namespace SelectStock_UpLimit
         public int SectorACount{set;get;}
 		public List<double> inflowRatio;
 		public List<double> freeFloatShares;
-		public List<double> closePrice;
+		public List<List<double>> closePriceMatrix;
 		public double AverageInflowRatio
 		{
 			get
@@ -65,45 +65,75 @@ namespace SelectStock_UpLimit
 				return total / count;
 			}
 		}
+		public static double SolveWeightAverageInflowRatio(List<double> aInflowRatioList, List<double> aFreeFloatSharesList, List<double> aClosePriceList)
+		{
+			double avgInflowRatio = 0;
+			try
+			{
+				if (aInflowRatioList.Count != aFreeFloatSharesList.Count || aFreeFloatSharesList.Count != aClosePriceList.Count)
+				{
+					Console.WriteLine("error, inflow ratio, free float shares and close price doesn't match");
+				}
+				List<double> weight = new List<double>();
+				double valueOfSector = 0;
+				for (int i = 0; i < aClosePriceList.Count; i++)
+				{
+					if ((!double.IsNaN(aInflowRatioList[i])) &&
+						(!double.IsNaN(aFreeFloatSharesList[i])) &&
+						(!double.IsNaN(aClosePriceList[i])))
+					{
+						valueOfSector += aFreeFloatSharesList[i] * aClosePriceList[i];
+					}
+				}
+				for (int i = 0; i < aClosePriceList.Count; i++)
+				{
+					if ((!double.IsNaN(aInflowRatioList[i])) &&
+						(!double.IsNaN(aFreeFloatSharesList[i])) &&
+						(!double.IsNaN(aClosePriceList[i])))
+					{
+						avgInflowRatio += aInflowRatioList[i] * aFreeFloatSharesList[i] * aClosePriceList[i] / valueOfSector;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
+			return avgInflowRatio;
+		}
 		public double WeightAverageInflowRatio
 		{
 			get
 			{
-				double avgInflowRatio = 0;
-				try
+				return SolveWeightAverageInflowRatio(inflowRatio, freeFloatShares, closePriceMatrix[closePriceMatrix.Count-1]);
+			}
+		}
+		public List<string> limitedStockList = new List<string>();
+		public string LimitedStockList
+		{
+			get
+			{
+				string list = "";
+				foreach (string ticker in limitedStockList)
 				{
-					if (inflowRatio.Count != freeFloatShares.Count || freeFloatShares.Count != closePrice.Count)
-					{
-						Console.WriteLine("error, inflow ratio, free float shares and close price doesn't match");
-					}
-					List<double> weight = new List<double>();
-					double valueOfSector = 0;
-					for (int i = 0; i < closePrice.Count; i++)
-					{
-						if ((!double.IsNaN(inflowRatio[i])) &&
-							(!double.IsNaN(freeFloatShares[i])) &&
-							(!double.IsNaN(closePrice[i])))
-						{
-							valueOfSector += freeFloatShares[i] * closePrice[i];
-						}
-					}
-					for (int i = 0; i < closePrice.Count; i++)
-					{
-						if ((!double.IsNaN(inflowRatio[i])) &&
-							(!double.IsNaN(freeFloatShares[i])) &&
-							(!double.IsNaN(closePrice[i])))
-						{
-							avgInflowRatio += inflowRatio[i] * freeFloatShares[i] * closePrice[i] / valueOfSector;
-						}
-					}
+					list += ticker + ",";
 				}
-				catch(Exception e)
+				return list;
+			}
+		}
+		public List<string> stockList = new List<string>();
+		public string StockList
+		{
+			get
+			{
+				string list = "";
+				foreach (string ticker in stockList)
 				{
-					Console.WriteLine(e.Message);
-					Console.WriteLine(e.Source);
-					Console.WriteLine(e.StackTrace);
+					list += ticker + ",";
 				}
-				return avgInflowRatio;
+				return list;
 			}
 		}
     }

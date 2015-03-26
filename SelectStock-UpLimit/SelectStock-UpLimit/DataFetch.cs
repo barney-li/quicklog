@@ -11,7 +11,7 @@ namespace MarketDataUtilities
     class DataFetch
     {
         private WindAPI wAPI = new WindAPI();
-        public const string tickerCSI300 = "000300.SH";
+        public const string TickerCSI300 = "000300.SH";
 		const int daysAfterIPO = 30;
 		public const string ClosePriceType = "close";
 		public const string OpenPriceType = "open";
@@ -200,7 +200,7 @@ namespace MarketDataUtilities
             {
                 DateTime toDate = Convert.ToDateTime(date);
                 DateTime fromDate = toDate.AddDays(-1 * withinDays);
-                List<string> tradingDayList = GetTradingDays(tickerCSI300, string.Format("{0:yyyy-MM-dd}", fromDate), string.Format("{0:yyyy-MM-dd}", toDate));
+                List<string> tradingDayList = GetTradingDays(TickerCSI300, string.Format("{0:yyyy-MM-dd}", fromDate), string.Format("{0:yyyy-MM-dd}", toDate));
                 string screenNewIPODate = tradingDayList[0];
                 string inputStockList = "";
                 foreach (string stock in stockList)
@@ -255,7 +255,7 @@ namespace MarketDataUtilities
             string lastTradingDay = "";
             try
             {
-                List<string> lastTradingDayList = GetLastTradingDaySet(tickerCSI300, date);
+                List<string> lastTradingDayList = GetLastTradingDaySet(TickerCSI300, date);
                 lastTradingDay = lastTradingDayList[0];
             }
             catch(Exception e)
@@ -272,7 +272,7 @@ namespace MarketDataUtilities
             List<string> limitedStocks = new List<string>();
             try
             {
-                List<string> lastTradingDayList = GetLastTradingDaySet(tickerCSI300, date);
+                List<string> lastTradingDayList = GetLastTradingDaySet(TickerCSI300, date);
                 string lastTradingDay = lastTradingDayList[0];
 				List<string> stockList = GetStockTickers(lastTradingDay, sector);
                 limitedStocks = GetLimitedStocks(stockList, lastTradingDay, upLmt);
