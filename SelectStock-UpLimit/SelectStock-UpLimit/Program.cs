@@ -19,12 +19,15 @@ namespace SelectStock_UpLimit
 		static List<List<double>> closeChangeMatrixOfAll = new List<List<double>>();
 		static List<List<string>> nameMatrixOfAll = new List<List<string>>();
 		static List<List<double>> inflowRatioMatrixOfAll = new List<List<double>>();
+		static List<List<double>> volumeMatrixOfAll = new List<List<double>>();
 		const string LimitedStock = "LimitedStock";
+		const string MarketAStock = "MarketAStock";
 		const string Close = "Close";
 		const string FreeFloatShares = "FreeFloatShares";
 		const string CloseChangeMatrix = "CloseChangeMatrix";
 		const string InflowRatio = "InflowRatio";
 		const string Name = "Name";
+		const string Volume = "Volume";
         static void Main(string[] args)
         {
             try
@@ -51,6 +54,7 @@ namespace SelectStock_UpLimit
 				closeChangeMatrixOfAll = data.GetDecimalMatrix(tickerListOfAll, DataFetch.CloseChangeType, fromDate, toDate);
 				inflowRatioMatrixOfAll = data.GetDecimalMatrix(tickerListOfAll, DataFetch.InflowRatioType, fromDate, toDate);
 				nameMatrixOfAll = data.GetStringMatrix(tickerListOfAll, "sec_name", cutOffDate, cutOffDate);
+				volumeMatrixOfAll = data.GetDecimalMatrix(tickerListOfAll, DataFetch.VolumeType, fromDate, toDate);
 
 				int index = 0;
 				foreach (string ticker in tickerListOfAll)
@@ -59,10 +63,9 @@ namespace SelectStock_UpLimit
 					index++;
 				}
 				Console.WriteLine("data fetch complete");
-				//GetSectorInfo("test", lastTradingDay);
 				GetSectorInfoMatrix("area", fromDate, toDate, cutOffDate);
-				//GetSectorInfo("concept", lastTradingDay);
-				//GetSectorInfo("industry", lastTradingDay);
+				GetSectorInfoMatrix("concept", fromDate, toDate, cutOffDate);
+				GetSectorInfoMatrix("industry", fromDate, toDate, cutOffDate);
             }
             catch (Exception e)
             {
@@ -151,6 +154,18 @@ namespace SelectStock_UpLimit
 						dataList.Add(closeMatrixOfAll[stockIndex][dateIndex]);
 					}
 					break;
+				case Volume:
+					foreach (string stock in tickerList)
+					{
+						// 如果这个板块中的股票不在A股市场则略过
+						int stockIndex = 0;
+						if (map.ContainsKey(stock))
+						{
+							stockIndex = (int)map[stock];
+						}
+						dataList.Add(volumeMatrixOfAll[stockIndex][dateIndex]);
+					}
+					break;
 			}
 			return dataList;
 		}
@@ -182,11 +197,29 @@ namespace SelectStock_UpLimit
 						}
 					}
 					break;
+				case MarketAStock:
+					foreach (string stock in tickerList)
+					{
+						try
+						{
+							// 如果这个板块中的股票不在A股市场则略过
+							if (map.ContainsKey(stock))
+							{
+								dataList.Add(stock);
+							}
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine(e.Message);
+						}
+					}
+					break;
 			}
 			return dataList;
 		}
 		static List<SectorInfo> GetSectorInfoMatrix(string sectorName, string from, string to, string cutOff)
 		{
+			int daysInterval = 6;
 			StreamWriter writer = new StreamWriter("./" + sectorName + ".csv", false, Encoding.UTF8);
 			List<SectorInfo> sectorInfoList = new List<SectorInfo>();
 			try
@@ -198,18 +231,46 @@ namespace SelectStock_UpLimit
 				{
 					Console.WriteLine("当前板块： " + sector);
 					List<string> sectorStockList = data.GetStockTickers(cutOff, sector);
+					
+
 					List<string> limitedStocks = GetStringMarketData(sectorStockList, 0, LimitedStock);
-					List<double> freeFloatShares = GetDecimalMarketData(sectorStockList, 0, FreeFloatShares);
-					List<List<double>> closeMatrix = new List<List<double>>();
-					for (int i = 0; i < 6; i++)
+					sectorStockList = GetStringMarketData(sectorStockList, 0, MarketAStock);
+					if (sectorStockList.Count == 0)
 					{
-						List<double> closePrices = GetDecimalMarketData(sectorStockList, 5-i, Close);
-						closeMatrix.Add(closePrices);
+						// if this sector is empty then ignore it
+						continue;
 					}
 					
-					List<double> sectorInflowRatio = GetDecimalMarketData(sectorStockList, 0, InflowRatio);
+					List<List<double>> closeMatrix = new List<List<double>>();
+					for (int i = 0; i < daysInterval; i++)
+					{
+						List<double> closePrices = GetDecimalMarketData(sectorStockList, daysInterval-1-i, Close);
+						closeMatrix.Add(closePrices);
+					}
 
-					SectorInfo tempSector = new SectorInfo(sector, tickerListOfAll.Count, limitedStocks, sectorStockList, sectorInflowRatio, freeFloatShares, closeMatrix);
+					List<List<double>> inflowRatioMatrix = new List<List<double>>();
+					for (int i = 0; i < daysInterval; i++)
+					{
+						List<double> inflowRatioForOneDay = GetDecimalMarketData(sectorStockList, daysInterval - 1 - i, InflowRatio);
+						inflowRatioMatrix.Add(inflowRatioForOneDay);
+					}
+
+					List<List<double>> freeFloatSharesMatrix = new List<List<double>>();
+					for (int i = 0; i < daysInterval; i++)
+					{
+						List<double> freeFloatSharesForOneDay = GetDecimalMarketData(sectorStockList, daysInterval - 1 - i, FreeFloatShares);
+						freeFloatSharesMatrix.Add(freeFloatSharesForOneDay);
+					}
+
+					List<List<double>> volumeMatrix = new List<List<double>>();
+					for (int i = 0; i < daysInterval; i++)
+					{
+						List<double> volumeForOneDay = GetDecimalMarketData(sectorStockList, daysInterval - 1 - i, Volume);
+						volumeMatrix.Add(volumeForOneDay);
+					}
+
+					SectorInfo tempSector = new SectorInfo(sector, tickerListOfAll.Count, limitedStocks, sectorStockList, inflowRatioMatrix, freeFloatSharesMatrix, closeMatrix, volumeMatrix);
+
 					sectorInfoList.Add(tempSector);
 
 					foreach (string stock in limitedStocks)
@@ -217,16 +278,21 @@ namespace SelectStock_UpLimit
 						upLmtInAllArea++;
 						Console.WriteLine("+" + stock);
 					}
+					// test only
+					//Console.WriteLine(sectorInfoList[0].GetDeltaVolume());
 				}
 				//record sector information
-				writer.WriteLine("板块名称,涨停个股数量,板块个股总数,涨停个股数量/板块个股总数,单一板块涨停个股/所有板块涨停个股,算术平均资金流,加权平均资金流,A股个股总数");
+				writer.WriteLine("板块名称,涨停个股数量,板块个股总数,涨停个股数量/板块个股总数,单一板块涨停个股/所有板块涨停个股,算术平均资金流,加权平均资金流,加权平均资金流增幅,板块成交量增幅,A股个股总数");
 				foreach (SectorInfo sector in sectorInfoList)
 				{
 					writer.WriteLine(sector.SectorName + "," + sector.SectorUpLimitCount + "," + sector.SectorCount + ","
 										+ Math.Round(100 * (double)sector.SectorUpLimitCount / (double)sector.SectorCount, 2) + "%,"
 										+ Math.Round(100 * (double)sector.SectorUpLimitCount / (double)upLmtInAllArea, 2) + "%,"
 										+ Math.Round(100 * sector.AverageInflowRatio, 2) + "%,"
-										+ Math.Round(100 * sector.WeightAverageInflowRatio, 2) + "%," + tickerListOfAll.Count);
+										+ Math.Round(100 * sector.WeightAverageInflowRatio, 2) + "%," 
+										+ Math.Round(100 * sector.DeltaWeightAverageInflowRatio, 2) + "%,"
+										+ Math.Round(100 * sector.GetDeltaVolume(), 2) + "%," 
+										+ tickerListOfAll.Count);
 				}
 			}
 			catch (Exception e)

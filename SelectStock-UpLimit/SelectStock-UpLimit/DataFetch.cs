@@ -355,20 +355,29 @@ namespace MarketDataUtilities
         {
             List<string> stockTickers = new List<string>();
 
-            string options = "date=" + date + ";sector=" + sector;
-            WindData wsetResult = wAPI.wset("SectorConstituent", options);
-            string message = wsetResult.GetErrorMsg();
-            object[] wsetData = (object[])wsetResult.data;
-            int counter = 0;
-            foreach (object s in wsetData)
-            {
-                if (counter % 3 == 1)
-                {
-                    stockTickers.Add((string)s);
-                }
-                counter++;
-            }
+			try
+			{
+				string options = "date=" + date + ";sector=" + sector;
+				WindData wsetResult = wAPI.wset("SectorConstituent", options);
+				string message = wsetResult.GetErrorMsg();
 
+				object[] wsetData = (object[])wsetResult.data;
+				int counter = 0;
+				foreach (object s in wsetData)
+				{
+					if (counter % 3 == 1)
+					{
+						stockTickers.Add((string)s);
+					}
+					counter++;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Source);
+				Console.WriteLine(e.StackTrace);
+			}
             return stockTickers;
         }
 

@@ -7,25 +7,45 @@ namespace SelectStock_UpLimit
 {
     class SectorInfo
     {
+		List<List<double>> volumeMatrix = new List<List<double>>();
+		public List<string> stocksUpLmt = new List<string>();
+		public List<string> stocks = new List<string>();
+		public List<List<double>> inflowRatioMatrix = new List<List<double>>();
+		public List<List<double>> freeFloatSharesMatrix = new List<List<double>>();
+		public List<List<double>> closePriceMatrix = new List<List<double>>();
+		public List<string> limitedStockList = new List<string>();
+		public List<string> stockList = new List<string>();
+
         public SectorInfo()
         {
             SectorName = "";
             SectorACount = 0;
-			inflowRatio = new List<double>();
-            stocksUpLmt = new List<string>();
-            stocks = new List<string>();
-			freeFloatShares = new List<double>();
-			closePriceMatrix = new List<List<double>>();
         }
-        public SectorInfo(string aSectorName, int aSectorACount, List<string> aStocksUpLmt, List<string> aStocks, List<double> aInflowRatio, List<double> aFreeFloatShares, List<List<double>> aClosePrice)
+        public SectorInfo(string aSectorName, 
+						int aSectorACount, 
+						List<string> aStocksUpLmt, 
+						List<string> aStocks, 
+						List<List<double>> aInflowRatioMatrix, 
+						List<List<double>> aFreeFloatSharesMatrix, 
+						List<List<double>> aClosePriceMatrix,
+						List<List<double>> aVolumeMatrix)
         {
             SectorName = aSectorName;
             SectorACount = aSectorACount;
             stocksUpLmt = aStocksUpLmt;
             stocks = aStocks;
-			inflowRatio = aInflowRatio;
-			freeFloatShares = aFreeFloatShares;
-			closePriceMatrix = aClosePrice;
+			if (aInflowRatioMatrix.Count < 6 || aFreeFloatSharesMatrix.Count < 6 || aClosePriceMatrix.Count < 6)
+			{
+				Console.WriteLine("error, SectorInfor requires at least 5 days of data");
+				return;
+			}
+			else
+			{
+				inflowRatioMatrix = aInflowRatioMatrix;
+				freeFloatSharesMatrix = aFreeFloatSharesMatrix;
+				closePriceMatrix = aClosePriceMatrix;
+				volumeMatrix = aVolumeMatrix;
+			}
         }
         public string SectorName { get; set; }
         public int SectorCount
@@ -42,19 +62,14 @@ namespace SelectStock_UpLimit
                 return stocksUpLmt.Count;
             }
         }
-        public List<string> stocksUpLmt;
-        public List<string> stocks;
         public int SectorACount{set;get;}
-		public List<double> inflowRatio;
-		public List<double> freeFloatShares;
-		public List<List<double>> closePriceMatrix;
 		public double AverageInflowRatio
 		{
 			get
 			{
 				double total = 0;
 				int count = 0;
-				foreach (double fr in inflowRatio)
+				foreach (double fr in inflowRatioMatrix[inflowRatioMatrix.Count-1])
 				{
 					if (!double.IsNaN(fr))
 					{
@@ -65,6 +80,7 @@ namespace SelectStock_UpLimit
 				return total / count;
 			}
 		}
+
 		public static double SolveWeightAverageInflowRatio(List<double> aInflowRatioList, List<double> aFreeFloatSharesList, List<double> aClosePriceList)
 		{
 			double avgInflowRatio = 0;
@@ -107,10 +123,28 @@ namespace SelectStock_UpLimit
 		{
 			get
 			{
-				return SolveWeightAverageInflowRatio(inflowRatio, freeFloatShares, closePriceMatrix[closePriceMatrix.Count-1]);
+				return SolveWeightAverageInflowRatio(inflowRatioMatrix[inflowRatioMatrix.Count-1], freeFloatSharesMatrix[freeFloatSharesMatrix.Count-1], closePriceMatrix[closePriceMatrix.Count-1]);
 			}
 		}
-		public List<string> limitedStockList = new List<string>();
+		public double GetWeightAverageInflowRatio(int daysAgo)
+		{
+			return SolveWeightAverageInflowRatio(inflowRatioMatrix[inflowRatioMatrix.Count - 1 - daysAgo],
+												freeFloatSharesMatrix[freeFloatSharesMatrix.Count - 1 - daysAgo],
+												closePriceMatrix[closePriceMatrix.Count - 1 - daysAgo]);
+		}
+		public double DeltaWeightAverageInflowRatio
+		{
+			get
+			{
+				double sum = 0;
+				int deltaDays = 5;
+				for (int i = 1; i <= deltaDays; i++)
+				{
+					sum += GetWeightAverageInflowRatio(i);
+				}
+				return WeightAverageInflowRatio - (sum / deltaDays);
+			}
+		}
 		public string LimitedStockList
 		{
 			get
@@ -123,7 +157,6 @@ namespace SelectStock_UpLimit
 				return list;
 			}
 		}
-		public List<string> stockList = new List<string>();
 		public string StockList
 		{
 			get
@@ -134,6 +167,38 @@ namespace SelectStock_UpLimit
 					list += ticker + ",";
 				}
 				return list;
+			}
+		}
+
+		public double GetVolume(int daysAgo)
+		{
+			double sum = 0;
+			List<double> volumeList = volumeMatrix[volumeMatrix.Count-1-daysAgo];
+			foreach (double volume in volumeList)
+			{
+				if (!double.IsNaN(volume))
+				{
+					sum += volume;
+				}
+			}
+			return sum;
+		}
+		public double GetDeltaVolume()
+		{
+			int deltaDays = 5;
+			double todayVolume = GetVolume(0);
+			double sumVolume = 0;
+			for (int i = 1; i <= deltaDays; i++)
+			{
+				sumVolume += GetVolume(i);
+			}
+			if (sumVolume == 0)
+			{
+				return 0;
+			}
+			else
+			{
+				return (todayVolume - sumVolume / deltaDays) / (sumVolume / deltaDays);
 			}
 		}
     }
