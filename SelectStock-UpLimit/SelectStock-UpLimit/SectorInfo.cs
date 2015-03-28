@@ -10,11 +10,12 @@ namespace SelectStock_UpLimit
 		List<List<double>> volumeMatrix = new List<List<double>>();
 		public List<string> stocksUpLmt = new List<string>();
 		public List<string> stocks = new List<string>();
+		/* matrix的存储结构是： somethingMatrix[day N][stock M]*/
 		public List<List<double>> inflowRatioMatrix = new List<List<double>>();
 		public List<List<double>> freeFloatSharesMatrix = new List<List<double>>();
 		public List<List<double>> closePriceMatrix = new List<List<double>>();
 		public List<string> limitedStockList = new List<string>();
-		public List<string> stockList = new List<string>();
+		//public List<string> stockList = new List<string>();
 
         public SectorInfo()
         {
@@ -162,7 +163,7 @@ namespace SelectStock_UpLimit
 			get
 			{
 				string list = "";
-				foreach (string ticker in stockList)
+				foreach (string ticker in stocks)
 				{
 					list += ticker + ",";
 				}
@@ -200,6 +201,58 @@ namespace SelectStock_UpLimit
 			{
 				return (todayVolume - sumVolume / deltaDays) / (sumVolume / deltaDays);
 			}
+		}
+
+		//板块市值
+		public double GetSectorValue(int daysAgo)
+		{
+			double sum = 0;
+			if (closePriceMatrix.Count < daysAgo)
+			{
+				Console.WriteLine("error: require more days of close price");
+			}
+			if (freeFloatSharesMatrix.Count < daysAgo)
+			{
+				Console.WriteLine("error: require more days of free float shares");
+			}
+			List<double> closeList = closePriceMatrix[closePriceMatrix.Count - 1 - daysAgo];
+			List<double> freeFloatSharesList = freeFloatSharesMatrix[freeFloatSharesMatrix.Count - 1 - daysAgo];
+			for (int i = 0; i < closeList.Count; i++)
+			{
+				sum += closeList[i] * freeFloatSharesList[i];
+			}
+			return sum;
+		}
+		//板块市值涨幅
+		public double GetDeltaSectorValue(int fromDaysAgo, int toDaysAgo)
+		{
+			double delta = 0;
+			double valueBefore = GetSectorValue(fromDaysAgo);
+			double valueNow = GetSectorValue(toDaysAgo);
+			delta = (valueNow - valueBefore) / valueBefore;
+			return delta;
+		}
+
+		//板块个股n日涨幅排行
+		public string GetDeltaOrderStockList(int daysAgo, int topN)
+		{
+			string[] tickerArray = new string[stocks.Count];
+			double[] deltaPriceArray = new double[stocks.Count];
+			for (int i = 0; i < stocks.Count; i++)
+			{
+				tickerArray[i] = stocks[i];
+				double closeToday = closePriceMatrix[closePriceMatrix.Count - 1][i];
+				double closeBefore = closePriceMatrix[closePriceMatrix.Count - 1 - daysAgo][i];
+				deltaPriceArray[i] = (closeToday - closeBefore)/closeBefore;
+			}
+			Array.Sort(deltaPriceArray, tickerArray);
+			int outputCount = (tickerArray.Count()<topN)?tickerArray.Count():topN;
+			string outputInfo = "";
+			for (int i = tickerArray.Count()-1; i > tickerArray.Count()-1-outputCount; i--)
+			{
+				outputInfo += tickerArray[i] + "(" + Math.Round(deltaPriceArray[i], 2) * 100 + "%);";
+			}
+			return outputInfo;
 		}
     }
 }

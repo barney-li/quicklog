@@ -31,8 +31,7 @@ namespace SelectStock_UpLimit
         static void Main(string[] args)
         {
             try
-            {
-				
+			{
                 //get last trading day
 				Console.WriteLine("请输入计算日期，格式为YYYY-MM-DD，计算当天数据请直接按回车键");
 				string processDate = Console.ReadLine();
@@ -219,8 +218,8 @@ namespace SelectStock_UpLimit
 		}
 		static List<SectorInfo> GetSectorInfoMatrix(string sectorName, string from, string to, string cutOff)
 		{
-			int daysInterval = 6;
-			StreamWriter writer = new StreamWriter("./" + sectorName + ".csv", false, Encoding.UTF8);
+			int daysInterval = 11;
+			StreamWriter writer = new StreamWriter("./" + to + " " +sectorName + ".csv", false, Encoding.UTF8);
 			List<SectorInfo> sectorInfoList = new List<SectorInfo>();
 			try
 			{
@@ -230,10 +229,11 @@ namespace SelectStock_UpLimit
 				foreach (string sector in sectorList)
 				{
 					Console.WriteLine("当前板块： " + sector);
-					List<string> sectorStockList = data.GetStockTickers(cutOff, sector);
+					//get stock ticker 的截止时间选择为最新一天，保证能够拿到最新板块的股票代码
+					List<string> sectorStockList = data.GetStockTickers(to, sector);
 					
-
 					List<string> limitedStocks = GetStringMarketData(sectorStockList, 0, LimitedStock);
+					//将板块股票代码中不在A股市场交易的代码剔除
 					sectorStockList = GetStringMarketData(sectorStockList, 0, MarketAStock);
 					if (sectorStockList.Count == 0)
 					{
@@ -282,7 +282,7 @@ namespace SelectStock_UpLimit
 					//Console.WriteLine(sectorInfoList[0].GetDeltaVolume());
 				}
 				//record sector information
-				writer.WriteLine("板块名称,涨停个股数量,板块个股总数,涨停个股数量/板块个股总数,单一板块涨停个股/所有板块涨停个股,算术平均资金流,加权平均资金流,加权平均资金流增幅,板块成交量增幅,A股个股总数");
+				writer.WriteLine("板块名称,涨停个股数量,板块个股总数,涨停个股数量/板块个股总数,单一板块涨停个股/所有板块涨停个股,算术平均资金流,加权平均资金流,加权平均资金流增幅,板块成交量增幅,板块市值5日增幅,板块市值10日增幅,5日涨幅前10的个股,A股个股总数");
 				foreach (SectorInfo sector in sectorInfoList)
 				{
 					writer.WriteLine(sector.SectorName + "," + sector.SectorUpLimitCount + "," + sector.SectorCount + ","
@@ -291,7 +291,10 @@ namespace SelectStock_UpLimit
 										+ Math.Round(100 * sector.AverageInflowRatio, 2) + "%,"
 										+ Math.Round(100 * sector.WeightAverageInflowRatio, 2) + "%," 
 										+ Math.Round(100 * sector.DeltaWeightAverageInflowRatio, 2) + "%,"
-										+ Math.Round(100 * sector.GetDeltaVolume(), 2) + "%," 
+										+ Math.Round(100 * sector.GetDeltaVolume(), 2) + "%,"
+										+ Math.Round(100 * sector.GetDeltaSectorValue(5,0), 2) + "%,"
+										+ Math.Round(100 * sector.GetDeltaSectorValue(10, 0), 2) + "%,"
+										+ sector.GetDeltaOrderStockList(5,10) + ","
 										+ tickerListOfAll.Count);
 				}
 			}

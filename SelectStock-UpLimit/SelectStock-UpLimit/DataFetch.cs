@@ -360,7 +360,11 @@ namespace MarketDataUtilities
 				string options = "date=" + date + ";sector=" + sector;
 				WindData wsetResult = wAPI.wset("SectorConstituent", options);
 				string message = wsetResult.GetErrorMsg();
-
+				if (wsetResult.data == null)
+				{
+					Console.WriteLine("sector "+sector+" doesn't exist in "+date);
+					return stockTickers;
+				}
 				object[] wsetData = (object[])wsetResult.data;
 				int counter = 0;
 				foreach (object s in wsetData)
