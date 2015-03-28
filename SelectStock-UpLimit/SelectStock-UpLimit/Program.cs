@@ -10,6 +10,10 @@ namespace SelectStock_UpLimit
 {
     class Program
     {
+		const int FetchDataCalenderDay = 200;
+		const int FetchDataBussinessDay = 120;
+		const int CutOffBussinessDay = 120;
+		const int InsertToDataInfoBussinessDay = 120;
 		static DataFetch data = new DataFetch();
 		static List<string> tradingDayList = new List<string>();
 		static Hashtable map = new Hashtable();
@@ -81,11 +85,11 @@ namespace SelectStock_UpLimit
 		{
 			try
 			{
-				string initialDay = string.Format("{0:yyyy-MM-dd}", Convert.ToDateTime(today).AddDays(-60));
+				string initialDay = string.Format("{0:yyyy-MM-dd}", Convert.ToDateTime(today).AddDays(-1*FetchDataCalenderDay));
 				tradingDayList = data.GetTradingDays(DataFetch.TickerCSI300, initialDay, today);
-				from = tradingDayList[tradingDayList.Count-11];
+				from = tradingDayList[tradingDayList.Count-1-1*FetchDataBussinessDay];
 				to = tradingDayList[tradingDayList.Count-1];
-				cutOff = tradingDayList[tradingDayList.Count-30];
+				cutOff = tradingDayList[tradingDayList.Count-1*CutOffBussinessDay];
 			}
 			catch (Exception e)
 			{
@@ -218,8 +222,8 @@ namespace SelectStock_UpLimit
 		}
 		static List<SectorInfo> GetSectorInfoMatrix(string sectorName, string from, string to, string cutOff)
 		{
-			int daysInterval = 11;
 			StreamWriter writer = new StreamWriter("./" + to + " " +sectorName + ".csv", false, Encoding.UTF8);
+			StreamWriter timeSerialWriter = new StreamWriter("./"+to+" "+sectorName+" TimeSerialAnalyze.csv",false,Encoding.UTF8);
 			List<SectorInfo> sectorInfoList = new List<SectorInfo>();
 			try
 			{
@@ -242,30 +246,30 @@ namespace SelectStock_UpLimit
 					}
 					
 					List<List<double>> closeMatrix = new List<List<double>>();
-					for (int i = 0; i < daysInterval; i++)
+					for (int i = 0; i < InsertToDataInfoBussinessDay; i++)
 					{
-						List<double> closePrices = GetDecimalMarketData(sectorStockList, daysInterval-1-i, Close);
+						List<double> closePrices = GetDecimalMarketData(sectorStockList, InsertToDataInfoBussinessDay-1-i, Close);
 						closeMatrix.Add(closePrices);
 					}
 
 					List<List<double>> inflowRatioMatrix = new List<List<double>>();
-					for (int i = 0; i < daysInterval; i++)
+					for (int i = 0; i < InsertToDataInfoBussinessDay; i++)
 					{
-						List<double> inflowRatioForOneDay = GetDecimalMarketData(sectorStockList, daysInterval - 1 - i, InflowRatio);
+						List<double> inflowRatioForOneDay = GetDecimalMarketData(sectorStockList, InsertToDataInfoBussinessDay - 1 - i, InflowRatio);
 						inflowRatioMatrix.Add(inflowRatioForOneDay);
 					}
 
 					List<List<double>> freeFloatSharesMatrix = new List<List<double>>();
-					for (int i = 0; i < daysInterval; i++)
+					for (int i = 0; i < InsertToDataInfoBussinessDay; i++)
 					{
-						List<double> freeFloatSharesForOneDay = GetDecimalMarketData(sectorStockList, daysInterval - 1 - i, FreeFloatShares);
+						List<double> freeFloatSharesForOneDay = GetDecimalMarketData(sectorStockList, InsertToDataInfoBussinessDay - 1 - i, FreeFloatShares);
 						freeFloatSharesMatrix.Add(freeFloatSharesForOneDay);
 					}
 
 					List<List<double>> volumeMatrix = new List<List<double>>();
-					for (int i = 0; i < daysInterval; i++)
+					for (int i = 0; i < InsertToDataInfoBussinessDay; i++)
 					{
-						List<double> volumeForOneDay = GetDecimalMarketData(sectorStockList, daysInterval - 1 - i, Volume);
+						List<double> volumeForOneDay = GetDecimalMarketData(sectorStockList, InsertToDataInfoBussinessDay - 1 - i, Volume);
 						volumeMatrix.Add(volumeForOneDay);
 					}
 
@@ -278,8 +282,7 @@ namespace SelectStock_UpLimit
 						upLmtInAllArea++;
 						Console.WriteLine("+" + stock);
 					}
-					// test only
-					//Console.WriteLine(sectorInfoList[0].GetDeltaVolume());
+
 				}
 				//record sector information
 				writer.WriteLine("板块名称,涨停个股数量,板块个股总数,涨停个股数量/板块个股总数,单一板块涨停个股/所有板块涨停个股,算术平均资金流,加权平均资金流,加权平均资金流增幅,板块成交量增幅,板块市值5日增幅,板块市值10日增幅,5日涨幅前10的个股,A股个股总数");
@@ -297,6 +300,28 @@ namespace SelectStock_UpLimit
 										+ sector.GetDeltaOrderStockList(5,10) + ","
 										+ tickerListOfAll.Count);
 				}
+
+				
+				foreach(SectorInfo sector in sectorInfoList)
+				{
+					string inflowRatioList = "";
+					string valueList = "";
+					string tradingDay = "";
+					inflowRatioList += "inflow ratio,";
+					valueList+="value,";
+					tradingDay += "trading day,";
+					for (int i = InsertToDataInfoBussinessDay - 1; i >= 0; i-- )
+					{
+						inflowRatioList += Math.Round(sector.GetWeightAverageInflowRatio(i),4)+",";
+						valueList+=Math.Round(sector.GetSectorValue(i),4)+",";
+						tradingDay+=tradingDayList[tradingDayList.Count - 1 - i] + ",";
+					}
+					timeSerialWriter.WriteLine(sector.SectorName);
+					timeSerialWriter.WriteLine(tradingDay);
+					timeSerialWriter.WriteLine(inflowRatioList);
+					timeSerialWriter.WriteLine(valueList);
+				}
+				
 			}
 			catch (Exception e)
 			{
@@ -308,7 +333,8 @@ namespace SelectStock_UpLimit
 			{
 				writer.Flush();
 				writer.Close();
-
+				timeSerialWriter.Flush();
+				timeSerialWriter.Close();
 			}
 			return sectorInfoList;
 		}
