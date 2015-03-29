@@ -10,10 +10,10 @@ namespace SelectStock_UpLimit
 {
     class Program
     {
-		const int FetchDataCalenderDay = 200;
-		const int FetchDataBussinessDay = 120;
-		const int CutOffBussinessDay = 120;
-		const int InsertToDataInfoBussinessDay = 120;
+		const int FetchDataCalenderDay = 200/2;
+		const int FetchDataBussinessDay = 120/4;
+		const int CutOffBussinessDay = 120/4;
+		const int InsertToDataInfoBussinessDay = 120/4;
 		static DataFetch data = new DataFetch();
 		static List<string> tradingDayList = new List<string>();
 		static Hashtable map = new Hashtable();
@@ -66,9 +66,17 @@ namespace SelectStock_UpLimit
 					index++;
 				}
 				Console.WriteLine("data fetch complete");
-				GetSectorInfoMatrix("area", fromDate, toDate, cutOffDate);
-				GetSectorInfoMatrix("concept", fromDate, toDate, cutOffDate);
-				GetSectorInfoMatrix("industry", fromDate, toDate, cutOffDate);
+
+				MaxInflowRatioTrade simuTrade = new MaxInflowRatioTrade(tickerListOfAll,
+																		tradingDayList,
+																		closeMatrixOfAll,
+																		inflowRatioMatrixOfAll,
+																		map);
+				simuTrade.TradeReport("./" + toDate + " MaxInflowRatioTradeAnalyze.csv", 5, 3);
+
+				//GetSectorInfoMatrix("area", fromDate, toDate, cutOffDate);
+				//GetSectorInfoMatrix("concept", fromDate, toDate, cutOffDate);
+				//GetSectorInfoMatrix("industry", fromDate, toDate, cutOffDate);
             }
             catch (Exception e)
             {
@@ -86,10 +94,11 @@ namespace SelectStock_UpLimit
 			try
 			{
 				string initialDay = string.Format("{0:yyyy-MM-dd}", Convert.ToDateTime(today).AddDays(-1*FetchDataCalenderDay));
-				tradingDayList = data.GetTradingDays(DataFetch.TickerCSI300, initialDay, today);
-				from = tradingDayList[tradingDayList.Count-1-1*FetchDataBussinessDay];
-				to = tradingDayList[tradingDayList.Count-1];
-				cutOff = tradingDayList[tradingDayList.Count-1*CutOffBussinessDay];
+				List<string> allTradingDayList = data.GetTradingDays(DataFetch.TickerCSI300, initialDay, today);
+				from = allTradingDayList[allTradingDayList.Count - 1 - 1 * FetchDataBussinessDay];
+				to = allTradingDayList[allTradingDayList.Count - 1];
+				cutOff = allTradingDayList[allTradingDayList.Count - 1 * CutOffBussinessDay];
+				tradingDayList = data.GetTradingDays(DataFetch.TickerCSI300, from, to);
 			}
 			catch (Exception e)
 			{
