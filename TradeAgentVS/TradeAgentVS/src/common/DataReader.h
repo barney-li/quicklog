@@ -56,7 +56,7 @@ public:
 	{
 		*aMarketData = NULL;
 		// get these:               TradingDay  InstrumentID        LastPrice       PSPrice         PCPrice         POInterest      OpenPrice       HighestPrice    LowestPrice     Volume  OPI             UpperLimit      LowerLimit      UpdateTime                  Ms      BidPrice1       BidVol1 AskPrice1       AskVol1
-		string lPatternStr = ".*	(\\d{8})	([a-zA-Z]{1,2}\\w+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d+\\.\\d+)	(\\d{2}\\:\\d{2}\\:\\d{2})	(\\d+)	(\\d+\\.\\d+)	(\\d+)	(\\d+\\.\\d+)	(\\d+)	.*";
+		string lPatternStr = ".*	(\\d{8})\\s+([a-zA-Z]{1,2}\\w+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d{2}\\:\\d{2}\\:\\d{2})\\s+(\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+)\\s+(\\d+\\.\\d+)\\s+(\\d+).*";
 		boost::regex lPattern(lPatternStr);
 		boost::smatch lResult;
 		if(!mDataFile.is_open())
