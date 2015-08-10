@@ -327,15 +327,17 @@ void PrimeryAndSecondary::LogBollData()
 	double lDeltaPrice1 = lPrim.bidPrice - lScnd.bidPrice;
 	double lDeltaPrice2 = lPrim.askPrice - lScnd.askPrice;
 #endif
-	tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
-		<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mMidLine<<"	"\
-		<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
-		<<lPrim.volume<<"	"<<lScnd.volume<<"	";
+	//tempStream<<lDeltaPrice1<<"	"<<lDeltaPrice2<<"	"\
+	//	<<tempData.mOutterUpperLine<<"	"<<tempData.mInnerUpperLine<<"	"<<tempData.mMidLine<<"	"\
+	//	<<tempData.mInnerLowerLine<<"	"<<tempData.mOutterLowerLine<<"	"\
+	//	<<lPrim.volume<<"	"<<lScnd.volume<<"	";
 	tempStream\
 				<<lPrim.askPrice<<"	"\
 				<<lPrim.bidPrice<<"	"\
+				<< lPrim.tradingDay << " " << lPrim.updateTime << "." << lPrim.updateMillisec << "	"\
 				<<lScnd.askPrice<<"	"\
 				<<lScnd.bidPrice<<"	"\
+				<< lScnd.tradingDay << " " << lScnd.updateTime << "." << lScnd.updateMillisec << "	"\
 				<<lDeltaPrice1<<"	"\
 				<<lDeltaPrice2<<"	"\
 				<<tempData.mOutterUpperLine<<"	"\

@@ -338,6 +338,8 @@ void PrimeryAndSecondary::OpenScnd()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -382,6 +384,8 @@ void PrimeryAndSecondary::OpenScnd()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -442,6 +446,8 @@ void PrimeryAndSecondary::OpenPrim()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -473,6 +479,8 @@ void PrimeryAndSecondary::OpenPrim()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -538,6 +546,8 @@ void PrimeryAndSecondary::CloseScnd()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -568,6 +578,8 @@ void PrimeryAndSecondary::CloseScnd()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -632,6 +644,8 @@ void PrimeryAndSecondary::ClosePrim()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
@@ -663,6 +677,8 @@ void PrimeryAndSecondary::ClosePrim()
 		tempStream.clear();
 		tempStream.str("");
 		tempStream\
+				<< "99999" << "	"\
+				<< "99999" << "	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
