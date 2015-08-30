@@ -355,7 +355,8 @@ void PrimeryAndSecondary::LogBollData()
 	{
 		tempStream<<"99999	";
 	}
-	tempStream<<"99999	"<<"99999	"<<"99999	"<<"99999	";
+	// the last several fields of BOLL data is: scnd enter price, prim enter price, scnd exit price, prim exit price and trade type
+	tempStream<<"99999	"<<"99999	"<<"99999	"<<"99999	"<<"99999	";
 #ifdef COINTEGRATION_TEST
 	tempStream<<lPrim.askPrice<<"	"<<lPrim.bidPrice<<"	"\
 		<<lScnd.askPrice<<"	"<<lScnd.bidPrice<<"	";

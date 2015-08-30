@@ -355,9 +355,10 @@ void PrimeryAndSecondary::OpenScnd()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<mScndEnterPrice<<"	"\
-				<<"99999"<<"	"
-				<<"99999"<<"	"
-				<<"99999"<<"	";
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"LongScnd"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 
 #endif
@@ -401,9 +402,10 @@ void PrimeryAndSecondary::OpenScnd()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<mScndEnterPrice<<"	"\
-				<<"99999"<<"	"
-				<<"99999"<<"	"
-				<<"99999"<<"	";
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"ShortScnd"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
@@ -463,9 +465,10 @@ void PrimeryAndSecondary::OpenPrim()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
-				<<mPrimEnterPrice<<"	"
-				<<"99999"<<"	"
-				<<"99999"<<"	";
+				<<mPrimEnterPrice<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"ShortPrim"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
@@ -496,9 +499,10 @@ void PrimeryAndSecondary::OpenPrim()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
-				<<mPrimEnterPrice<<"	"
-				<<"99999"<<"	"
-				<<"99999"<<"	";
+				<<mPrimEnterPrice<<"	"\
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<"LongPrim"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
@@ -563,9 +567,10 @@ void PrimeryAndSecondary::CloseScnd()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
-				<<"99999"<<"	"
-				<<mScndClosePrice<<"	"
-				<<"99999"<<"	";
+				<<"99999"<<"	"\
+				<<lScnd.bidPrice<<"	"\
+				<<"99999"<<"	"\
+				<<"SellScnd"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
@@ -595,9 +600,10 @@ void PrimeryAndSecondary::CloseScnd()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
-				<<"99999"<<"	"
-				<<mScndClosePrice<<"	"
-				<<"99999"<<"	";
+				<<"99999"<<"	"\
+				<<lScnd.askPrice<<"	"\
+				<<"99999"<<"	"\
+				<<"CoverScnd"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
@@ -661,9 +667,10 @@ void PrimeryAndSecondary::ClosePrim()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
-				<<"99999"<<"	"
-				<<"99999"<<"	"
-				<<mPrimClosePrice<<"	";
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<lPrim.askPrice<<"	"\
+				<<"CoverPrim"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
@@ -694,9 +701,10 @@ void PrimeryAndSecondary::ClosePrim()
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
 				<<"99999"<<"	"\
-				<<"99999"<<"	"
-				<<"99999"<<"	"
-				<<mPrimClosePrice<<"	";
+				<<"99999"<<"	"\
+				<<"99999"<<"	"\
+				<<lPrim.bidPrice<<"	"\
+				<<"SellPrim"<<"	";
 		mBollLog.LogThisFastNoTimeStamp(tempStream.str());
 #endif
 	}
