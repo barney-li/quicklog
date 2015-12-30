@@ -19,19 +19,19 @@ typedef	unsigned char	TYPE_UCHAR;
 typedef unsigned short	TYPE_USHORT;
 typedef	unsigned int	TYPE_UINT;
 typedef unsigned long	TYPE_ULONG;
-
-typedef enum ORDER_DIRECTION
-{
-	BUY=0,
-	SELL=1
-};
-
-typedef enum ORDER_TYPE
-{
-	OPEN=0,
-	CLOSE=1,
-	CLOSE_TODAY
-};
+//
+//typedef enum ORDER_DIRECTION
+//{
+//	BUY=0,
+//	SELL=1
+//};
+//
+//typedef enum ORDER_TYPE
+//{
+//	OPEN=0,
+//	CLOSE=1,
+//	CLOSE_TODAY
+//};
 #define CMD_LEN 50
 typedef enum 
 {
