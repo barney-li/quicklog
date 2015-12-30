@@ -5,13 +5,25 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Steady|Win32">
       <Configuration>Steady</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Steady|x64">
+      <Configuration>Steady</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -26,7 +38,20 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -40,16 +65,32 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steady|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steady|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -61,6 +102,14 @@
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_58_0\VC14\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_58_0\VC14\include\boost-1_58</IncludePath>
+    <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
+    <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSdkDir)lib;$(FrameworkSDKDir)lib;C:\boost_1_58_0\VC14\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\$(Platform);C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\$(Platform)</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_58_0\VC14\include\boost-1_58</IncludePath>
@@ -69,12 +118,28 @@
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_58_0\VC14\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_58_0\VC14\include\boost-1_58</IncludePath>
+    <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
+    <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSdkDir)lib;$(FrameworkSDKDir)lib;C:\boost_1_58_0\VC14\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\$(Platform);C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\$(Platform)</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_58_0\VC14\include\boost-1_58</IncludePath>
     <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
     <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib;C:\boost_1_58_0\VC14\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\x86</LibraryPath>
+    <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steady|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\CTPAPI;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\Stratergy;$(IncludePath);C:\boost_1_58_0\VC14\include\boost-1_58</IncludePath>
+    <ExecutablePath>$(SolutionDir)TradeAgentVS\src\CTPAPI;$(ExecutablePath)</ExecutablePath>
+    <ReferencePath>$(VCInstallDir)atlmfc\lib;$(VCInstallDir)lib</ReferencePath>
+    <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSdkDir)lib;$(FrameworkSDKDir)lib;C:\boost_1_58_0\VC14\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\$(Platform);C:\Program Files (x86)\Windows Kits\8.1\Lib\winv6.3\um\$(Platform)</LibraryPath>
     <SourcePath>$(VCInstallDir)atlmfc\src\mfc;$(VCInstallDir)atlmfc\src\mfcm;$(VCInstallDir)atlmfc\src\atl;$(VCInstallDir)crt\src;$(SolutionDir)TradeAgentVS\src;$(SolutionDir)TradeAgentVS\src\MarketProcess;$(SolutionDir)TradeAgentVS\src\TradeProcess;$(SolutionDir)TradeAgentVS\src\common;$(SolutionDir)TradeAgentVS\src\Stratergy;$(SolutionDir)TradeAgentVS\src\CTPAPI</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -92,7 +157,48 @@
       <MapExports>true</MapExports>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level1</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <StackReserveSize>0x800000</StackReserveSize>
+      <StackCommitSize>0x400000</StackCommitSize>
+      <MapExports>true</MapExports>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <CallingConvention>Cdecl</CallingConvention>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <StackReserveSize>0x800000</StackReserveSize>
+      <StackCommitSize>0x400000</StackCommitSize>
+      <MapExports>true</MapExports>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -143,6 +249,31 @@
       <MapExports>true</MapExports>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steady|x64'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <PreprocessorDefinitions>BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
+      <CallingConvention>Cdecl</CallingConvention>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <StackReserveSize>0x800000</StackReserveSize>
+      <StackCommitSize>0x400000</StackCommitSize>
+      <MapExports>true</MapExports>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
     <None Include="src\CTPAPI\thostmduserapi.dll" />
@@ -159,8 +290,11 @@
     <ClCompile Include="src\Stratergy\TradeOperation.cpp" />
     <ClCompile Include="src\TradeAgentVS.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Steady|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Steady|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\TradeProcess\TradeProcess.cpp" />
     <ClCompile Include="src\TradeProcess\TradeService.cpp" />
