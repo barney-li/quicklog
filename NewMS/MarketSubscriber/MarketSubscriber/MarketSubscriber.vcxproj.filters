@@ -19,9 +19,6 @@
     <Filter Include="src\TradeProcess">
       <UniqueIdentifier>{a12eaa94-2fed-4c13-b8a0-ad0994ec67a8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Database">
-      <UniqueIdentifier>{824965e9-8d01-46eb-8def-dbd76b03d3c1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MarketSubscriber.cpp">
@@ -44,12 +41,6 @@
     </ClCompile>
     <ClCompile Include="src\TradeProcess\TradeService.cpp">
       <Filter>src\TradeProcess</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Database\MarketDataType.cpp">
-      <Filter>src\Database</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Database\MarketDataTypeMap.cpp">
-      <Filter>src\Database</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -103,15 +94,6 @@
     </ClInclude>
     <ClInclude Include="src\TradeProcess\TradeProcess.h">
       <Filter>src\TradeProcess</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Database\MarketDataType.h">
-      <Filter>src\Database</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Database\MarketDataTypeMap.h">
-      <Filter>src\Database</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Database\NonBlockDatabase.h">
-      <Filter>src\Database</Filter>
     </ClInclude>
     <ClInclude Include="src\MarketSubscriber.h">
       <Filter>src</Filter>

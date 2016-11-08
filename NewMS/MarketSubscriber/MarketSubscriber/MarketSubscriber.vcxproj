@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -28,23 +28,27 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -64,23 +68,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0\VC10\include\boost-1_57;C:\mydll\include;C:\sqldev\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\TradeProcess;C:\boost_1_58_0\VC14\include\boost-1_58;C:\mydll\include;C:\sqldev\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost_1_58_0\VC14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\Database;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost_1_57_0_32\VC10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\Database;$(ProjectDir)src\TradeProcess;C:\boost\include;C:\mydll\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0\VC10\include\boost-1_57;C:\mydll\include;C:\sqldev\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost_1_57_0\VC10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\TradeProcess;C:\boost_1_58_0\VC14\include\boost-1_58;C:\mydll\include;C:\sqldev\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost_1_58_0\VC14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\Database;$(ProjectDir)src\TradeProcess;C:\boost_1_57_0_32\VC10\include\boost-1_57;C:\mydll32\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\boost_1_57_0_32\VC10\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)src\common;$(ProjectDir)src\CTPAPI;$(ProjectDir)src\MarketProcess;$(ProjectDir)src\Database;$(ProjectDir)src\TradeProcess;C:\boost\include;C:\mydll\include;C:\sqldev32\instantclient_12_1\sdk\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -94,7 +98,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\mydll;C:\sqldev\instantclient_12_1\sdk\lib\msvc;$(ProjectDir)src\CTPAPI;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oraocci12d.lib;Log-dg.lib;OracleClient-Debug.lib;%(AdditionalDependencies);thostmduserapi.lib;thosttraderapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>Log-dg.lib;%(AdditionalDependencies);thostmduserapi.lib;thosttraderapi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,7 +132,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>C:\mydll;C:\sqldev\instantclient_12_1\sdk\lib\msvc;$(ProjectDir)src\CTPAPI;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>oraocci12.lib;Log.lib;OracleClient-Release.lib;%(AdditionalDependencies);thostmduserapi.lib;thosttraderapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>Log.lib;%(AdditionalDependencies);thostmduserapi.lib;thosttraderapi.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,8 +160,6 @@
   <ItemGroup>
     <ClCompile Include="src\common\CommonLog.cpp" />
     <ClCompile Include="src\common\InstrumentLog.cpp" />
-    <ClCompile Include="src\Database\MarketDataType.cpp" />
-    <ClCompile Include="src\Database\MarketDataTypeMap.cpp" />
     <ClCompile Include="src\MarketProcess\MarketProcess.cpp" />
     <ClCompile Include="src\MarketSubscriber.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
@@ -178,9 +180,6 @@
     <ClInclude Include="src\CTPAPI\ThostFtdcTraderApi.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiDataType.h" />
     <ClInclude Include="src\CTPAPI\ThostFtdcUserApiStruct.h" />
-    <ClInclude Include="src\Database\MarketDataType.h" />
-    <ClInclude Include="src\Database\MarketDataTypeMap.h" />
-    <ClInclude Include="src\Database\NonBlockDatabase.h" />
     <ClInclude Include="src\MarketProcess\MarketProcess.h" />
     <ClInclude Include="src\MarketSubscriber.h" />
     <ClInclude Include="src\stdafx.h" />
