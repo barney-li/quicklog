@@ -1,7 +1,0 @@
-input: 
-	vol(NumericSimple),
-	thisClose(NumericSimple),
-	lastClose(NumericSimple);
-begin
-	myPowerIndex = vol*(thisClose - lastClose); 
-end;
